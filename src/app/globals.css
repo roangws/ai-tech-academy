@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+/*
+  AI Tech Education Academy - design tokens.
+
+  Derived from a forensic analysis of 15 learning-platform homepages
+  (references/DESIGN-SPEC.md), with Coursera, Udemy and DeepLearning.AI as the
+  primary visual targets. Tokens honour the project's own LMS design system in
+  references/lms-benchmark/DESIGN-SYSTEM-AND-LMS-UX.md.
+
+  White theme only. There is no dark mode and no dark full-bleed band.
+
+  Accent lock: --accent appears on filled primary buttons (max one per
+  section), text actions, the search submit button, active underlines, and
+  step-one of the timeline. Never as a section background, card background,
+  card border, or heading colour. Green is semantic only: a module that is
+  open with no signup.
+
+  Radius lock: control 8, card 12, feature 16. Pills only for status chips and
+  the path tab row.
+*/
+
+:root {
+  color-scheme: light;
+
+  --surface: #ffffff;
+  --surface-subtle: #eef3f7;
+  --surface-sunken: #e7eef4;
+
+  --ink: #101820;
+  --ink-secondary: #3d4f60;
+  --ink-muted: #5c6e7f;
+
+  --line: #d8e1e8;
+  --line-strong: #aebecb;
+
+  --accent: #066c94;
+  --accent-hover: #045675;
+  --accent-tint: #ddf3fb;
+
+  --state-open: #0f6a4b;
+  --state-open-surface: #e2f2e9;
+
+  --focus: #725cf5;
+
+  --shadow-1: 0 1px 2px rgb(16 24 32 / 0.06);
+  --shadow-2: 0 4px 14px rgb(16 24 32 / 0.08);
+
+  /*
+    Cover grounds, one per path. Five hues held at the same lightness and
+    chroma so the catalog reads as one set while every card is telling you
+    which path it is before you read a word. These appear only as the ground
+    of a path cover and as the rule under its heading. They stay away from
+    --accent, which keeps its job on controls and text actions.
+  */
+  --path-a: #0a5c7a;
+  --path-b: #46305f;
+  --path-c: #1f5540;
+  --path-d: #1b3f6b;
+  --path-e: #6d3c22;
+
+  /* Dark anchor band. One section on the page uses it. */
+  --ink-band: #0d1a22;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-tint: var(--accent-tint);
+
+  --color-state-open: var(--state-open);
+  --color-state-open-surface: var(--state-open-surface);
+
+  --color-ink-band: var(--ink-band);
+
+  /*
+    One family for the page. The display face is Inter Tight and it is reserved
+    for the brand wordmark, which the logo package specifies at 700. Headings
+    stay on Inter.
+  */
+  --font-sans: var(--font-inter), ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-feature: 16px;
+
+  --shadow-e1: var(--shadow-1);
+  --shadow-e2: var(--shadow-2);
+}
+
+/*
+  Type scale. Every text element on the page uses exactly one of these.
+  Nothing is larger than 44px. Card titles are 16px, meta is 13px: those two
+  numbers are what separate a course catalog from a marketing landing page.
+*/
+@utility t-display {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+@utility t-h2 {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+/*
+  The one element on the page allowed above 44px, used exactly once, for the
+  measured before-and-after in the outcomes section. Every reference has a
+  single stat set larger than its own body scale; this is ours.
+*/
+@utility t-stat {
+  font-size: 56px;
+  line-height: 60px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Figures inside the outcome sheet, so the before and after columns align. */
+@utility t-figure {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility t-h3 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+@utility t-card-title {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+@utility t-body {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+@utility t-body-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility t-meta {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+/*
+  Three ranks, where there used to be one.
+
+  t-label was doing five different jobs at roughly eighty call sites: section
+  eyebrow, status chip, in-card field label, group heading and table header, all
+  at the same 11px uppercase. Collapsing five ranks into one style means the eye
+  cannot use size or case to rank anything, which is why a card's internal field
+  label read as a peer of the section heading above it.
+
+  t-label  section eyebrows and status chips only, uppercase
+  t-field  in-card field labels and table headers, sentence case
+  group headings run at t-meta in --ink-secondary
+*/
+@utility t-label {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+@utility t-field {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+@utility t-micro {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+@utility t-button {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+@utility t-nav {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .t-display {
+    font-size: 32px;
+    line-height: 40px;
+  }
+
+  .t-h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .t-stat {
+    font-size: 40px;
+    line-height: 44px;
+    letter-spacing: -0.8px;
+  }
+}
+
+/* Fixed-height clamp boxes so meta rows align across every card in a row. */
+@utility clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 92px;
+  }
+
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: pretty;
+  }
+
+  :where(a, button, input, [tabindex]):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--accent-tint);
+    color: var(--ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Horizontal catalog rail. Scrollbar hidden; the peeking card is the cue. */
+.rail {
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,'Segoe UI',sans-serif;color:#101820;background:#FFFFFF;-webkit-font-smoothing:antialiased}
+a{color:#0B5F86;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div data-screen-label="Academy Home v2" style="min-width:1180px">
+
+<header style="background:#FFFFFF;border-bottom:1px solid #EDF1F5;position:sticky;top:0;z-index:50">
+  <div style="max-width:1200px;margin:0 auto;height:64px;padding:0 24px;display:flex;align-items:center;gap:36px">
+    <a href="#" style="display:flex;align-items:baseline;gap:6px;color:#101820" style-hover="text-decoration:none">
+      <span style="font-size:17px;font-weight:400;color:#344454">AI Tech Education</span>
+      <span style="font-size:17px;font-weight:700;color:#0B5F86">Academy</span>
+    </a>
+    <nav style="display:flex;align-items:center;gap:26px">
+      <a href="#overview" style="color:#344454;font-size:13.5px;font-weight:400" style-hover="color:#101820;text-decoration:none">Overview</a>
+      <a href="#tracks" style="color:#344454;font-size:13.5px;font-weight:400" style-hover="color:#101820;text-decoration:none">Tracks</a>
+      <a href="#method" style="color:#344454;font-size:13.5px;font-weight:400" style-hover="color:#101820;text-decoration:none">Methodology</a>
+      <a href="#preview" style="color:#344454;font-size:13.5px;font-weight:400" style-hover="color:#101820;text-decoration:none">Preview</a>
+      <a href="#faq" style="color:#344454;font-size:13.5px;font-weight:400" style-hover="color:#101820;text-decoration:none">FAQs</a>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:22px">
+      <a href="#" style="color:#344454;font-size:13.5px" style-hover="color:#101820;text-decoration:none">Sign in</a>
+      <a href="#tracks" style="display:inline-flex;align-items:center;height:38px;padding:0 18px;background:#0B5F86;color:#FFFFFF;border-radius:6px;font-size:13.5px;font-weight:500" style-hover="background:#0A5578;text-decoration:none">Start learning</a>
+    </div>
+  </div>
+</header>
+
+<section id="overview" data-screen-label="Hero" style="background:#FFFFFF">
+  <div style="max-width:1200px;margin:0 auto;padding:56px 24px 40px;display:grid;grid-template-columns:1fr 520px;gap:72px;align-items:start">
+    <div style="padding-top:8px">
+      <h1 style="margin:0;font-size:38px;line-height:48px;font-weight:500;letter-spacing:-.01em;color:#101820;text-wrap:pretty">Applied AI Implementation</h1>
+      <p style="margin:18px 0 0;font-size:15.5px;line-height:26px;color:#344454;max-width:520px">Ready to move past AI demos? The Academy teaches technical teams to deploy working AI systems on their own data. Guided recorded labs walk you from a light profile to a live deployment, measured inside your organization.</p>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:26px">
+        <a href="#tracks" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 22px;background:#0B5F86;color:#FFFFFF;border-radius:6px;font-size:14.5px;font-weight:500" style-hover="background:#0A5578;text-decoration:none">Start Module 1<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+        <span style="font-size:14px;color:#66788A">free, no signup</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:30px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:14px;color:#344454"><span style="width:7px;height:7px;border-radius:50%;background:#0879A8;flex:none"></span>Learn from practitioners who deploy AI in production</span>
+        <span style="display:flex;align-items:center;gap:12px;font-size:14px;color:#344454"><span style="width:7px;height:7px;border-radius:50%;background:#0879A8;flex:none"></span>Build on your own data, never a generic demo</span>
+        <span style="display:flex;align-items:center;gap:12px;font-size:14px;color:#344454"><span style="width:7px;height:7px;border-radius:50%;background:#0879A8;flex:none"></span>Finish with a measured, deployed result</span>
+      </div>
+    </div>
+    <div>
+      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;box-shadow:0 4px 14px rgba(16,24,32,.08)">
+        <image-slot id="hero-video-poster" shape="rect" placeholder="Drop intro video still (instructor on camera)"></image-slot>
+        <div style="position:absolute;top:20px;left:20px;display:flex;flex-direction:column;gap:8px;pointer-events:none">
+          <span style="font-size:19px;font-weight:600;color:#FFFFFF;text-shadow:0 1px 8px rgba(16,24,32,.5);margin-bottom:2px">Deploy AI<br>that works</span>
+          <span style="display:inline-flex;align-self:flex-start;align-items:center;height:26px;padding:0 10px;background:rgba(255,255,255,.94);border:1px solid #101820;border-radius:5px;font-size:12px;font-weight:500;color:#101820">Profile your goals</span>
+          <span style="display:inline-flex;align-self:flex-start;align-items:center;height:26px;padding:0 10px;background:rgba(255,255,255,.94);border:1px solid #101820;border-radius:5px;font-size:12px;font-weight:500;color:#101820">Build on your data</span>
+          <span style="display:inline-flex;align-self:flex-start;align-items:center;height:26px;padding:0 10px;background:rgba(255,255,255,.94);border:1px solid #101820;border-radius:5px;font-size:12px;font-weight:500;color:#101820">Deploy in your org</span>
+          <span style="display:inline-flex;align-self:flex-start;align-items:center;height:26px;padding:0 10px;background:rgba(255,255,255,.94);border:1px solid #101820;border-radius:5px;font-size:12px;font-weight:500;color:#101820">Measure the result</span>
+        </div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <span style="width:52px;height:52px;border-radius:50%;background:rgba(16,24,32,.6);display:flex;align-items:center;justify-content:center;padding-left:3px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M8 5v14l11-7z"></path></svg>
+          </span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#0B5F86"><circle cx="12" cy="12" r="10" fill="#0B5F86"></circle><path d="M10 8l6 4-6 4z" fill="#FFFFFF"></path></svg>
+        <a href="#preview" style="font-size:14px;font-weight:500">Discover what you'll learn in Module 1</a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+    <div style="border-top:1px solid #EDF1F5;display:flex;justify-content:center;gap:56px;padding:16px 0">
+      <a href="#overview" style="font-size:13.5px;color:#101820;font-weight:500;border-bottom:2px solid #0B5F86;padding-bottom:2px" style-hover="text-decoration:none">Overview</a>
+      <a href="#tracks" style="font-size:13.5px;color:#66788A" style-hover="color:#101820;text-decoration:none">Tracks</a>
+      <a href="#method" style="font-size:13.5px;color:#66788A" style-hover="color:#101820;text-decoration:none">Methodology</a>
+      <a href="#preview" style="font-size:13.5px;color:#66788A" style-hover="color:#101820;text-decoration:none">Preview</a>
+      <a href="#faq" style="font-size:13.5px;color:#66788A" style-hover="color:#101820;text-decoration:none">FAQs</a>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Proof" style="background:#FFFFFF;border-top:1px solid #EDF1F5">
+  <div style="max-width:840px;margin:0 auto;padding:64px 24px 72px;text-align:center">
+    <h2 style="margin:0;font-size:28px;line-height:38px;font-weight:400;color:#101820;text-wrap:pretty">Complete the course by deploying, not by watching</h2>
+    <p style="margin:14px auto 0;font-size:14.5px;line-height:23px;color:#66788A;max-width:520px">Every track ends when something is live in your organization and the result is measured against a baseline you set in week one.</p>
+    <div style="display:flex;justify-content:center;gap:120px;margin-top:48px">
+      <div style="max-width:220px">
+        <div style="font-size:52px;line-height:1;font-weight:500;color:#0B5F86">5</div>
+        <div style="width:56px;height:1px;background:#D8E0E8;margin:18px auto"></div>
+        <div style="font-size:13.5px;line-height:20px;color:#66788A">independent tracks, with every module title and outcome public before you sign up</div>
+      </div>
+      <div style="max-width:220px">
+        <div style="font-size:52px;line-height:1;font-weight:500;color:#157A55">1</div>
+        <div style="width:56px;height:1px;background:#D8E0E8;margin:18px auto"></div>
+        <div style="font-size:13.5px;line-height:20px;color:#66788A">open module in every track. Watch it end to end with no account and no payment</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tracks" data-screen-label="Tracks" style="background:#F5F7FA">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px 72px">
+    <h2 style="margin:0;font-size:28px;line-height:38px;font-weight:400;color:#101820;text-align:center">Learn more about the tracks</h2>
+    <div style="margin-top:40px;background:#FFFFFF;border:1px solid #D8E0E8;border-radius:8px;box-shadow:0 1px 2px rgba(16,24,32,.06);display:grid;grid-template-columns:1fr 380px;gap:48px;padding:36px 40px">
+      <div>
+        <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #AEBBC8;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#344454">LEAD TRACK</span>
+        <h3 style="margin:14px 0 0;font-size:21px;line-height:30px;font-weight:600;color:#101820">Applied AI for GTM Teams</h3>
+        <p style="margin:12px 0 0;font-size:14.5px;line-height:24px;color:#344454;max-width:520px">Built for marketing ops, RevOps, growth analysts, and GTM engineers. Across five modules of self paced recorded labs, you'll assemble a multimodal agent loop on your own pipeline data and put it live in your revenue stack. By the last module you're not watching demos, you're measuring your own deployment.</p>
+        <a href="#" style="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;background:#0B5F86;color:#FFFFFF;border-radius:6px;font-size:14px;font-weight:500;margin-top:24px" style-hover="background:#0A5578;text-decoration:none">Start Module 1 free<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+      </div>
+      <div style="border-left:1px solid #EDF1F5;padding-left:40px">
+        <span style="font-size:13.5px;font-weight:600;color:#101820">Track curriculum:</span>
+        <div style="display:flex;flex-direction:column;gap:11px;margin-top:14px">
+          <span style="display:flex;gap:10px;font-size:13.5px;line-height:19px;color:#344454"><span style="color:#157A55;font-weight:600;flex:none">1</span>The multimodal agent loop <span style="color:#157A55;font-weight:500">· open</span></span>
+          <span style="display:flex;gap:10px;font-size:13.5px;line-height:19px;color:#344454"><span style="color:#66788A;font-weight:600;flex:none">2</span>Profile your workflow and data audit</span>
+          <span style="display:flex;gap:10px;font-size:13.5px;line-height:19px;color:#344454"><span style="color:#66788A;font-weight:600;flex:none">3</span>Build: the agent workflow on your pipeline</span>
+          <span style="display:flex;gap:10px;font-size:13.5px;line-height:19px;color:#344454"><span style="color:#66788A;font-weight:600;flex:none">4</span>Deploy into your revenue stack</span>
+          <span style="display:flex;gap:10px;font-size:13.5px;line-height:19px;color:#344454"><span style="color:#66788A;font-weight:600;flex:none">5</span>Measure, outcome sheet, and evidence</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:20px">
+      <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="4">
+        <div style="background:#FFFFFF;border:1px solid #D8E0E8;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(16,24,32,.06)">
+          <div style="width:100%;aspect-ratio:16/9">
+            <image-slot id="{{ t.slotId }}" shape="rect" placeholder="{{ t.photoHint }}"></image-slot>
+          </div>
+          <div style="padding:18px 20px 20px;display:flex;flex-direction:column;gap:7px;flex:1">
+            <span style="font-size:11.5px;font-weight:600;letter-spacing:.05em;color:#66788A">{{ t.eyebrow }}</span>
+            <span style="font-size:15.5px;line-height:22px;font-weight:600;color:#101820">{{ t.title }}</span>
+            <span style="font-size:13px;line-height:19px;color:#66788A;flex:1">{{ t.text }}</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#66788A;margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#66788A" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ t.meta }}</span>
+            <a href="#" style="font-size:13.5px;font-weight:500;margin-top:6px">Start Module 1</a>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section id="preview" data-screen-label="Preview" style="background:#FFFFFF">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px 72px">
+    <h2 style="margin:0 0 36px;font-size:28px;line-height:38px;font-weight:400;color:#101820;text-align:center">Preview the course material</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-radius:8px;overflow:hidden;border:1px solid #D8E0E8">
+      <div style="position:relative;min-height:380px">
+        <image-slot id="module1-preview" shape="rect" style="position:absolute;inset:0;width:100%;height:100%" placeholder="Drop a Module 1 lesson still"></image-slot>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <span style="width:56px;height:56px;border-radius:50%;background:rgba(16,24,32,.55);display:flex;align-items:center;justify-content:center;padding-left:3px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M8 5v14l11-7z"></path></svg>
+          </span>
+        </div>
+      </div>
+      <div style="background:#F5F7FA;padding:44px 48px">
+        <span style="font-size:11.5px;font-weight:600;letter-spacing:.08em;color:#66788A">MODULE 1 · TRACK A</span>
+        <h3 style="margin:12px 0 0;font-size:22px;line-height:31px;font-weight:600;color:#101820">Learn from people who deploy AI for a living</h3>
+        <p style="margin:14px 0 0;font-size:14px;line-height:23px;color:#344454">Module 1 is a complete working lab, not a trailer. You'll see the exact format of the gated modules: a practitioner on camera, a real dataset, and a build that ends the session running. It's the fastest way to judge whether the method fits how your team works.</p>
+        <div style="margin-top:22px">
+          <span style="font-size:13.5px;font-weight:600;color:#101820">The course includes:</span>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+            <span style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#344454"><span style="width:6px;height:6px;border-radius:50%;background:#0879A8;flex:none"></span>Videos from working practitioners</span>
+            <span style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#344454"><span style="width:6px;height:6px;border-radius:50%;background:#0879A8;flex:none"></span>Hands-on labs on your own data</span>
+            <span style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:#344454"><span style="width:6px;height:6px;border-radius:50%;background:#0879A8;flex:none"></span>Assessments and a measured outcome sheet</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:24px">
+          <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0B5F86"></circle><path d="M10 8l6 4-6 4z" fill="#FFFFFF"></path></svg>
+          <a href="#" style="font-size:14px;font-weight:500">Watch the video</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method" data-screen-label="Methodology" style="background:#FFFFFF;border-top:1px solid #EDF1F5">
+  <div style="max-width:1200px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:400px 1fr;gap:96px">
+    <div>
+      <h2 style="margin:0;font-size:30px;line-height:40px;font-weight:400;color:#101820">Learn by<br>Deploying</h2>
+      <p style="margin:18px 0 0;font-size:14.5px;line-height:24px;color:#344454">One methodology, identical in every track. You finish with a deployed system, a measured result, and a record your organization can verify. The certificate is the least interesting thing you leave with.</p>
+      <a href="#tracks" style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;margin-top:20px">Choose your track<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0B5F86" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;gap:24px;padding:20px 0;border-bottom:1px solid #EDF1F5">
+          <span style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #D8E0E8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#0B5F86">{{ s.num }}</span>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:15px;font-weight:600;color:#101820">{{ s.name }}</span>
+            <span style="font-size:13.5px;line-height:21px;color:#66788A;max-width:560px">{{ s.text }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<sc-if value="{{ showTestimonial }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="Testimonial" style="background:#FFFFFF;border-top:1px solid #EDF1F5">
+  <div style="max-width:1040px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:340px 1fr;gap:80px;align-items:center">
+    <image-slot id="testimonial-portrait" shape="circle" style="width:320px;height:320px" placeholder="Drop a learner portrait"></image-slot>
+    <div>
+      <span style="font-size:11.5px;font-weight:600;letter-spacing:.08em;color:#66788A">EARLY COHORT</span>
+      <p style="margin:16px 0 0;font-size:17px;line-height:29px;color:#101820;max-width:560px">"The course didn't end with a quiz, it ended with a working system my team still runs every Monday. Having to measure the before and after made it impossible to fake the result."</p>
+      <p style="margin:16px 0 0;font-size:13.5px;color:#344454;font-weight:500">Track A graduate, revenue operations lead</p>
+      <p style="margin:4px 0 0;font-size:12.5px;color:#66788A;font-style:italic">(Placeholder quote, replace with a signed impact letter excerpt)</p>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<section id="faq" data-screen-label="FAQ" style="background:#FFFFFF;border-top:1px solid #EDF1F5">
+  <div style="max-width:920px;margin:0 auto;padding:64px 24px 88px">
+    <h2 style="margin:0 0 24px;font-size:28px;line-height:38px;font-weight:400;color:#101820;text-align:center">Frequently asked questions</h2>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="8">
+        <div style="border-bottom:1px solid #EDF1F5">
+          <button onClick="{{ f.toggle }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:19px 4px;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit">
+            <span style="font-size:14.5px;color:#101820">{{ f.q }}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66788A" stroke-width="2" style="flex:none;transform:{{ f.rot }};transition:transform .15s">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </button>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:0 4px 20px;font-size:14px;line-height:23px;color:#344454;max-width:720px">{{ f.a }}</p>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#FFFFFF;border-top:1px solid #D8E0E8">
+  <div style="max-width:1200px;margin:0 auto;padding:22px 24px;display:flex;align-items:center;gap:28px">
+    <span style="font-size:14px;color:#101820"><span style="color:#344454">AI Tech Education</span> <span style="font-weight:700;color:#0B5F86">Academy</span></span>
+    <a href="#" style="font-size:13px;color:#66788A" style-hover="color:#101820">About</a>
+    <a href="#tracks" style="font-size:13px;color:#66788A" style-hover="color:#101820">Tracks</a>
+    <a href="#method" style="font-size:13px;color:#66788A" style-hover="color:#101820">Methodology</a>
+    <a href="#" style="font-size:13px;color:#66788A" style-hover="color:#101820">For organizations</a>
+    <a href="#" style="font-size:13px;color:#66788A" style-hover="color:#101820">Privacy</a>
+    <a href="#" style="font-size:13px;color:#66788A" style-hover="color:#101820">Terms</a>
+    <span style="margin-left:auto;font-size:13px;color:#66788A">AITechEducation.academy · English (US)</span>
+  </div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showTestimonial&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  state = { openFaq: 0 };
+  renderVals() {
+    const faqData = [
+      { q: 'What does the Academy cost?', a: 'Nothing in Phase 1. Module 1 of every track is open with no account, and one free signup unlocks the rest of the track. There are no tiers and no payment step.' },
+      { q: 'Do I need to sign up to start?', a: 'No. The first module of every track plays for anyone. You only create an account when you decide to continue past Module 1, and signup is a short profile: name, role, company, and a few questions about your goals.' },
+      { q: 'What does "complete by deploying" mean?', a: 'A track is finished when the system you built in the labs is live inside your organization and you have measured its effect against the baseline you recorded at the start. Watching every video is not completion.' },
+      { q: 'What is the outcome sheet?', a: 'A one page record inside the course. Before you deploy, you note a baseline on time, cost, or quality. After you deploy, you measure again. The sheet holds both numbers and the difference.' },
+      { q: 'Which track should I start with?', a: 'Pick by role. GTM Teams for marketing ops, RevOps, and growth. Video and Media for production workflows. Industry Teams for field and operations work. Infrastructure for developers. Small Business Starter if you want a short first win before committing.' },
+      { q: 'Who records the courses?', a: 'Core labs are recorded by the lead instructor. Context specific deep dives are recorded by invited specialist partners who run these workflows in production, and an outside advisory board reviews curriculum and outcomes.' },
+      { q: 'Can my whole team take a track?', a: 'Yes. Each person signs up individually so each gets their own labs, baseline, and outcome sheet. If you want to coordinate a group, contact us and we will help you sequence it.' },
+      { q: 'What happens to the information I provide?', a: 'Your profile and progress are used to run the course and to produce your own outcome record. You can request a copy or deletion of your data at any time.' }
+    ];
+    return {
+      showTestimonial: this.props.showTestimonial ?? true,
+      steps: [
+        { num: '1', name: 'Profile', text: 'A light signup: who you are, your goals, and how you use AI today. Nothing heavy, no long forms.' },
+        { num: '2', name: 'Build', text: 'Guided recorded labs where you construct the workflow on your own material with current multimodal models and APIs.' },
+        { num: '3', name: 'Deploy', text: 'Your build goes live inside your organization. Deployment is the completion requirement, not a stretch goal.' },
+        { num: '4', name: 'Measure', text: 'A pre and post baseline on time, cost, or quality, captured in a one page outcome sheet inside the course.' },
+        { num: '5', name: 'Evidence', text: 'Progress, assessment, and outcomes are recorded, and completers are invited to sign an impact letter.' }
+      ],
+      tracks: [
+        { slotId: 'track-b-photo', photoHint: 'Photo: editor at a workstation', eyebrow: 'TRACK B', title: 'Applied AI for Video and Media Production', text: 'Production grade multimodal workflows, from ingest to finished cut.', meta: 'Self paced · Module 1 open' },
+        { slotId: 'track-c-photo', photoHint: 'Photo: field technician at work', eyebrow: 'TRACK C', title: 'Applied AI for Industry Technical Teams', text: 'For restoration and claims, vegetation management, and security operations.', meta: 'Self paced · Module 1 open' },
+        { slotId: 'track-d-photo', photoHint: 'Photo: developer at a terminal', eyebrow: 'TRACK D', title: 'Applied AI Infrastructure for Developers', text: 'Serving, scaling, and operating models on GPU cloud infrastructure.', meta: 'Self paced · Module 1 open' },
+        { slotId: 'track-e-photo', photoHint: 'Photo: small business owner', eyebrow: 'TRACK E · STARTER', title: 'AI Starter for Small Business', text: 'A short free module to find your first deployable AI win.', meta: 'Short course · Fully open' }
+      ],
+      faqs: faqData.map((f, i) => ({
+        ...f,
+        open: this.state.openFaq === i,
+        rot: this.state.openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)',
+        toggle: () => this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
