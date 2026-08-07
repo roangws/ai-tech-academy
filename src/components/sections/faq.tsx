@@ -9,8 +9,10 @@ import { faqs } from "@/lib/content";
  *
  * WHAT THE PATTERN IS, since almost none of it is obvious from a screenshot:
  *
- *   1. The question is the largest type in the block, uppercase, and it is the
- *      row. There is no card, no chevron and no icon.
+ *   1. The question is the largest type in the block and it is the row. There
+ *      is no card, no chevron and no icon. The reference sets it uppercase;
+ *      this one does not, from 7 Aug. See globals.css at `t-question` for why
+ *      that also removed the row compression.
  *   2. A closed question is drawn down. It is legible, but it is grey the way a
  *      watermark is grey, so a column of them reads as a list of subjects
  *      rather than as eleven competing headlines.
@@ -20,7 +22,9 @@ import { faqs } from "@/lib/content";
  *      with `-space-y-6` flipping to `space-y-0`, which is a negative bottom
  *      margin on the trigger's content inside an `overflow-hidden` trigger, so
  *      a closed row loses its bottom padding and the leading under the
- *      baseline. Uppercase has no descenders, so nothing is cut but air.
+ *      baseline. Uppercase has no descenders, so nothing is cut but air. This
+ *      one is sentence case now and therefore does not do it; the rows are
+ *      packed with padding instead.
  *
  * ------------------------------------------------- what changed on this pass
  *
@@ -84,11 +88,11 @@ export function Faq() {
                   */
                   className="group flex w-full cursor-pointer overflow-hidden text-left"
                 >
-                  <span
-                    className={`flex w-full items-start py-3.5 transition-[margin] duration-200 ease-out md:py-5 ${
-                      expanded ? "mb-0" : "-mb-1.5 md:-mb-2.5"
-                    }`}
-                  >
+                  {/* No compression margin any more. It clipped the leading
+                      under the baseline to pack the rows, which is only safe
+                      on uppercase; in sentence case it cut the tails off every
+                      descender in the list. globals.css has the note. */}
+                  <span className="flex w-full items-start py-3 md:py-4">
                     {/* The index. Tabular so eleven of them share an edge, and
                         hung into the container gutter from lg so the question
                         can start where the section heading starts. */}

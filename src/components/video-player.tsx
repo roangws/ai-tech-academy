@@ -28,7 +28,7 @@ export function VideoPlayer({
   src: string;
   poster: string;
   posterAlt: string;
-  card?: { title: string; beats: readonly string[] };
+  card?: { title: string };
   width?: number;
   height?: number;
 }) {
@@ -96,12 +96,17 @@ export function VideoPlayer({
             sizes="(max-width: 1024px) 100vw, 700px"
             className="h-full w-full object-cover"
           />
-          <span className="pointer-events-none absolute inset-x-0 top-0 bottom-[84px] flex items-center justify-center">
+          {/* `bottom-[49px]` tracks the title card's height, so the play button
+              stays centred in the frame above it rather than in the whole
+              poster. It was 84 while the card carried a row of beat chips; the
+              chips are gone and this had to come down with them or the button
+              sits 17px high. */}
+          <span className="pointer-events-none absolute inset-x-0 top-0 bottom-[49px] flex items-center justify-center">
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white pl-0.5 shadow-e2 transition-transform duration-150 group-hover:scale-105">
               <PlayIcon size={20} weight="fill" className="text-ink" />
             </span>
           </span>
-          {card ? <PosterTitleCard title={card.title} beats={card.beats} /> : null}
+          {card ? <PosterTitleCard title={card.title} /> : null}
         </button>
       )}
     </div>

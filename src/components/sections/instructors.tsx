@@ -95,15 +95,22 @@ export function Instructors() {
           consequence of something rather than a number somebody has to keep in
           sync with 2 x 248 + 16.
 
-          302 rather than 248 is for the photographs. A 2:3 studio portrait in a
-          342 x 248 window shows 45% of its own height, which cuts the crown off
-          anyone whose head sits high in frame; at 302 it shows 59% and every
-          one of the four clears.
+          360 rather than 302, and the number is arithmetic rather than taste.
+
+          `object-cover` scales a 2:3 portrait to the card's width, so at 343px
+          across the head lands 202px tall whatever the card's height is. The
+          text block under it is about 140px. 202 + 140 is 342, so at 302 the
+          two could not both fit and the name was always printed across
+          somebody's chin. 360 gives the head its 202, the text its 140, and
+          18px between them.
+
+          Making the card shorter and the head smaller is not available: the
+          head's size is set by the card's width, and the width is the bento's.
         */}
         <ul
           tabIndex={0}
           aria-label="Specialist instructors"
-          className="rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:-mx-5 sm:px-5 md:-mx-6 md:px-6 lg:col-span-7 lg:mx-0 lg:grid lg:auto-rows-[302px] lg:grid-cols-2 lg:overflow-visible lg:px-0"
+          className="rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:-mx-5 sm:px-5 md:-mx-6 md:px-6 lg:col-span-7 lg:mx-0 lg:grid lg:auto-rows-[360px] lg:grid-cols-2 lg:overflow-visible lg:px-0"
         >
           {specialists.map((person) => (
             <li
@@ -130,11 +137,14 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
       className={`group/tile relative w-full overflow-hidden rounded-[var(--radius-feature)] bg-ink-band ${
         /* No `min-h` on the lead any more. It takes the row the four specialists
            set; see the note at the rail. */
-        /* The lead runs taller on a phone than it used to. Its text block now
+        /*
+           Mobile heights are set the same way as the desktop rows: head height
+           plus text height. A specialist card at 260px across puts the head at
+           153px and its text at about 130, so 300 clears with room; the lead
            carries a headline, a three-line blurb, an investor line and two link
-           chips, which is about 270px; at the old 380 that left roughly a
-           hundred pixels of face above it. */
-        lead ? "h-[470px] sm:h-[500px] lg:h-full" : "h-[250px] lg:h-full"
+           chips, about 270px of text under a 211px head, so it needs 500.
+        */
+        lead ? "h-[520px] sm:h-[540px] lg:h-full" : "h-[300px] lg:h-full"
       }`}
     >
       {/*
@@ -165,30 +175,45 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
 
             These are studio portraits at 2:3 with the face high in the frame,
             which is a different problem from the illustrations they replace.
-            A 2:3 source in a 342 x 230 tile means `object-cover` scales to
-            width and shows about 45% of the height, so the window has to start
-            near the top or it opens below the crown: measured, the head lands
-            at y 20-222 of a 510px scaled frame, and anything past about 10%
-            cuts hair off. The lead card is nearly the source's own ratio and
-            crops almost nothing, so it only needs to clear the top edge.
+            `object-cover` scales the source to the card's width, so in a 343px
+            column the head is 202px tall whatever else changes, and it lands at
+            y 20-222 of the 511px scaled frame. The card is 360 and its text
+            block takes the bottom 140, which leaves the window two bounds:
+            past 13% it cuts the crown, under 1.3% it pushes the chin behind the
+            name. 8% is the middle of that, putting the head 8px below the top
+            edge with 10px of clear frame under the jaw.
+
+            The lead card is almost exactly the source's own ratio, so it crops
+            about five pixels in total and the value barely matters there.
 
             No corrective scale on either. The specialist tiles ran at 1.2 for
             one pass to hide a pale margin the illustrations came back with, and
             that patch left with the illustrations.
           */
-          className={`transition-transform duration-500 group-hover/tile:scale-[1.04] ${
-            lead ? "object-[center_8%]" : "object-[center_6%]"
-          }`}
+          className="object-[center_8%] transition-transform duration-500 group-hover/tile:scale-[1.04]"
         />
         </span>
       ) : null}
 
-      {/* Reading scrim. Deeper on the small tiles, because their type block
-          starts higher up a shorter frame. */}
+      {/*
+        Reading scrim, retuned to stop at the chin.
+
+        It used to ramp all the way to the top of the card, so the whole
+        photograph sat under a wash and the faces went grey. It now runs solid
+        under the text block, releases fast just above it, and is fully clear
+        over the top half of the frame: `to-transparent` lands at 66% on a
+        specialist and 74% on the lead, which is where each one's text stops.
+
+        The percentages track the text block's own height, so if a card gains a
+        line these have to move with it. Both are gradients up from the bottom,
+        so `via-32%` is a third of the way up, not down.
+      */}
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] to-transparent ${
-          lead ? "via-[rgb(13_26_34/0.18)] via-42%" : "via-[rgb(13_26_34/0.34)] via-52%"
+        className={`pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.96)] ${
+          lead
+            ? "via-[rgb(13_26_34/0.80)] via-38% to-transparent to-76%"
+            : "via-[rgb(13_26_34/0.78)] via-32% to-transparent to-66%"
         }`}
       />
 

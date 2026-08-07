@@ -74,40 +74,70 @@ export function Teams() {
             <h2 className="t-h2 mt-2 max-w-[20ch] text-white">{teams.headline}</h2>
             <p className="t-body mt-3 max-w-[62ch] text-[#c3d2dc]">{teams.intro}</p>
 
-            {/* Designed artifact rather than a photograph. */}
+            {/*
+              Designed artifact rather than a photograph, and a list of
+              sentences rather than a table.
+
+              It was a two-column table with a "Participant / Ships" header row,
+              and Roan read it and could not tell what it was for. The reason is
+              structural: a table asks the reader to infer the relationship
+              between its columns from their position, and the relationship is
+              the entire argument of this band. An arrow states it. Once the
+              arrow is there the column headers have nothing left to label, so
+              they are gone, and the row that used to carry the path badge under
+              the job title carries it as a chip on the same line instead, which
+              is one line saved per seat and one less thing stacked.
+            */}
             <figure className="m-0 mt-6 overflow-hidden rounded-[var(--radius-card)] border border-white/18 bg-white/[0.045] md:mt-7">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/18 px-4 py-3 md:px-5 md:py-3.5">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/18 px-4 py-3.5 md:px-5">
+                <div className="min-w-0">
                   <p className="t-label text-white/60">{teams.panel.label}</p>
                   <h3 className="t-card-title mt-1 text-white">{teams.panel.title}</h3>
+                  <p className="t-meta mt-1.5 max-w-[46ch] text-[#9db0bd]">
+                    {teams.panel.intro}
+                  </p>
                 </div>
-                <span className="t-meta inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-white">
+                <span className="t-meta inline-flex flex-none items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-white">
                   <CalendarBlankIcon size={14} weight="regular" className="flex-none" />
                   {teams.panel.date}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between gap-3 border-b border-white/12 px-5 py-2">
-                <span className="t-field text-white/60">{teams.panel.columns.who}</span>
-                <span className="t-field text-white/60">{teams.panel.columns.ships}</span>
-              </div>
+              {/*
+                One line from sm, two lines below it, and the order changes
+                rather than the markup.
 
+                At 390px each row has about 286px to work in and its four parts
+                measure past 320, so on one line the artifact broke to three
+                words stacked in a column and the row stopped reading as a
+                sentence at all. Wrapping the artifact onto its own full width
+                keeps the arrow doing its job: who, then what they ship,
+                directly underneath.
+              */}
               <ul>
                 {teams.panel.seats.map((s) => (
                   <li
                     key={s.who}
-                    className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-2.5 last:border-b-0"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-white/[0.08] px-4 py-3 last:border-b-0 md:px-5"
                   >
-                    <span className="min-w-0 flex-1">
-                      <span className="t-card-title block truncate text-white">{s.who}</span>
-                      <span className="t-meta block text-[#9db0bd]">{s.path}</span>
+                    <span className="t-card-title order-1 min-w-0 text-white">{s.who}</span>
+                    <span className="t-field order-2 ml-auto flex-none rounded-full bg-white/10 px-2 py-1 text-white/70 sm:order-4">
+                      {s.path}
                     </span>
-                    <span className="t-meta flex-none text-right text-[#c3d2dc]">{s.ships}</span>
+                    <span className="order-3 flex w-full items-center gap-2.5 sm:w-auto sm:flex-1">
+                      <ArrowRightIcon
+                        size={14}
+                        weight="bold"
+                        aria-label="ships"
+                        className="flex-none text-white/40"
+                      />
+                      <span className="t-card-title min-w-0 text-white">{s.ships}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
 
-              <figcaption className="t-micro border-t border-white/12 px-5 pb-3.5 pt-3 text-[#8fa3b1]">
+              <figcaption className="t-micro border-t border-white/12 px-4 pb-3.5 pt-3 text-[#8fa3b1] md:px-5">
                 {teams.panel.footnote}
               </figcaption>
             </figure>

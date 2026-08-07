@@ -339,26 +339,10 @@ export function PosterChip({
  * than shipping a raw frame, and that is the pattern here. The band is one
  * solid value so text contrast holds over any frame underneath it.
  */
-export function PosterTitleCard({
-  title,
-  beats,
-}: {
-  title: string;
-  beats: readonly string[];
-}) {
+export function PosterTitleCard({ title }: { title: string }) {
   return (
     <span className="pointer-events-none absolute inset-x-0 bottom-0 block bg-[rgb(13_26_34/0.86)] px-4 py-3">
       <span className="t-card-title block text-white">{title}</span>
-      <span className="mt-2 flex flex-wrap gap-1.5">
-        {beats.map((b) => (
-          <span
-            key={b}
-            className="t-micro inline-flex h-[22px] items-center rounded-[5px] border border-white/25 px-2 font-medium text-white/90"
-          >
-            {b}
-          </span>
-        ))}
-      </span>
     </span>
   );
 }

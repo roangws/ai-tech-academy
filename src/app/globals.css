@@ -200,12 +200,25 @@
   that introduces it, and still reads as the oversized-index treatment the
   pattern is for. components/sections/faq.tsx has the note.
 */
+/*
+  Sentence case, as of 7 Aug. `text-transform: uppercase` came off at Roan's
+  instruction and it takes the row compression with it.
+
+  Those two were one decision, not two. The accordion-05 pattern packs its rows
+  by clipping the leading under the baseline with a negative margin, and that is
+  only safe on uppercase, which has no descenders. In sentence case the same
+  clip cuts the tails off every g, y, p and q in the list, so the crop is gone
+  and the rows are packed with padding instead. See components/sections/faq.tsx.
+
+  Sentence case is also the better read at this size. Eleven uppercase questions
+  is eleven headlines shouting in a row; the same eleven in sentence case are a
+  list of questions somebody might actually ask, which is what they are.
+*/
 @utility t-question {
   font-size: 18px;
-  line-height: 1.15;
+  line-height: 1.2;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  letter-spacing: -0.015em;
 }
 
 /*

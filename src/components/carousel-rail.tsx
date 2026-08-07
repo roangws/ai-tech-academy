@@ -186,6 +186,21 @@ export function CarouselRail({
     return () => ro.disconnect();
   }, []);
 
+  /*
+    Focus pauses it. The mouse does not, at Roan's instruction on 7 Aug.
+
+    Hover-pause was in here for a real reason: the board cards reveal what each
+    seat checks on hover, and a track that keeps moving under the cursor makes
+    that state hard to read. Roan looked at both and wants the row to keep
+    moving, which is the call to make — a carousel that stops whenever the
+    pointer crosses it reads as broken far more often than it reads as
+    considerate, because a pointer crosses it on the way to somewhere else.
+
+    Focus is a different gesture and it keeps the pause. Somebody who has tabbed
+    into the rail is reading it deliberately and cannot chase a moving target,
+    which is the accessibility failure this pattern is known for. Reduced motion
+    still turns autoplay off entirely.
+  */
   const hold = () => {
     paused.current = true;
   };
@@ -198,7 +213,7 @@ export function CarouselRail({
     "md:-mx-6 md:px-6 md:[scroll-padding-inline-start:1.5rem] lg:mx-0 lg:px-0 lg:[scroll-padding-inline-start:0px]";
 
   return (
-    <div className={className} onMouseEnter={hold} onMouseLeave={resume}>
+    <div className={className}>
       <div
         ref={rail}
         tabIndex={0}

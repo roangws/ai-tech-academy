@@ -564,8 +564,15 @@ export const paths: readonly Path[] = [
 export const course = {
   label: "The course",
   headline: "One lesson and one lab, every module",
+  /*
+    Second sentence cut on 7 Aug. It read "Your workflow, from first sketch to
+    live", which is the poster's own title card set 35px higher on the same
+    screen. One of the two had to go and it is the fragment, because on the
+    poster the line is doing work: it tells a reader what the video is before
+    they spend two minutes on it.
+  */
   intro:
-    "Each module pairs one recorded lesson with a guided lab you run on your own workflow. Your workflow, from first sketch to live.",
+    "Each module pairs one recorded lesson with a guided lab you run on your own workflow.",
   video: {
     src: "/media/tutorial-2.mp4",
     /*
@@ -577,11 +584,19 @@ export const course = {
     poster: "/images/scenes/interview-session.jpg",
     posterAlt: "Roan Weigert seated at a microphone in the studio",
     caption: "Course preview, 2 min",
-    /* Designed title card over the frame, so the resting state states its subject. */
-    card: {
-      title: "One workflow, from first sketch to live",
-      beats: ["Lesson", "Guided lab", "Launch", "Measure"],
-    },
+    /*
+      Designed title card over the frame, so the resting state states its
+      subject rather than showing a raw frame of somebody mid-gesture.
+
+      The four beats that used to sit under the title are gone: "Lesson, Guided
+      lab, Launch, Measure" restated the section heading ("one lesson and one
+      lab") and its intro ("one recorded lesson with a guided lab") for a third
+      time, and they were burning 79px of a 356px frame to do it, which is 38%
+      of the frame at 390px. They were also the block's second chip vocabulary,
+      12px outlined squares 130px from the 11px uppercase filled pills in the
+      outline card, in one 1216px row.
+    */
+    card: { title: "One workflow, from first sketch to live" },
   },
   outlineLabel: "Module outline",
   /* The access model, stated once as an unlock rather than as four gates. */
@@ -652,29 +667,40 @@ export const outcomes = {
     status: "Deployment verified",
     footnote: "One completed Path A implementation, measured by the learner.",
   },
-  lead: {
-    artifact: "Live system",
-    title: "Your deployed workflow",
-    text: "A functioning workflow running in the tools your team already uses, owned by you or your team. A path completes when your workflow runs live and you have measured it.",
-    bullets: [
-      "Running on your organization's real inputs",
-      "Owned and operated by your team after the course",
-      "Reviewed against the brief you wrote in module 1",
-      "Handed over with the templates used to build it",
+  /*
+    Condensed on 7 Aug, at Roan's request: he has one worked example and not yet
+    the rest of the evidence, so the section should show the example and stop.
+
+    What it was: the figure, then a "Live system / Your deployed workflow" block
+    with a paragraph and four bullets, then the outcome sheet, then two more
+    cards headed "Your outcome sheet" and "Your completion record". Three of
+    those four blocks were describing the same three artifacts at three
+    different lengths, and the second card described the sheet that was printed
+    in full 200px to its left.
+
+    What it is: the figure, the sheet, and one three-item list of what a learner
+    leaves holding. Same three artifacts, named once each. The prose that went
+    was not deleted so much as compressed into the `text` lines here, and the
+    canonical completion sentence it carried still appears in the FAQ, which is
+    where a definition belongs.
+  */
+  leaveWith: {
+    label: "You leave with",
+    items: [
+      {
+        title: "A live workflow",
+        text: "Running in the tools your team already uses, and owned by you after the course.",
+      },
+      {
+        title: "An outcome sheet",
+        text: "The same measure taken before you launched and after, on one page.",
+      },
+      {
+        title: "A completion record",
+        text: "The brief, the build, the launch and the result, in one document you can share.",
+      },
     ],
   },
-  supporting: [
-    {
-      title: "Your outcome sheet",
-      text: "A concise before-and-after record covering time, cost, quality, or another relevant operational measure.",
-      artifact: "Before and after",
-    },
-    {
-      title: "Your completion record",
-      text: "A shareable record describing the implementation, the work completed, and the measured result.",
-      artifact: "Completion record",
-    },
-  ],
 } as const;
 
 export type Person = {
@@ -962,17 +988,39 @@ export const teams = {
     src: "/images/scenes/team-session.jpg",
     alt: "Three colleagues at a table in a bright office, laptops open, mid-discussion",
   },
+  /*
+    Rewritten 7 Aug, because Roan read it and could not tell what it was saying.
+
+    It was a table: a header row reading "Participant / Ships", then three rows
+    of "RevOps analyst / Path A" against "Pipeline agent". Everything in it was
+    true and the format was doing the arguing, which is the failure. A two-column
+    table asks the reader to work out the relationship between the columns from
+    their position, and the relationship here is the whole point: this person
+    ends up with that thing. Printed as a table it reads as a schedule; the
+    reader has to already know what the band is about to decode it.
+
+    The fix is to state the relationship instead of implying it. Each row is now
+    a sentence with an arrow in it, the column headers are gone because an arrow
+    does not need labelling, and `intro` above says the thing the table was
+    being asked to demonstrate: different jobs, different paths, one date.
+
+    "Deployments" also went. It is this program's word, and the panel is the one
+    place a manager is being asked to picture the outcome, so it says the three
+    things three people are actually holding at the end of it.
+  */
   panel: {
     label: "Shared launch",
-    title: "One date, three deployments",
+    title: "One date, three working systems",
+    intro:
+      "Three people from the same team, on three different paths, all launching in the same week.",
     date: "Thursday, week 6",
-    columns: { who: "Participant", ships: "Ships" },
     seats: [
-      { who: "RevOps analyst", path: "Path A", ships: "Pipeline agent" },
-      { who: "Post supervisor", path: "Path B", ships: "Rough cut" },
-      { who: "Platform engineer", path: "Path D", ships: "Serving stack" },
+      { who: "RevOps analyst", path: "Path A", ships: "A pipeline agent" },
+      { who: "Post supervisor", path: "Path B", ships: "A rough-cut workflow" },
+      { who: "Platform engineer", path: "Path D", ships: "A serving stack" },
     ],
-    footnote: "Each person keeps their own baseline, so the group compares real outcomes.",
+    footnote:
+      "Each person measured their own before and after, so the team compares real results rather than opinions.",
   },
 } as const;
 
