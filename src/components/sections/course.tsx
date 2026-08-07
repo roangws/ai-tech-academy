@@ -56,20 +56,50 @@ export function Course() {
             Removing it also settles the bottoms: the caption under the video
             ends at 594 and the button at 590, against 594 and 620 before.
           */}
+          {/*
+            `last:h-[63px]` on the rows below, because they are border-box.
+
+            Rows 1 to 4 spend one of their 64 pixels on the divider they share
+            with the row beneath. Row 5 has no divider, so it keeps all 64 and
+            the list's own bottom border is added outside it: bands of 64, 64,
+            64, 64, 65, measured off a pixel scan. One pixel, and it is the last
+            one under the reader's eye.
+          */}
           <ol className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
             {course.outline.map((m) => (
               <li
                 key={m.n}
-                className="flex min-h-[56px] items-start gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:h-[64px] sm:items-center sm:py-0"
+                className="flex min-h-[56px] items-center gap-3 border-b border-line px-4 py-3 last:min-h-[55px] last:border-b-0 sm:h-[64px] sm:py-0 sm:last:h-[63px]"
               >
-                {/* A numeral, not a badge. The ring was `--line` drawn a tenth
-                    time inside one card, after the card edge and four dividers,
-                    and `rounded-full` on a numeral is outside the radius lock
-                    besides: pills are for status chips and the path tab row. */}
-                <span className="t-meta w-6 flex-none tabular-nums text-ink-muted">{m.n}</span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:gap-0">
-                  <span className="t-card-title clamp-2 text-ink sm:truncate">{m.name}</span>
-                  <span className="t-meta text-ink-muted">{m.detail}</span>
+                {/*
+                  Numeral and title share a line, and that is the whole reason
+                  this is nested rather than flat.
+
+                  The ring around the numeral went in the last pass, correctly:
+                  it was `--line` drawn a tenth time inside one card. But a
+                  circle has no baseline and bare text does, and the numeral was
+                  left centred against the two-line block beside it. Measured
+                  off the glyph ink, it landed 7.1px under the title's baseline
+                  and 12.9px over the detail's, floating in the gutter between
+                  two lines while being set in exactly the detail's style. A
+                  reader reads it as the same rank as "Baseline and brief" and
+                  expects one baseline.
+
+                  `items-baseline` on a row containing only the numeral and the
+                  title gives it one, with no offset to keep in sync. The detail
+                  is indented by the track plus the gap, so all three still line
+                  up on the left.
+                */}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-3">
+                    <span className="t-meta w-5 flex-none tabular-nums text-ink-muted">
+                      {m.n}
+                    </span>
+                    <span className="t-card-title clamp-2 min-w-0 flex-1 text-ink sm:truncate">
+                      {m.name}
+                    </span>
+                  </span>
+                  <span className="t-meta block pl-8 text-ink-muted">{m.detail}</span>
                 </span>
                 {/*
                   Only the open module gets a chip.
@@ -85,8 +115,13 @@ export function Course() {
                   first working sy...". With the four gone nothing truncates at
                   any width.
                 */}
+                {/* `flex items-center`, not bare `flex-none`. As a plain flex
+                    item this span was blockified and established a line box
+                    whose 16/24 strut is taller than the 24px chip inside it, so
+                    the chip baseline-aligned to the bottom of it and rode 1px
+                    low on every row. */}
                 {m.access === "Open" ? (
-                  <span className="flex-none">
+                  <span className="flex flex-none items-center">
                     <StatusChip open>{m.access}</StatusChip>
                   </span>
                 ) : null}
@@ -112,12 +147,18 @@ export function Course() {
         Whitespace separates this block without claiming to be a boundary.
 
         Three columns over five items left a 384px hole in the bottom right and
-        wrapped the longest item while its neighbours sat on one line. Two
-        columns capped at 880px gives every cell about 424px and nothing wraps.
+        wrapped the longest item while its neighbours sat on one line.
+
+        Two columns, and they are the *same* two columns as the grid above
+        rather than a fresh pair capped at some width. Capping it at 880px was
+        the first attempt and it put this list's second column at x=568 against
+        the grid's 777, a 209px miss directly under a block whose own columns
+        the reader has just finished scanning. Borrowing the grid's track sizes
+        is the only version where the strip belongs to the section above it.
       */}
       <div className="mt-8 md:mt-12">
         <p className="t-meta font-semibold text-ink-secondary">{course.includesLabel}</p>
-        <ul className="mt-3 grid max-w-[880px] grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2 md:gap-y-3">
+        <ul className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2 md:gap-y-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-x-8">
           {course.includes.map((item) => (
             <li key={item} className="flex items-start gap-2.5">
               <CheckIcon size={16} weight="bold" className="mt-0.5 flex-none text-ink" />
