@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { PlayIcon } from "@phosphor-icons/react";
 import { PosterTitleCard } from "@/components/ui";
@@ -34,11 +34,33 @@ export function VideoPlayer({
 }) {
   const [playing, setPlaying] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
+  const frame = useRef(0);
+
+  useEffect(
+    () => () => {
+      if (frame.current) cancelAnimationFrame(frame.current);
+    },
+    [],
+  );
 
   function start() {
     setPlaying(true);
     // The element mounts with the same frame, so play on the next tick.
-    requestAnimationFrame(() => ref.current?.play());
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      const el = ref.current;
+      if (!el) return;
+      /*
+        Focus moves with the control. The button unmounts the instant this
+        state flips, so without this `activeElement` falls to `<body>` and a
+        keyboard user who just started the video has to tab from the top of the
+        document to reach pause.
+      */
+      el.focus();
+      // A rejected play() is an unhandled rejection otherwise, and the poster
+      // has already been replaced by a video that is not playing.
+      el.play().catch(() => setPlaying(false));
+    });
   }
 
   return (
@@ -49,7 +71,9 @@ export function VideoPlayer({
           className="block h-full w-full"
           controls
           playsInline
-          poster={poster}
+          /* No `poster`. The still is already on screen from the optimized
+             `<Image>` below; pointing the video at the raw file downloaded the
+             unoptimized original a second time the moment anyone pressed play. */
           onEnded={() => setPlaying(false)}
         >
           <source src={src} type="video/mp4" />
@@ -67,6 +91,9 @@ export function VideoPlayer({
             alt={posterAlt}
             width={width}
             height={height}
+            /* The only image on the page that was missing this, so it was
+               fetching a 3840px source for a slot at most 700 CSS px wide. */
+            sizes="(max-width: 1024px) 100vw, 700px"
             className="h-full w-full object-cover"
           />
           <span className="pointer-events-none absolute inset-x-0 top-0 bottom-[84px] flex items-center justify-center">

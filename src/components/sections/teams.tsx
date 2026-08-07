@@ -1,94 +1,123 @@
 import { ArrowRightIcon, CalendarBlankIcon } from "@phosphor-icons/react/dist/ssr";
-import { ButtonLink, Section } from "@/components/ui";
+import { ButtonLink, Photo, Section } from "@/components/ui";
 import { cta, teams } from "@/lib/content";
 
 /**
- * Learning as a team. This is the page's one dark band.
+ * Learning as a team. One inset dark panel, photograph and all.
  *
- * Two problems were fixed here on 6 Aug. The image was a 21:9 crop of the same
- * clip used twice already, framed so the subject's head sat above the top edge,
- * in a section about groups that showed one person. There is no team footage to
- * crop, so the photograph is replaced by a designed panel: one shared launch
- * date with three participants on their own paths, which is what the section
- * describes. That gives the page a second real content object alongside the
- * outcome sheet.
+ * Compressed on this pass. It was four stacked blocks: a headline, three
+ * pseudo-steps, a photograph and a launch table, running roughly 700px to make
+ * a single point. content.ts has the note on the copy, including the line that
+ * caused most of the confusion, which was calling three things "steps" directly
+ * under a headline about the five-step method.
  *
- * And the band changed ground. Twelve sections alternating between white and
- * #EEF3F7 gives a 6% luminance swing, which is too little to act as rhythm.
- * Coursera and Udemy both anchor a long page with a saturated or dark band;
- * this is ours, and it stays the only one.
+ * The structure that replaced it is a two-column panel with no padding of its
+ * own: the photograph is a full-height column on the left, and the right column
+ * carries the sentence, the launch table and the control. That is what took the
+ * height out. Stacking the frame above the table made the right column two
+ * objects tall against a left column of one, which is the imbalance the last
+ * pass had to prop up with an `mt-auto` on the button; side by side, the
+ * photograph simply takes whatever height the content sets and the problem
+ * stops existing.
  *
- * Refinements from the same review:
- *   - Columns align at the top. `items-center` left the panel 46px below the
- *     eyebrow and 56px above the button, so nothing in the row met anything.
- *   - The step rules are capped at the text width. They used to run up to 249px
- *     past the line they underlined, and at white/12 on #0d1a22 they were close
- *     to invisible on a dim panel.
- *   - "Ships" is a column header stated once, rather than a label repeated on
- *     all three rows below the AA contrast floor.
- *   - The three steps lost their numerals. They are parallel choices rather than
- *     an ordered sequence, and numbering stays with the method, where the order
- *     carries meaning.
+ * Below lg the photograph goes back on top at 21:9, because a full-height image
+ * column at 390px is a stripe.
+ *
+ * The section runs `compressed`, at 40/40 rather than 64/64. The panel carries
+ * its own generous inner padding, so the band around it was spending another
+ * 128px to separate a self-contained object from two hairlines.
+ *
+ * Refinements kept from earlier reviews: the table states "Ships" once as a
+ * column header rather than repeating it on all three rows below the AA
+ * contrast floor, and the panel is a designed artifact rather than a
+ * screenshot, so its figures stay selectable and translatable.
  */
 export function Teams() {
   return (
-    <Section id="teams" dark>
-      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,470px)] lg:gap-14">
-        <div>
-          <p className="t-label text-white/60">{teams.label}</p>
-          <h2 className="t-h2 mt-2 text-white">{teams.headline}</h2>
-          <p className="t-body mt-3 max-w-[58ch] text-[#c3d2dc]">{teams.intro}</p>
+    <Section id="teams" compressed>
+      <div className="overflow-hidden rounded-[var(--radius-feature)] bg-ink-band">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+          {/*
+            The photograph column, recut.
 
-          <ul className="mt-7 flex max-w-[600px] flex-col">
-            {teams.steps.map((step) => (
-              <li key={step.title} className="border-t border-white/18 py-3.5">
-                <h3 className="t-card-title text-white">{step.title}</h3>
-                <p className="t-body-sm mt-1 text-[#a9bbc7]">{step.text}</p>
-              </li>
-            ))}
-          </ul>
+            It was a 420px slot holding a 4:3 frame at `object-[center_35%]`, and
+            at that width the crop landed between the two people on the left and
+            the one on the right: the near subject was sliced down the middle by
+            the panel edge and the group the frame is of was no longer in it.
+            A photograph of three people around a table needs the table.
 
-          <ButtonLink href="#paths" tone="onDark" size="md" className="mt-7">
-            {cta.compare}
-            <ArrowRightIcon size={14} weight="bold" />
-          </ButtonLink>
-        </div>
+            Two changes. The column is wider, at 460px, and the crop moved to
+            `center 42%` which is where the three heads actually sit. And the
+            seam is a real fade now rather than a wash with a hard edge: the old
+            version put a flat 20% ink over the whole frame and then a gradient
+            that reached 90% at the inner edge, so the photograph ended in a
+            visible vertical band against a panel that was already that colour.
+            One gradient, running from clear at the outer edge to the panel's own
+            ink at the inner one, dissolves the join instead of drawing it.
+          */}
+          <figure className="relative m-0 aspect-[16/8] sm:aspect-[21/9] lg:aspect-auto lg:h-full lg:min-h-[460px]">
+            <Photo
+              image={teams.image}
+              width={1200}
+              height={1400}
+              sizes="(max-width: 1024px) 100vw, 460px"
+              className="object-[center_42%]"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.92)] via-[rgb(13_26_34/0.30)] via-55% to-[rgb(13_26_34/0.12)] lg:bg-linear-to-r lg:from-[rgb(13_26_34/0.12)] lg:via-[rgb(13_26_34/0.30)] lg:to-[rgb(13_26_34)]"
+            />
+          </figure>
 
-        {/* Designed artifact rather than a photograph. */}
-        <figure className="m-0 overflow-hidden rounded-[var(--radius-card)] border border-white/18 bg-white/[0.045]">
-          <div className="border-b border-white/18 px-5 py-4">
-            <p className="t-label text-white/60">{teams.panel.label}</p>
-            <h3 className="t-h3 mt-1.5 text-white">{teams.panel.title}</h3>
-            <span className="t-meta mt-3 inline-flex items-center gap-1.5 rounded-[6px] bg-white/10 px-2.5 py-1.5 text-white">
-              <CalendarBlankIcon size={14} weight="regular" className="flex-none" />
-              {teams.panel.date}
-            </span>
-          </div>
+          <div className="p-5 md:p-8 lg:p-10">
+            <p className="t-label text-white/60">{teams.label}</p>
+            <h2 className="t-h2 mt-2 max-w-[20ch] text-white">{teams.headline}</h2>
+            <p className="t-body mt-3 max-w-[62ch] text-[#c3d2dc]">{teams.intro}</p>
 
-          <div className="flex items-center justify-between gap-3 border-b border-white/12 px-5 py-2">
-            <span className="t-field text-white/60">{teams.panel.columns.who}</span>
-            <span className="t-field text-white/60">{teams.panel.columns.ships}</span>
-          </div>
-
-          <ul>
-            {teams.panel.seats.map((s) => (
-              <li
-                key={s.who}
-                className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-3 last:border-b-0"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="t-card-title block truncate text-white">{s.who}</span>
-                  <span className="t-meta block text-[#9db0bd]">{s.path}</span>
+            {/* Designed artifact rather than a photograph. */}
+            <figure className="m-0 mt-6 overflow-hidden rounded-[var(--radius-card)] border border-white/18 bg-white/[0.045] md:mt-7">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/18 px-4 py-3 md:px-5 md:py-3.5">
+                <div>
+                  <p className="t-label text-white/60">{teams.panel.label}</p>
+                  <h3 className="t-card-title mt-1 text-white">{teams.panel.title}</h3>
+                </div>
+                <span className="t-meta inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-white">
+                  <CalendarBlankIcon size={14} weight="regular" className="flex-none" />
+                  {teams.panel.date}
                 </span>
-                <span className="t-meta flex-none text-right text-[#c3d2dc]">{s.ships}</span>
-              </li>
-            ))}
-          </ul>
+              </div>
 
-          <figcaption className="t-micro border-t border-white/12 px-5 pb-4 pt-3 text-[#8fa3b1]">
-            {teams.panel.footnote}
-          </figcaption>
-        </figure>
+              <div className="flex items-center justify-between gap-3 border-b border-white/12 px-5 py-2">
+                <span className="t-field text-white/60">{teams.panel.columns.who}</span>
+                <span className="t-field text-white/60">{teams.panel.columns.ships}</span>
+              </div>
+
+              <ul>
+                {teams.panel.seats.map((s) => (
+                  <li
+                    key={s.who}
+                    className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-2.5 last:border-b-0"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="t-card-title block truncate text-white">{s.who}</span>
+                      <span className="t-meta block text-[#9db0bd]">{s.path}</span>
+                    </span>
+                    <span className="t-meta flex-none text-right text-[#c3d2dc]">{s.ships}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <figcaption className="t-micro border-t border-white/12 px-5 pb-3.5 pt-3 text-[#8fa3b1]">
+                {teams.panel.footnote}
+              </figcaption>
+            </figure>
+
+            <ButtonLink href="#paths" tone="onDark" size="md" className="mt-6 md:mt-7">
+              {cta.compare}
+              <ArrowRightIcon size={14} weight="bold" />
+            </ButtonLink>
+          </div>
+        </div>
       </div>
     </Section>
   );

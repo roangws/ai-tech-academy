@@ -15,9 +15,10 @@ import { hero } from "@/lib/content";
  * imported:
  *
  *   1. Three stock photographs became two real ones. There are four
- *      photographs on this site and the studio band carries three of them, so a
- *      third frame here would have spent the whole library in one viewport.
- *      content.ts has the note.
+ *      photographs on this site, so a third frame here would have spent most of
+ *      the library in one viewport. content.ts has the note. The studio band
+ *      that used to carry these frames again further down the page is gone;
+ *      page.tsx says why.
  *   2. The third tile is the lesson card. The fold's job is to hand a visitor
  *      the free lesson, and the pattern's third image is decoration; swapping
  *      one for the other keeps the composition and keeps the offer. The card
@@ -81,23 +82,40 @@ export function HeroCollage() {
          background, which is to say not at all. */
       className="relative isolate mx-auto w-full max-w-[496px] lg:mx-0"
     >
-      {/* Shapes. Behind everything, aria-hidden, and clear of every text run. */}
+      {/*
+        Shapes. Behind everything, aria-hidden, and clear of every text run.
+
+        Both are `hidden sm:block` from 6 Aug. A collage is a composition of
+        offsets, and an offset needs room to be read as one: at 390px the two
+        drifting circles, the second frame and the lesson card were four layers
+        overlapping inside a 358px column, so what reads as depth on a desktop
+        read as clutter behind a card on a phone. They also drift, which is two
+        infinite animations running on the element directly above the fold on
+        the device least able to afford them.
+
+        Below sm the collage is two objects: the lesson poster and the lesson
+        card overlapping its lower edge. That is still a collage, and it is the
+        two that carry the offer.
+      */}
       <motion.span
         aria-hidden="true"
         animate={drift(0)}
-        className="pointer-events-none absolute -right-7 -top-9 z-0 h-44 w-44 rounded-full bg-accent-tint"
+        className="pointer-events-none absolute -right-7 -top-9 z-0 hidden h-44 w-44 rounded-full bg-accent-tint sm:block"
       />
       <motion.span
         aria-hidden="true"
         animate={drift(1.4)}
-        className="pointer-events-none absolute -bottom-8 left-[18%] z-0 h-32 w-32 rounded-full bg-state-open-surface"
+        className="pointer-events-none absolute -bottom-8 left-[18%] z-0 hidden h-32 w-32 rounded-full bg-state-open-surface sm:block"
       />
 
       {/* Fixed heights per breakpoint. The tiles are absolutely positioned, so
-          the box has to state its own height or it collapses to nothing. */}
-      <div className="relative h-[404px] sm:h-[442px]">
+          the box has to state its own height or it collapses to nothing. The
+          mobile figure drops with the layer count above. */}
+      <div className="relative h-[302px] sm:h-[442px]">
         {/* Main frame. The whole tile is the link to the open module. */}
-        <motion.div variants={item} className="absolute left-[7%] top-0 z-10 w-[81%]">
+        {/* Full width below sm, where there is no second frame to make room
+            for and no shapes to sit inside of. */}
+        <motion.div variants={item} className="absolute left-0 top-0 z-10 w-full sm:left-[7%] sm:w-[81%]">
           <Link
             href="/paths/gtm/module-1"
             aria-label={`Watch ${hero.lesson.label}: ${hero.lesson.title}`}
@@ -136,7 +154,10 @@ export function HeroCollage() {
           takes the foliage instead. A collage overlap has to be chosen against
           the image under it, not against the grid.
         */}
-        <motion.div variants={item} className="absolute bottom-[74px] right-0 z-20 w-[41%]">
+        <motion.div
+          variants={item}
+          className="absolute bottom-[74px] right-0 z-20 hidden w-[41%] sm:block"
+        >
           <div className={frame}>
             <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px] bg-surface-sunken">
               <Photo
@@ -156,7 +177,7 @@ export function HeroCollage() {
         */}
         <motion.article
           variants={item}
-          className="absolute bottom-0 left-0 z-30 w-[71%] rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-e2"
+          className="absolute bottom-0 left-0 z-30 w-full rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-e2 sm:w-[71%]"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="t-label text-ink-muted">{hero.lesson.label}</p>

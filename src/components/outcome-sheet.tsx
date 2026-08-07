@@ -28,7 +28,7 @@ export function OutcomeSheet() {
 
   return (
     <figure className="m-0 overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1">
-      <div className="border-b border-line px-5 pb-4 pt-4">
+      <div className="border-b border-line px-4 pb-3.5 pt-3.5 md:px-5 md:pb-4 md:pt-4">
         <p className="t-label text-ink-muted">{sheet.label}</p>
         <h3 className="t-h3 mt-1.5 text-ink">{sheet.title}</h3>
         <p className="t-meta mt-1 text-ink-muted">

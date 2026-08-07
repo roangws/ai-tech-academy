@@ -25,7 +25,7 @@ export function Course() {
         intro={course.intro}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-8">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-8">
         <figure className="m-0 min-w-0">
           <VideoPlayer
             src={course.video.src}
@@ -44,7 +44,7 @@ export function Course() {
             {course.outline.map((m) => (
               <li
                 key={m.n}
-                className="flex min-h-[56px] items-start gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:h-[56px] sm:items-center sm:py-0"
+                className="flex min-h-[52px] items-start gap-3 border-b border-line px-4 py-2.5 last:border-b-0 sm:h-[56px] sm:items-center sm:py-0"
               >
                 <span className="t-meta flex h-7 w-7 flex-none items-center justify-center rounded-full border border-line text-ink">
                   {m.n}
@@ -72,9 +72,9 @@ export function Course() {
         </div>
       </div>
 
-      <div className="mt-8 border-t border-line pt-6">
+      <div className="mt-6 border-t border-line pt-5 md:mt-8 md:pt-6">
         <p className="t-meta font-semibold text-ink-secondary">{course.includesLabel}</p>
-        <ul className="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2 md:gap-y-3 lg:grid-cols-3">
           {course.includes.map((item) => (
             <li key={item} className="flex items-start gap-2.5">
               <CheckIcon size={16} weight="bold" className="mt-0.5 flex-none text-ink" />

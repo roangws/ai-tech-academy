@@ -1,58 +1,102 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { Actions } from "@/components/sections/actions";
 import { Board } from "@/components/sections/board";
-import { Categories } from "@/components/sections/categories";
+import { Closing } from "@/components/sections/closing";
 import { Course } from "@/components/sections/course";
 import { Faq } from "@/components/sections/faq";
-import { FinalCta } from "@/components/sections/final-cta";
-import { Goals } from "@/components/sections/goals";
 import { Hero } from "@/components/sections/hero";
 import { Instructors } from "@/components/sections/instructors";
 import { Method } from "@/components/sections/method";
 import { Outcomes } from "@/components/sections/outcomes";
 import { Paths } from "@/components/sections/paths";
-import { ProofBand } from "@/components/sections/proof-band";
-import { Studio } from "@/components/sections/studio";
 import { Teams } from "@/components/sections/teams";
 
 /*
-  Section order follows the 6 Aug review, plus three blocks ported from
-  mockups/learning-marketplace-blocks.html.
+  Ten sections, from fourteen.
 
-  WHAT CAME ACROSS, and where each one sits:
+  ORDER. The catalog is now the first thing under the fold, and the method is
+  the last thing before the FAQ.
 
-    Goals       marketplace `goals`       role router, ahead of the catalog
-    Categories  marketplace `categories`  skill cloud, straight after it
-    Studio      marketplace `careers`     the photograph band
-    Actions     marketplace `actions`     last routing chance before the CTA
+  That inverts what this page used to do. It opened with a credibility band and
+  then a five-step diagram, so a visitor met a serial number and an abstraction
+  before a single thing they could enrol in. Both were the site talking about
+  itself. The catalog is the page's most concrete object and the one a reader
+  came for, so it goes first, and the sections after it are people: who teaches,
+  who learns together, who reviews.
 
-  The fifth, `topbar`, shipped as an audience strip and has since been removed.
-  It spent 32px above a 72px header offering a choice between "For individuals"
-  and "For teams" when there is one enrolment here and the teams section
-  describes several people each taking their own path. content.ts has the note.
+  The method keeps its place in the argument by moving to the end. By then a
+  reader has seen five paths that all say "Profile, baseline, deploy, measure",
+  and the five-step section stops being a diagram they have to take on trust and
+  becomes the answer to a question the catalog has already raised. It sits
+  directly above the FAQ, which is where the rest of the how-does-this-work
+  questions live.
 
-  WHAT DID NOT, and why. Five blocks in that file need a fact this program does
-  not have, and inventing one is the failure mode the brief guards against:
+  WHAT WENT, and what it was repeating.
 
-    logostrip   needs partner logos. There are no partners.
-    quotes      needs named learners. One deployment exists and its learner is
-                not named, which is why the standalone learner story is already
-                held out of this page.
-    plusband    needs a subscription. Nothing is for sale.
-    statband    needs a second oversized figure. The 56px before-and-after in
-                Outcomes is the one element on the page allowed above 44px.
-    careers     the block shape came across for Studio. Its salary and
-                open-roles fields did not, since both would be invented.
+    ProofBand   "On the record", four chips: review board, book, keynote, patent
+                number. The board has a whole section of its own further down
+                that says what each seat reads, and a conference name and a
+                USPTO serial persuade the fewest readers per pixel on the page.
+                They ask to be believed 200px after a headline that promised to
+                show. content.ts has the note and the place they would go back
+                to, which is an about page rather than the second screen.
 
-  A sixth, `rail`, was left out as duplication rather than fabrication: a
-  three-column rail of the same five paths, sitting two sections from the
-  catalog that already lists them, adds a row and no information.
+    Studio      A band titled "Every lesson is recorded, one lesson and one lab
+                per module", 700px below a section titled "One lesson and one
+                lab, every module", over an intro that was the instructor
+                roster's intro reworded, over three photographs every one of
+                which appears higher up the page: the room is the hero collage's
+                second frame, the lesson recording is the hero lesson card's
+                poster, and the interview session is the course video's poster.
+                Nothing photographic was lost, because it held nothing the page
+                did not already show.
 
-  Ground rhythm, in order: white, tint, white, white, tint, white, white, tint,
-  white, tint, dark, tint, white, white, tint. The lock is that no two tinted
-  bands sit next to each other, and that holds. The four new sections do create
-  white runs, so each one takes `hairlineTop` and the rule carries the join.
+    Categories  A skill cloud in five columns, each headed by a path badge and
+                that path's audience line, both printed on that path's cover one
+                section above in the same order. The skills were the only new
+                thing in it, so they moved onto the catalog cards and the
+                section went. content.ts has the full note.
+
+    Actions     Three tiles whose first read "Watch the open module / 14
+                minutes, open to everyone", directly above a call to action
+                reading "Module 1 is open. It takes 14 minutes." Merged into the
+                closing band, which is now one section instead of two.
+
+  WHAT CHANGED SHAPE. Every section here was the same object: full-bleed band,
+  1216px container, left eyebrow, 28px heading, intro, grid. Fourteen of those
+  is one idea repeated, and a 6% swing between white and #EEF3F7 is not enough
+  to break it. Teams and Closing are now inset dark panels rather than bands,
+  which is the pattern the Coursera and Udemy captures use, and two of them is
+  what makes it a shape the page owns rather than a one-off. `Panel` in ui.tsx
+  has the note.
+
+  The catalog cards changed with the Categories removal: modules 02 and 03 came
+  off the four small cards and each card gained its own skills. The rows that
+  went were the five-step spine's third appearance in a row, after the method
+  section states it in full and before the course outline states it again with
+  the access model attached.
+
+  EARLIER REMOVALS, kept here because they answer the same question. `topbar`
+  shipped as an audience strip and spent 32px above a 72px header offering a
+  choice between "For individuals" and "For teams" when there is one enrolment
+  here. `goals` shipped as a role router, five tiles asking the reader to choose
+  a path before the catalog had told them what they were choosing between.
+  `rail` was a three-column list of the same five paths two sections from the
+  catalog that lists them.
+
+  And five blocks in mockups/learning-marketplace-blocks.html need a fact this
+  program does not have, which is the failure mode the brief guards against:
+  `logostrip` needs partners, `quotes` needs named learners, `plusband` needs a
+  subscription, `statband` needs a second oversized figure, and `careers` needs
+  salary and open-role counts.
+
+  Ground rhythm, in order: white, tint, white, tint, white, white, tint, white,
+  white, white. The lock is that no two tinted bands sit next to each other, and
+  that holds. Teams and Closing are white grounds carrying a dark panel. Three
+  sections take `hairlineTop`, each because it follows a section that draws no
+  bottom border of its own: Teams after Instructors, and Faq and Closing in the
+  white run that closes the page. A tinted band already draws its own, so asking
+  for a hairline under one stacks two rules into a 2px line.
 */
 export default function HomePage() {
   return (
@@ -66,20 +110,15 @@ export default function HomePage() {
       <SiteHeader />
       <main id="main" className="flex-1">
         <Hero />
-        <ProofBand />
-        <Goals />
-        <Method />
         <Paths />
-        <Categories />
         <Course />
         <Outcomes />
         <Instructors />
-        <Studio />
         <Teams />
         <Board />
+        <Method />
         <Faq />
-        <Actions />
-        <FinalCta />
+        <Closing />
       </main>
       <SiteFooter />
     </>

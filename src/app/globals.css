@@ -34,9 +34,36 @@
   --line: #d8e1e8;
   --line-strong: #aebecb;
 
-  --accent: #066c94;
-  --accent-hover: #045675;
-  --accent-tint: #ddf3fb;
+  /*
+    Deep electric blue, set 7 Aug to the tone Roan sent.
+
+    Third value this token has held. It began as a desaturated teal (#066C94),
+    which read as a slate the page happened to use for links, so the one control
+    the whole page exists to get clicked looked like chrome. It then went to a
+    royal blue (#0b4fd1) matched to the Coursera enrol button. This is that blue
+    pushed further: more chroma, less lightness, so a filled control holds its
+    colour against the glass tint the button now paints it through.
+
+    That last part is why the value had to move rather than just being liked
+    better. The liquid-glass button renders its fill at 90% over a frosted
+    backdrop with a white body highlight on top, and #0b4fd1 through that stack
+    came out a washed lavender: the control lost the colour it was chosen for
+    at exactly the moment the glass was added. A deeper, more saturated base
+    survives the wash.
+
+    Computed rather than eyeballed, and every one of these clears AA:
+      white on #0a3fe0 ....................... 7.50:1  (was 6.88)
+      white on #0a3fe0 at 90%, over white .... 6.20:1  (the glass button)
+      white on the hover value ............... 10.4:1
+      accent on its own tint ................. 6.30:1  (the active nav pill)
+
+    The tint stays in the same family. It is the ground behind the active nav
+    item and the liquid pill that travels between them, and a tint from a
+    different hue reads as a second accent.
+  */
+  --accent: #0a3fe0;
+  --accent-hover: #0832b4;
+  --accent-tint: #e4ebff;
 
   --state-open: #0f6a4b;
   --state-open-surface: #e2f2e9;
@@ -98,6 +125,13 @@
 
   --shadow-e1: var(--shadow-1);
   --shadow-e2: var(--shadow-2);
+
+  /*
+    The marquee track is gone, with the marquee. The review board runs on a
+    scroll-snap rail now, which needs no keyframes: see the note at the head of
+    components/carousel-rail.tsx for why a moving track was the wrong shape for
+    a set of six cards a reader is meant to stop and read.
+  */
 }
 
 /*
@@ -112,11 +146,20 @@
   letter-spacing: -0.4px;
 }
 
+/*
+  33px, up from 28. Raised on 6 Aug at Roan's request, to the 32-34px band.
+
+  It was the smallest section heading of any reference the spec was built from,
+  and at 28px against a 20px `t-h3` it had four points of separation from the
+  step titles underneath it. Ten sections opened at a size that read as a large
+  card title rather than as the top of a band. The mobile override below holds
+  at 24, because the constraint down there is page height.
+*/
 @utility t-h2 {
-  font-size: 28px;
-  line-height: 36px;
+  font-size: 33px;
+  line-height: 42px;
   font-weight: 600;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
 }
 
 /*
@@ -147,11 +190,38 @@
   letter-spacing: -0.2px;
 }
 
-@utility t-card-title {
-  font-size: 16px;
-  line-height: 22px;
+/*
+  The FAQ question. It is not `t-h2` and it is not `t-display`, so it gets a
+  rank of its own rather than borrowing one and drifting.
+
+  The accordion-05 pattern this is taken from runs `text-3xl md:text-5xl`, and
+  48px would make eleven questions the second-largest type on a page whose
+  display is 44. At 26px it sits a clear step under the 33px section heading
+  that introduces it, and still reads as the oversized-index treatment the
+  pattern is for. components/sections/faq.tsx has the note.
+*/
+@utility t-question {
+  font-size: 18px;
+  line-height: 1.15;
   font-weight: 600;
-  letter-spacing: -0.1px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/*
+  18px, up from 16, and only from md up. See the mobile block below.
+
+  16px card titles were deliberate once: they are what separates a course
+  catalog from a marketing landing page, and they still are on a phone. On a
+  1440 desktop they were the same size as the body copy beside them, so a card
+  had a title only because it was bold. 18 against a 16px body is the smallest
+  step that reads as a rank.
+*/
+@utility t-card-title {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
 }
 
 @utility t-body {
@@ -218,6 +288,14 @@
   font-weight: 500;
 }
 
+/*
+  The mobile scale, which is now a height budget rather than a courtesy.
+
+  The 6 Aug brief asks for at least 20% off the mobile page, so every one of
+  these holds where its desktop counterpart grew. `t-card-title` in particular
+  stays at 16: there are roughly forty of them down the page, and three points
+  each is 120px of scroll bought back for nothing.
+*/
 @media (max-width: 767px) {
   .t-display {
     font-size: 32px;
@@ -227,6 +305,24 @@
   .t-h2 {
     font-size: 24px;
     line-height: 32px;
+    letter-spacing: -0.3px;
+  }
+
+  .t-card-title {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: -0.1px;
+  }
+
+  /*
+    `t-h3` has to come down with `t-h2` or the bump undoes itself on a phone.
+    At 24px for a section heading and 20px for a step title, both at 600, there
+    are four points between a band's title and the titles inside it, which is
+    precisely the collision the desktop change was made to fix.
+  */
+  .t-h3 {
+    font-size: 17px;
+    line-height: 24px;
   }
 
   .t-stat {
@@ -268,7 +364,9 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 92px;
+    /* 72px of chrome plus 12 of air. It was 92, which landed every in-page
+       anchor 20px below the heading it was aiming at. */
+    scroll-padding-top: 84px;
   }
 
   body {
@@ -303,6 +401,17 @@
     scroll-behavior: auto;
   }
 
+  /*
+    The rails need their own line. `scroll-behavior` is not an animation or a
+    transition, so the blanket rule below never reached them, and an arrow press
+    on the review board still flew a 320px-wide face across a phone screen for
+    somebody who had asked for exactly that not to happen. The carousel's
+    autoplay is gated in JS on the same query; carousel-rail.tsx has the note.
+  */
+  .rail {
+    scroll-behavior: auto !important;
+  }
+
   *,
   *::before,
   *::after {
@@ -311,6 +420,24 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+  `.glass` is gone, and with it the header's frosting.
+
+  It set `backdrop-filter: blur(12px) saturate(180%)` on the sticky bar, and it
+  had to go for a reason that is not a taste call: an element with a
+  backdrop-filter is a *backdrop root*, which is the boundary any
+  backdrop-filter inside it can sample back to. The three glass controls that
+  live in the chrome are backdrop-filter elements, so they could only refract
+  the inside of the header, which is empty. The page's primary CTA was the one
+  control that could never work. site-header.tsx and
+  components/ui/liquid-glass-button.tsx both carry the full note.
+
+  The header is plain translucency now, which needs no rule of its own.
+
+  The rim shadows that used to sit in this file went the same way earlier. They
+  are part of the button component, where the layer they belong to is defined.
+*/
 
 /* Horizontal catalog rail. Scrollbar hidden; the peeking card is the cue. */
 .rail {

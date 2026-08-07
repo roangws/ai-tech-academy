@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BuildingsIcon, UserIcon } from "@phosphor-icons/react/dist/ssr";
+import { UserIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Img } from "@/lib/content";
 
 /**
@@ -71,36 +71,36 @@ export function AvatarSlot({
 }
 
 /**
- * Organization mark, 20px tall against white.
+ * Organization mark, 20px tall against white. Renders nothing when empty.
  *
- * Empty, it is a dashed frame reading "Logo", which is the honest state: this
- * page will not carry a mark its owner has not cleared, because a logo reads as
- * an endorsement by that organization. public/images/logos/README.txt has the
- * two lines that fill it.
+ * The empty state used to be a dashed frame reading "Logo", on the same
+ * reasoning as the portrait frame above: mark the slot, do not fake it. That
+ * reasoning holds for a portrait and does not hold here, and the difference is
+ * how many there are. One dashed frame is a slot. Ten of them, which is what
+ * the two rosters had, is a page that looks like it failed to finish loading,
+ * and they were the last thing on it still reading that way once the portraits
+ * arrived.
+ *
+ * A portrait frame also has a job when it is empty, because it holds the card's
+ * layout: drop it and the roster reflows the day the photographs land. A mark
+ * sits at the end of a flex row and takes its own width, so an absent one costs
+ * the card nothing.
+ *
+ * The footnote under each roster still says marks appear as employers clear
+ * them, so the state is stated once in words instead of ten times in dashes.
+ * public/images/logos/README.txt has the two lines that fill one.
  */
 export function LogoSlot({ logo }: { logo?: Img }) {
-  if (logo) {
-    return (
-      <Image
-        src={logo.src}
-        alt={logo.alt}
-        width={160}
-        height={40}
-        sizes="80px"
-        className="h-5 w-auto max-w-[104px] flex-none object-contain object-right"
-      />
-    );
-  }
+  if (!logo) return null;
 
   return (
-    <span
-      role="img"
-      aria-label="Organization mark pending"
-      title="Organization mark pending"
-      className="t-micro inline-flex h-6 flex-none items-center gap-1 rounded-[6px] border border-dashed border-line-strong px-2 font-medium text-ink-muted"
-    >
-      <BuildingsIcon size={12} weight="regular" aria-hidden="true" className="text-line-strong" />
-      Logo
-    </span>
+    <Image
+      src={logo.src}
+      alt={logo.alt}
+      width={160}
+      height={40}
+      sizes="80px"
+      className="h-5 w-auto max-w-[104px] flex-none object-contain object-right"
+    />
   );
 }

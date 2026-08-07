@@ -88,9 +88,18 @@ export function Logo({
   descriptor?: boolean;
   tone?: "light" | "dark";
   /**
-   * Drops the wordmark below sm so the mark stands alone. The header needs it:
-   * at 390px the chrome carries a search button, the primary CTA and the menu,
-   * and the package allows the mark by itself at 24px and above.
+   * Below sm, swap the full name for `brand.short` and drop the descriptor.
+   *
+   * This used to drop the wordmark entirely, on the grounds that the package
+   * allows the mark alone at 24px and above and the 390px chrome has a CTA and
+   * a menu button to fit. It does, and the result was a phone header whose
+   * top-left corner was an unlabelled cyan shield: the one screen where a
+   * visitor is least likely to recognise a mark they have never seen was the
+   * one screen that never told them whose site they were on.
+   *
+   * "AI Tech" measures about 62px at 18px, which the row has. It is a
+   * truncation of the real name rather than a second brand, so the two can
+   * never disagree. content.ts has the note.
    */
   compact?: boolean;
 }) {
@@ -107,16 +116,33 @@ export function Logo({
       ) : (
         <CrestMini size={size} />
       )}
-      <span className={`min-w-0 flex-col ${compact ? "hidden sm:flex" : "flex"}`}>
+      <span className="flex min-w-0 flex-col">
         <span
           className={`font-display text-[18px] font-bold leading-[23px] tracking-[-0.02em] ${
             onDark ? "text-white" : "text-ink"
           }`}
         >
-          {brand.name}
+          {/*
+            Two spans rather than a JS breakpoint check. The header renders on
+            the server and hydrates, so a width read in the client would ship
+            the wrong name in the HTML and swap it after paint, which is a
+            visible flicker on the brand.
+          */}
+          {compact ? (
+            <>
+              <span className="sm:hidden">{brand.short}</span>
+              <span className="hidden sm:inline">{brand.name}</span>
+            </>
+          ) : (
+            brand.name
+          )}
         </span>
         {descriptor ? (
-          <span className={`t-meta font-normal ${onDark ? "text-[#A9C6D1]" : "text-ink-muted"}`}>
+          <span
+            className={`t-meta font-normal ${compact ? "hidden sm:block" : ""} ${
+              onDark ? "text-[#A9C6D1]" : "text-ink-muted"
+            }`}
+          >
             {brand.tagline}
           </span>
         ) : null}

@@ -28,8 +28,20 @@ export function Outcomes() {
     <Section id="outcomes" tint ariaLabelledBy="outcomes-heading">
       <SectionHeader id="outcomes-heading" label="Outcomes" heading={outcomes.headline} />
 
-      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,512px)] lg:gap-12">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,512px)] lg:gap-12">
         <div className="flex flex-col">
+          {/*
+            The classifier, above the figure rather than under it.
+
+            This is the page's single element above 44px and it sat directly
+            beneath a heading reading "Leave with evidence of what changed",
+            unattributed, with its scope in 13px underneath. Read top to bottom
+            that is a claim about the program followed by a footnote walking it
+            back. Labelled first, the same numbers are an example, and "Example"
+            is the first word a reader meets.
+          */}
+          <p className="t-label mb-2 text-ink-muted">{outcomes.stat.label}</p>
+
           {/* The page's single element above 44px. */}
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <span className="t-stat text-ink-muted">{outcomes.stat.before}</span>
@@ -45,7 +57,7 @@ export function Outcomes() {
             {outcomes.stat.caption}
           </p>
 
-          <div className="mt-8 border-t border-line pt-6">
+          <div className="mt-6 border-t border-line pt-5 md:mt-8 md:pt-6">
             <p className="t-label text-ink-muted">{outcomes.lead.artifact}</p>
             <h3 className="t-h3 mt-2 text-ink">{outcomes.lead.title}</h3>
             <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">{outcomes.lead.text}</p>
@@ -64,7 +76,7 @@ export function Outcomes() {
         <OutcomeSheet />
       </div>
 
-      <ul className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <ul className="mt-7 grid grid-cols-1 gap-4 md:mt-10 md:grid-cols-2 md:gap-5">
         {outcomes.supporting.map((item) => (
           <li
             key={item.title}

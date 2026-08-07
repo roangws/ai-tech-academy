@@ -44,7 +44,12 @@ export function Method() {
     <Section id="method">
       <SectionHeader label={method.eyebrow} heading={method.headline} intro={method.intro} />
 
-      <ol className="relative mt-9 grid grid-cols-1 gap-7 lg:grid-cols-5 lg:gap-6">
+      {/* Mobile gap down from 28 to 20. Five stacked steps is the tallest
+          vertical list on the page after the FAQ, and the connector rule
+          between the nodes already carries the "these are consecutive" signal
+          that the whitespace was doubling up on. The connector's negative
+          offset below tracks this number and has to change with it. */}
+      <ol className="relative mt-6 grid grid-cols-1 gap-5 md:mt-9 md:gap-7 lg:grid-cols-5 lg:gap-6">
         {method.steps.map((step, i) => {
           const Glyph = glyphs[step.n];
           const first = step.n === 1;
@@ -60,7 +65,7 @@ export function Method() {
               {i < method.steps.length - 1 ? (
                 <span
                   aria-hidden="true"
-                  className="absolute -bottom-7 left-[19px] top-11 w-0.5 bg-line lg:bottom-auto lg:left-5 lg:top-[19px] lg:h-0.5 lg:w-[calc(100%+24px)]"
+                  className="absolute -bottom-5 left-[19px] top-11 w-0.5 bg-line md:-bottom-7 lg:bottom-auto lg:left-5 lg:top-[19px] lg:h-0.5 lg:w-[calc(100%+24px)]"
                 />
               ) : null}
 
@@ -80,9 +85,16 @@ export function Method() {
               <p className="t-field mt-4 text-ink-muted max-lg:mt-0">Step {step.n}</p>
               <h3 className="t-h3 mt-1 text-ink">{step.name}</h3>
               <p className="t-body-sm mt-1.5 text-ink-secondary">{step.text}</p>
-              <p className="t-meta mt-3 border-t border-line pt-2.5 text-ink-muted">
-                <span className="t-field block">{method.produces}</span>
-                <span className="mt-0.5 block font-semibold text-ink-secondary">{step.output}</span>
+              {/* One line below md, two above it. At 390px the label and the
+                  artifact fit side by side with room over, and stacking them
+                  spent 22px per step on a line break five times. From lg the
+                  column is 220px wide and they would wrap anyway, so the
+                  stacked form is the honest one up there. */}
+              <p className="t-meta mt-2.5 flex flex-wrap items-baseline gap-x-2 border-t border-line pt-2 text-ink-muted md:mt-3 md:block md:pt-2.5">
+                <span className="t-field md:block">{method.produces}</span>
+                <span className="font-semibold text-ink-secondary md:mt-0.5 md:block">
+                  {step.output}
+                </span>
               </p>
             </li>
           );
