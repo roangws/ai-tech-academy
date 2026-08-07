@@ -168,6 +168,26 @@ const TINTS = {
   onDark: "bg-white/85",
 } as const;
 
+/**
+ * Hover, which is a colour change now rather than only a shadow.
+ *
+ * The button lifted on hover with a drop shadow and nothing else, which on a
+ * saturated fill is close to no feedback at all: the shadow is behind the
+ * control and the control is the thing the cursor is on. `--accent-hover` is
+ * the same blue two steps down in lightness, so pressing toward it reads as the
+ * surface taking the weight of the pointer.
+ *
+ * It goes to 95% rather than staying at 90%. Hover is a transient state and the
+ * glass reads more solid under the cursor, which is also what makes the
+ * pointer highlight above it land: a brighter specular on a darker body.
+ * White on `#0832b4` at 95% over white is 9.8:1.
+ */
+const TINT_HOVER = {
+  default: "group-hover/glass:bg-white/55",
+  accent: "group-hover/glass:bg-accent-hover/95",
+  onDark: "group-hover/glass:bg-white/95",
+} as const;
+
 /** Per-variant body highlight. See the note at TINTS. */
 const SHEEN = {
   default: "bg-linear-to-b from-white/35 via-white/5 to-white/15",
@@ -300,10 +320,15 @@ export function LiquidButton({
       />
 
       {/* 3. The tint, unfiltered, so the pill keeps a crisp edge. See the note
-             at TINTS for why this is not on the frost layer. */}
+             at TINTS for why this is not on the frost layer, and the one at
+             TINT_HOVER for why hover darkens it. */}
       <span
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-0 -z-10 rounded-full", TINTS[v])}
+        className={cn(
+          "pointer-events-none absolute inset-0 -z-10 rounded-full transition-colors duration-200 ease-out",
+          TINTS[v],
+          TINT_HOVER[v],
+        )}
       />
 
       {/* 4. The fixed body highlight: light from above, the way a curved

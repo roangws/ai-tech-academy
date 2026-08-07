@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { LinkedinLogoIcon } from "@phosphor-icons/react/dist/ssr";
 import { Photo, Section, SectionHeader } from "@/components/ui";
 import { instructors, type Person } from "@/lib/content";
 
@@ -19,12 +20,24 @@ import { instructors, type Person } from "@/lib/content";
  * The bento is Roan at 5/12 of the row and the four specialists two by two
  * beside him. He is not one of five equal things: he writes the curriculum and
  * records every core lesson, and a grid of five identical cards said the
- * opposite. His card is the only one with a photograph in it, which the size
- * difference now lets a reader see rather than infer.
+ * opposite.
  *
- * The specialist portraits are the illustrated placeholders, and they carry
- * their own coloured ground, so they fill a card the way a photograph does
- * instead of floating in one.
+ * FIVE REAL PEOPLE, as of 7 Aug. This section spent its whole life working
+ * around not having them. It ran grey monogram tiles, then text-only slots,
+ * then faceless illustrations in path hues, each version an answer to the same
+ * question: how do you show a roster you cannot name? The answer turned out to
+ * be that you wait, and it arrived as five studio portraits from one shoot with
+ * five profile links.
+ *
+ * Everything built for the old problem is gone with it. No illustrated figures,
+ * no GMI stand-in wordmark, no footnote explaining what the frames are waiting
+ * for, and no corrective scale on the crop.
+ *
+ * What has not arrived is job titles, so four of the five cards carry a name
+ * and a profile link and nothing else. That is deliberate and it is not a
+ * placeholder: a role line under a real person's photograph is a claim about
+ * their employment. PersonTile renders every line conditionally so the card is
+ * complete either way, and content.ts has the note on what fills them.
  *
  * BELOW LG THE FOUR SPECIALISTS RUN ON A RAIL. This was the single most
  * expensive section on a phone: the bento collapses to one column, so the lead
@@ -71,15 +84,31 @@ export function Instructors() {
             Safari does not put it there at all, which leaves three of the four
             specialists unreachable from a keyboard. Naming it fixes the first
             and having it fixes the second. */}
+        {/*
+          `auto-rows` is what makes the bento a bento.
+
+          Without it the two specialist rows had no height of their own, so they
+          stretched to whatever the lead card happened to be and distributed the
+          slack as a 131px hole between them. Naming the row height inverts the
+          dependency: these four set the row, and the lead takes `h-full` of it.
+          That is also the only arrangement where the lead's height is a
+          consequence of something rather than a number somebody has to keep in
+          sync with 2 x 248 + 16.
+
+          302 rather than 248 is for the photographs. A 2:3 studio portrait in a
+          342 x 248 window shows 45% of its own height, which cuts the crown off
+          anyone whose head sits high in frame; at 302 it shows 59% and every
+          one of the four clears.
+        */}
         <ul
           tabIndex={0}
           aria-label="Specialist instructors"
-          className="rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:-mx-5 sm:px-5 md:-mx-6 md:px-6 lg:col-span-7 lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0"
+          className="rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:-mx-5 sm:px-5 md:-mx-6 md:px-6 lg:col-span-7 lg:mx-0 lg:grid lg:auto-rows-[302px] lg:grid-cols-2 lg:overflow-visible lg:px-0"
         >
           {specialists.map((person) => (
             <li
               key={person.id}
-              className="flex w-[64vw] max-w-[260px] shrink-0 snap-start lg:w-auto lg:max-w-none"
+              className="flex w-[64vw] max-w-[260px] shrink-0 snap-start lg:h-full lg:w-auto lg:max-w-none"
             >
               <PersonTile person={person} />
             </li>
@@ -99,32 +128,55 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
   return (
     <article
       className={`group/tile relative w-full overflow-hidden rounded-[var(--radius-feature)] bg-ink-band ${
-        lead ? "h-[340px] sm:h-[400px] lg:h-full lg:min-h-[520px]" : "h-[230px] lg:h-[248px]"
+        /* No `min-h` on the lead any more. It takes the row the four specialists
+           set; see the note at the rail. */
+        lead ? "h-[380px] sm:h-[430px] lg:h-full" : "h-[250px] lg:h-full"
       }`}
     >
+      {/*
+        The photograph is taken out of flow, and it has to be.
+
+        `PersonTile` sets `lg:h-full` on the lead so the four specialists decide
+        the row. But an in-flow `<img>` contributes its own intrinsic height to
+        that row, and once the file loads the browser swaps the declared ratio
+        for the real one. These portraits are 2:3 and the old attributes said
+        900 x 1120, so the lead measured 620 before the image arrived and 741
+        after: the bento was correct on first paint and 120px out of alignment a
+        moment later, which is why it looked fine in a DOM measurement taken
+        above the fold and wrong in a screenshot taken at it.
+
+        Absolutely positioned, the picture cannot contribute anything, and the
+        row height has exactly one source. The attributes are corrected to the
+        real 2:3 anyway, so the reserved box is right for anything that reads it.
+      */}
       {person.photo ? (
+        <span aria-hidden="true" className="absolute inset-0 block">
         <Photo
           image={person.photo}
-          width={lead ? 900 : 560}
-          height={lead ? 1120 : 560}
-          sizes={lead ? "(max-width: 1024px) 100vw, 500px" : "(max-width: 640px) 100vw, 300px"}
+          width={lead ? 800 : 520}
+          height={lead ? 1192 : 775}
+          sizes={lead ? "(max-width: 1024px) 100vw, 500px" : "(max-width: 640px) 66vw, 350px"}
           /*
-            No corrective scale on either variant.
+            Crops for real head-and-shoulders frames.
 
-            The specialist tiles ran at 1.2 for one pass, because the
-            illustrations had come back matted: the model framed each figure as
-            a print on paper, so every one carried a pale margin on all four
-            sides and `object-cover` filled the tile with it, drawing a light
-            border down both edges of a dark card. Scaling past the margin
-            worked and was a patch on the wrong layer. The prompt now states
-            full bleed as a construction rule rather than implying it with "no
-            border", the artwork reaches its own edges, and the crop is back to
-            an honest one.
+            These are studio portraits at 2:3 with the face high in the frame,
+            which is a different problem from the illustrations they replace.
+            A 2:3 source in a 342 x 230 tile means `object-cover` scales to
+            width and shows about 45% of the height, so the window has to start
+            near the top or it opens below the crown: measured, the head lands
+            at y 20-222 of a 510px scaled frame, and anything past about 10%
+            cuts hair off. The lead card is nearly the source's own ratio and
+            crops almost nothing, so it only needs to clear the top edge.
+
+            No corrective scale on either. The specialist tiles ran at 1.2 for
+            one pass to hide a pale margin the illustrations came back with, and
+            that patch left with the illustrations.
           */
           className={`transition-transform duration-500 group-hover/tile:scale-[1.04] ${
-            lead ? "object-[center_22%]" : "object-[center_28%]"
+            lead ? "object-[center_8%]" : "object-[center_6%]"
           }`}
         />
+        </span>
       ) : null}
 
       {/* Reading scrim. Deeper on the small tiles, because their type block
@@ -163,10 +215,29 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
         </span>
       ) : null}
 
+      {/*
+        Every line below is conditional, and that is the design rather than
+        defensive coding.
+
+        Four of these five are real, named people whose job titles nobody has
+        supplied yet. A role line under a real person's photograph is a claim
+        about their employment, so the card has to be able to say nothing where
+        it does not know something. Rendered as written, a card with only a name
+        and a profile link is a complete object: portrait, who it is, where to
+        read more. content.ts has the full note.
+      */}
       <div className={`absolute inset-x-0 bottom-0 ${lead ? "p-6" : "p-4"}`}>
-        <p className="t-label text-white/60">{person.scope}</p>
-        <h3 className={`mt-1.5 text-white ${lead ? "t-h3" : "t-card-title"}`}>{person.name}</h3>
-        <p className={`mt-0.5 text-white/70 ${lead ? "t-body-sm" : "t-meta"}`}>{person.role}</p>
+        {person.scope ? <p className="t-label text-white/60">{person.scope}</p> : null}
+
+        <h3
+          className={`text-white ${lead ? "t-h3" : "t-card-title"} ${person.scope ? "mt-1.5" : ""}`}
+        >
+          {person.name}
+        </h3>
+
+        {person.role ? (
+          <p className={`mt-0.5 text-white/70 ${lead ? "t-body-sm" : "t-meta"}`}>{person.role}</p>
+        ) : null}
 
         {/*
           The detail, revealed on hover and present in the document either way.
@@ -177,13 +248,37 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
           height for it and he is the one person here a visitor has a reason to
           read about before they decide anything.
         */}
-        {lead ? (
-          <p className="t-body-sm mt-3 max-w-[42ch] text-white/85">{person.detail}</p>
-        ) : (
-          <p className="t-meta grid grid-rows-[0fr] text-white/0 transition-[grid-template-rows,color,margin] duration-300 group-hover/tile:mt-2 group-hover/tile:grid-rows-[1fr] group-hover/tile:text-white/85">
-            <span className="overflow-hidden">{person.detail}</span>
-          </p>
-        )}
+        {person.detail ? (
+          lead ? (
+            <p className="t-body-sm mt-3 max-w-[42ch] text-white/85">{person.detail}</p>
+          ) : (
+            <p className="t-meta grid grid-rows-[0fr] text-white/0 transition-[grid-template-rows,color,margin] duration-300 group-hover/tile:mt-2 group-hover/tile:grid-rows-[1fr] group-hover/tile:text-white/85">
+              <span className="overflow-hidden">{person.detail}</span>
+            </p>
+          )
+        ) : null}
+
+        {/*
+          The profile link, always visible rather than revealed on hover.
+
+          On the cards with no detail it is the only thing under the name, and a
+          card whose one affordance appears on hover has no affordance at all on
+          a phone. The accessible name carries the person, because five links
+          reading "View profile" in a row is five identical destinations to
+          anyone reading the page through the link list.
+        */}
+        {person.linkedin ? (
+          <a
+            href={person.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${person.name} on LinkedIn`}
+            className="t-meta mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 font-medium text-white no-underline ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/25"
+          >
+            <LinkedinLogoIcon size={14} weight="fill" aria-hidden="true" className="flex-none" />
+            View profile
+          </a>
+        ) : null}
       </div>
     </article>
   );

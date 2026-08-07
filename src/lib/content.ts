@@ -34,21 +34,25 @@
  *   the audience line printed on top of it says in words. It introduces nobody
  *   and names nobody. These are the five path covers.
  *
- *   Photographs of a specific person. Only where the page names them. Roan is
- *   named, so his four frames stay. This is what removed the studio frame of an
- *   unnamed person, and it is why the specialist and board seats are not
- *   photographs: those seats belong to real practitioners who have not cleared
- *   their names yet, and a photorealistic face there would assert that a
- *   particular human reviewed this curriculum.
+ *   Photographs of a specific person. Only where the page names them. This is
+ *   what removed the studio frame of an unnamed person from the hero.
  *
- *   Illustration for a person who is real but not yet named. Allowed, and it is
- *   what the three instructor slots carry: warm figures with no facial
- *   features, in the hue of the path that specialist records. A figure with no
- *   face claims a person is coming without claiming which one.
+ *   The instructor roster now clears this rule outright. As of 7 Aug it is five
+ *   named practitioners with five real studio portraits and five public profile
+ *   links, so the illustration workaround that used to fill it is gone: no
+ *   faceless figures, no path-hue grounds standing in for people, no GMI mark.
+ *   Every frame in that section is a photograph of somebody the page names and
+ *   links to.
+ *
+ *   The rule has a second half that the roster now runs into, and it is the
+ *   live constraint on that section: naming a real person does not license
+ *   describing them. Job titles for four of the five have not been supplied, so
+ *   their cards carry a name and a link and no role line. A fabricated title
+ *   under a real face is the same failure as a fabricated face, in words.
  *
  *   A stand-in photograph, used knowingly and identically. This is what the six
- *   board seats now carry, at Roan's instruction: one studio portrait, the same
- *   frame on all six cards. It is the one arrangement of a photographic
+ *   board seats still carry, at Roan's instruction: one studio portrait, the
+ *   same frame on all six cards. It is the one arrangement of a photographic
  *   placeholder that cannot be mistaken for a claim, because six identical
  *   faces are self-evidently a placeholder rather than six practitioners. The
  *   moment two different faces appear there it stops being obvious and starts
@@ -59,9 +63,9 @@
  * of these: grey monogram tiles in a photograph's frame, which read as three
  * broken images rather than three pending ones.
  *
- * The organization mark on both rosters is the GMI wordmark, also a placeholder,
- * in white on the board's dark cards and black on the instructor cards. It
- * stands in for whichever employer eventually clears each seat.
+ * The organization mark on the board is the GMI wordmark, also a placeholder,
+ * in white on those dark cards. It stands in for whichever employer eventually
+ * clears each seat. The instructor roster no longer uses it.
  *
  * Everything generated lives under public/images/paths and
  * public/images/placeholders, and scripts/generate-images.mjs holds the prompts
@@ -229,7 +233,7 @@ export const hero = {
     role: "Applied AI educator, San Francisco",
     /** The second line under the facepile. The first is generated. */
     rosterNote: "Practitioners who run these systems in production",
-    image: { src: "/images/people/roan-weigert.jpg", alt: "Portrait of Roan Weigert" },
+    image: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
   },
   lesson: {
     label: "Module 1, lesson 1",
@@ -676,10 +680,24 @@ export const outcomes = {
 export type Person = {
   id: string;
   name: string;
-  role: string;
-  detail: string;
-  /** What this person records or reviews, printed as the card's foot. */
-  scope: string;
+  /**
+   * The line under the name.
+   *
+   * Optional as of 7 Aug, and the reason is the point of this whole type now.
+   * Four of the five people here are real, named practitioners whose portraits
+   * and profile links Roan supplied, and nobody has supplied their job titles.
+   * A role line is a claim about a specific human being, so an absent one has
+   * to render as absent rather than as a plausible sentence. The card handles
+   * it: no role, no line.
+   *
+   * These will be the people's own LinkedIn headlines, verbatim, once those are
+   * pasted in. Nothing else goes here.
+   */
+  role?: string;
+  /** A sentence about what this person does. Same rule as `role`. */
+  detail?: string;
+  /** What this person records or reviews, printed as the card's head. Same rule. */
+  scope?: string;
   /** Path hue from globals.css, so the card ties to the path it serves. */
   ground: string;
   /** Portrait. Absent means the slot renders marked-empty rather than faked. */
@@ -687,20 +705,38 @@ export type Person = {
   /** Employer mark, once that employer has cleared the use of it. */
   logo?: Img;
   lead?: boolean;
+  /** Full LinkedIn profile URL. Renders the profile link when present. */
+  linkedin?: string;
 };
 
 /*
-  A roster with portrait and organization-mark slots.
+  REAL PEOPLE, as of 7 Aug 2026. This roster is no longer a set of placeholders.
 
-  The slots were text-only for one release because the build had been filling
-  them with monogram tiles: two grey letters in a circle, identical framing to
-  Roan's real photograph, which read as three broken images rather than three
-  pending ones. The fix was never to remove the slot, it was to stop pretending
-  the slot was full. So the frames are back and an empty one says so, in a
-  dashed rule with an icon, and the footnote explains what it is waiting for.
+  Five named practitioners, five studio portraits from the same shoot, five
+  LinkedIn profiles. That retires the whole apparatus this section used to need:
+  the illustrated figures with no faces, the "a person is coming but not which
+  one" argument, the GMI stand-in wordmark. All of it existed because the seats
+  were real and the names were not, and the names are here now.
 
-  Filling one is two lines: drop the file in public/images/people or
-  public/images/logos, then add `photo` or `logo` to the entry below.
+  WHAT IS STILL MISSING, and why it is missing rather than written.
+
+  Nobody has supplied job titles. Four of these are named human beings with
+  public profiles, and a role line under a real person's photograph is a claim
+  about that person's employment. Inventing one is not a placeholder, it is a
+  misrepresentation, and it is the exact failure the imagery policy at the head
+  of this file was written to prevent, only in words instead of pixels.
+
+  So `role`, `scope` and `detail` are absent on all four, and the card renders
+  nothing where they would go: portrait, name, profile link. Every one of those
+  is a fact somebody handed over.
+
+  They fill in from the people's own LinkedIn headlines, verbatim, which is what
+  Roan chose. One line each into `role` below and the cards complete themselves.
+  Nothing needs to change in the component.
+
+  Surnames are the other gap. Hendrik and Loc came through on first name only,
+  and a surname guessed from a profile slug is the same class of invention as a
+  job title, so they run as given until somebody confirms them.
 */
 export const instructors = {
   headline: "Learn from people who run these systems in production",
@@ -742,85 +778,45 @@ export const instructors = {
         "Builds multimodal agent workflows for go-to-market and production teams. Writes the curriculum and records every core lesson.",
       scope: "All five paths",
       ground: "var(--accent)",
-      photo: { src: "/images/people/roan-weigert.jpg", alt: "Portrait of Roan Weigert" },
+      photo: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
+      linkedin: "https://www.linkedin.com/in/-roan/",
       lead: true,
     },
-    {
-      id: "gtm",
-      name: "Revenue operations lead",
-      role: "Series-C B2B software company",
-      detail:
-        "Runs agent workflows against a live pipeline of roughly 40,000 accounts, and owns the reporting the sales team works from.",
-      scope: "Records Path A",
-      ground: "var(--path-a)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this specialist",
-      },
-      logo: {
-        src: "/images/logos/gmi-black.png",
-        alt: "GMI",
-      },
-    },
-    {
-      id: "media",
-      name: "Post-production supervisor",
-      role: "Commercial and documentary studio",
-      detail:
-        "Operates multimodal logging and assembly tooling inside a working studio, on delivery schedules measured in days.",
-      scope: "Records Path B",
-      ground: "var(--path-b)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this specialist",
-      },
-      logo: {
-        src: "/images/logos/gmi-black.png",
-        alt: "GMI",
-      },
-    },
     /*
-      The fourth specialist, added with the new Path C.
+      The four specialists, in alphabetical order by the name each was given in.
 
-      Flagging it rather than burying it: the other three describe people who
-      have been invited. This one is written to the same pattern and needs the
-      same thing behind it before the page ships, because a roster of four is a
-      claim about four people. If the seat is still open, cut this entry and set
-      the intro back to three.
+      No ranking is implied by the order and none should be: whatever ordering
+      looked meaningful here would be a claim too, and until the headlines land
+      there is nothing to rank on. Alphabetical is the one order that says
+      nothing.
     */
     {
-      id: "literacy",
-      name: "Data governance lead",
-      role: "Regulated multinational",
-      detail:
-        "Owns the policy that decides what employee-facing AI tools may touch, and the review that keeps it current across a workforce in the thousands.",
-      scope: "Records Path C",
-      ground: "var(--path-c)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this specialist",
-      },
-      logo: {
-        src: "/images/logos/gmi-black.png",
-        alt: "GMI",
-      },
+      id: "aaron",
+      name: "Aaron Jimenez",
+      ground: "var(--path-a)",
+      photo: { src: "/images/people/aaron-jimenez.jpg", alt: "Portrait of Aaron Jimenez" },
+      linkedin: "https://www.linkedin.com/in/aaron-jimenez-086ba4181/",
     },
     {
-      id: "infra",
-      name: "Platform engineer",
-      role: "GPU cloud provider",
-      detail:
-        "Runs model serving at scale and owns the cost envelope, from autoscaling policy through to per-token accounting.",
-      scope: "Records Path D",
+      id: "hendrik",
+      name: "Hendrik",
+      ground: "var(--path-b)",
+      photo: { src: "/images/people/hendrik.jpg", alt: "Portrait of Hendrik" },
+      linkedin: "https://www.linkedin.com/in/climateadvocateaienthusiast/",
+    },
+    {
+      id: "loc",
+      name: "Loc",
+      ground: "var(--path-c)",
+      photo: { src: "/images/people/loc-nguyen.jpg", alt: "Portrait of Loc" },
+      linkedin: "https://www.linkedin.com/in/lhnguyen2/",
+    },
+    {
+      id: "patrick",
+      name: "Patrick Kriwanek",
       ground: "var(--path-d)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this specialist",
-      },
-      logo: {
-        src: "/images/logos/gmi-black.png",
-        alt: "GMI",
-      },
+      photo: { src: "/images/people/patrick-kriwanek.jpg", alt: "Portrait of Patrick Kriwanek" },
+      linkedin: "https://www.linkedin.com/in/patrick-kriwanek-92a3203/",
     },
   ] as readonly Person[],
 } as const;
