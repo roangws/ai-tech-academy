@@ -108,12 +108,36 @@ export const brand = {
  * four synonyms for it spends that recognition.
  */
 export const cta = {
-  primary: "Start free module",
+  primary: "Enroll for free",
   path: "View path",
   compare: "Compare all five paths",
   course: "See how the course works",
   watch: "Watch now",
 } as const;
+
+/**
+ * The start date, which is always today.
+ *
+ * Module 1 opens with no account and no cohort, so there is no future date to
+ * announce and never was: whenever somebody reads this page, the thing starts
+ * the moment they click. "Starts Aug 7" on 7 August is therefore a fact rather
+ * than a scarcity device, and it is the one line that turns "Enroll for free"
+ * from an offer into an appointment.
+ *
+ * Which is exactly why it cannot be a string in this file. A hardcoded date is
+ * true for one day and then quietly becomes a page advertising a start date in
+ * the past, which is worse than saying nothing. It is derived from the clock, in
+ * the reader's own timezone, every time the page is opened.
+ *
+ * `en-US` is pinned rather than left to the reader's locale. The rest of the
+ * page is written in one voice and one language, so a German visitor getting
+ * "7. Aug." inside an English button would be the only localised string on the
+ * site. See components/start-date.tsx for the half of this that runs on the
+ * client, and why it has to.
+ */
+export function startsOn(date: Date): string {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 /*
   In document order, which is the only order this list can be in. The header
@@ -122,10 +146,38 @@ export const cta = {
   reader scrolls forwards. Methodology moved to fourth when the method section
   moved down the page to sit above the FAQ.
 */
+/*
+  Six items, all six at every width from lg up.
+
+  Instructors joined this list on 7 Aug at Roan's request, and a sixth item did not
+  fit at 1024. Measured: the lockup is 268px, six links at the old padding are 497,
+  and the two controls are 266, which is 1,055px of content inside a 960px column,
+  and the document grew a 63px horizontal scrollbar at exactly the width where a
+  reader is most likely to be using the nav.
+
+  The first fix was to hide the widest label below xl, and it was wrong. Between
+  1024 and 1280 the desktop nav had dropped Methodology and the mobile panel that
+  carries all six is gated at lg, so there was no route to that section from the
+  chrome at all in a 256px band. The note that fix was written under rejected
+  hiding Sign in for exactly that reason and then did the same thing to a nav item
+  anyway, which is the sort of thing a comment is supposed to prevent.
+
+  So the 95px came out of the row instead, in four places, none of which is a
+  route to anywhere: the container gap from 24 to 12, the nav's own gap from 2 to
+  0, link padding from 12 to 8 a side below xl, and 8px a side off each of the two
+  controls below xl. That is 78px, against 95 needed once Methodology is back at
+  its tighter 108px, so at 1024 there are 31px of clear air between the last nav
+  item and the first control, measured.
+
+  Which is thin, and it is why the numbers above are written down. Anything added
+  to this row at lg has to be measured first, and the next thing that needs 40px
+  will have to take it from the lockup rather than from the nav.
+*/
 export const nav = [
   { label: "Paths", href: "#paths" },
   { label: "Course", href: "#course" },
   { label: "Outcomes", href: "#outcomes" },
+  { label: "Instructors", href: "#instructors" },
   { label: "Methodology", href: "#method" },
   { label: "FAQ", href: "#faq" },
 ] as const;
@@ -138,37 +190,48 @@ export const hero = {
     the only thing this slot is for.
   */
   eyebrow: "Free",
-  headline: "Deploy one AI workflow and measure what it changed",
+  /*
+    Rewritten 7 Aug at Roan's request.
+
+    It read "Deploy one AI workflow and measure what it changed", which is what
+    the program does and not what it is. A headline in the imperative describes
+    an action a reader has not agreed to take yet; naming the thing lets them
+    decide whether they want it. "Practical AI training" is the category, and
+    "ends with a deployed workflow" is the differentiator, so the sentence does
+    both jobs the old one split between itself and the two paragraphs that used
+    to sit under it.
+
+    The deploy-and-measure mechanic is not lost: it is the method section's whole
+    headline, the last two of the five module rows, and the outcomes band.
+  */
+  headline: "Practical AI training that ends with a deployed workflow",
   subtext:
     "Five role-based paths for operators and technical teams. You build on your own data, then launch it where the work happens.",
   /*
-    The shape of the program, stated in the fold.
+    TWO PARAGRAPHS CAME OUT of this fold on 7 Aug, at Roan's instruction, and
+    since both were argued for in comments that are now gone, here is what they
+    were and where their facts went.
 
-    Added 6 Aug. Everything the page needed to say about its own structure was
-    true and none of it was in one place: the catalog says five paths, the
-    course outline says five modules, the method section says five steps, and
-    all three are 2,000px apart and use the same numeral for different things.
-    A first-time reader had to assemble the shape from three sections before
-    they could tell whether "five" meant five courses or five lessons.
+    `structure` read "Choose one of five role-based paths. Every path contains
+    five modules and follows the same deployment method." It was added because
+    the page's three different fives (paths, modules, steps) were 2,000px apart
+    and a first-time reader had to assemble the shape from all three. The
+    subtext above still says five role-based paths, the second stat still says
+    five modules, and the catalog immediately below the fold shows both, so the
+    shape is now carried by the elements rather than narrated above them.
 
-    Two sentences at the top say it once, and they are deliberately structural
-    rather than persuasive. Nothing here is a new claim; it is the three facts
-    the page already carries, put next to each other.
+    `access` read "The first module opens without an account. A free account
+    saves your work and unlocks modules 2-5." It was the only statement of the
+    access model beside the button. That model is still on the page four times:
+    the "Free" chip that opens the fold, the "Open" chip on the lesson card in
+    this same fold, the course outline's own note, and two FAQ answers.
+
+    Between them they were 209 characters of explanation standing between the
+    subtext and the three stats, which is the part of a fold a reader scans
+    rather than reads. Worth knowing if either is ever proposed again: the fold
+    is now chip, headline, subtext, stats, control, byline, and there is no room
+    in that sequence for a paragraph that explains the sequence.
   */
-  structure:
-    "Choose one of five role-based paths. Every path contains five modules and follows the same deployment method.",
-  /*
-    The access model, at the point of decision.
-
-    It was stated four times on the page and never beside the button. A status
-    chip in the fold said "Free", the third stat said the hours were free, the
-    course outline marked four rows "Free account", and the FAQ answered it
-    twice. What none of them said, in the place a visitor decides whether to
-    click, is what the account is *for*. Saving your work is the answer, and it
-    is the difference between a signup that gates and a signup that keeps.
-  */
-  access:
-    "The first module opens without an account. A free account saves your work and unlocks modules 2–5.",
   /*
     Three stats with a glyph each, rather than three bulleted rows.
 
@@ -212,8 +275,15 @@ export const hero = {
       is a different object, and the second half is the part a reader is
       actually buying. It also stops the figure from reading as a promise about
       how long the path takes, which it never was.
+
+      Shortened again on 7 Aug, to fit two lines. The three stats are a fixed
+      three-column grid and each label gets about 148px, so "implementation" on
+      its own is 87px of a 148px line and forced this one to three lines while
+      its neighbours sat on two: three cells, three different depths, in the row
+      that exists so the numbers land as numbers. "Build time" is the same claim
+      in words that fit.
     */
-    { id: "open", value: "5+ hours", label: "Of instruction, plus your implementation work" },
+    { id: "open", value: "5+ hours", label: "Of instruction, plus your build time" },
   ],
   /*
     The byline under the fold's controls.
@@ -561,18 +631,32 @@ export const paths: readonly Path[] = [
   },
 ];
 
+/*
+  Rewritten 7 Aug, all three lines, at Roan's request.
+
+  The eyebrow said "The course" and the heading said "One lesson and one lab,
+  every module", which put the structure in the largest type in the band and left
+  the eyebrow naming the page. Swapped round, the eyebrow now says what the band
+  is about and the heading says what a reader gets out of it: learn the method,
+  apply it to your own work. The structure moves into the intro, where it belongs,
+  because it is detail rather than argument.
+
+  The intro is longer than the line it replaces and it earns the extra length by
+  answering the question the old one raised. "A guided lab you run on your own
+  workflow" told a reader what they would do; it did not say why one module's lab
+  matters, which is that each one builds a piece of a single system they finish
+  the course having deployed and measured. That is the whole shape of the program
+  in one sentence, and it is the sentence the removed hero paragraph was reaching
+  for from 3,000px further up the page.
+
+  Its cost is 24px of height in the one band on this page that has to fit a single
+  screen, and course.tsx has the note on where those 24px came back from.
+*/
 export const course = {
-  label: "The course",
-  headline: "One lesson and one lab, every module",
-  /*
-    Second sentence cut on 7 Aug. It read "Your workflow, from first sketch to
-    live", which is the poster's own title card set 35px higher on the same
-    screen. One of the two had to go and it is the fragment, because on the
-    poster the line is doing work: it tells a reader what the video is before
-    they spend two minutes on it.
-  */
+  label: "How each module works",
+  headline: "Learn the method. Apply it to your work.",
   intro:
-    "Each module pairs one recorded lesson with a guided lab you run on your own workflow.",
+    "Each module includes one focused lesson and one guided lab. You use your own data and workflow to build part of the AI system you will deploy and measure by the end of the course.",
   video: {
     src: "/media/tutorial-2.mp4",
     /*
@@ -766,17 +850,19 @@ export type Person = {
 
   WHAT IS STILL MISSING, and why it is missing rather than written.
 
-  Nobody has supplied job titles. Four of these are named human beings with
+  Nobody has supplied job titles as such. Four of these are named human beings with
   public profiles, and a role line under a real person's photograph is a claim
   about that person's employment. Inventing one is not a placeholder, it is a
   misrepresentation, and it is the exact failure the imagery policy at the head
   of this file was written to prevent, only in words instead of pixels.
 
-  So `role`, `scope` and `detail` are absent on all four, and the card renders
-  nothing where they would go: portrait, name, profile link. Every one of those
-  is a fact somebody handed over.
+  So `scope` and `detail` are absent on all four, and the card renders nothing
+  where they would go. `role` is filled, and the note below is why: it is each
+  person's own LinkedIn headline, verbatim, which is a description they authored
+  rather than one this site made up. Which path each of them records is still
+  unknown, and that is what `scope` is waiting on.
 
-  They fill in from the people's own LinkedIn headlines, verbatim, which is what
+  Headlines are taken verbatim, which is what
   Roan chose. One line each into `role` below and the cards complete themselves.
   Nothing needs to change in the component.
 
@@ -1187,14 +1273,26 @@ export const board = {
     },
   ] as readonly Seat[],
   /*
-    "The empty frames are seats already reviewing" described a state the cards
-    are no longer in: the frames hold illustrations now, and a sentence pointing
-    at emptiness that a reader cannot see reads as a leftover. The fact it was
-    protecting is the one that matters and it stays, said plainly: these seats
-    are filled and working, and what is pending is permission to say by whom.
+    THE FOOTNOTE IS GONE, removed 7 Aug at Roan's request, and it is worth being
+    clear about what that costs because it is not nothing.
+
+    It read: "Every seat here is filled and reviewing. One stand-in portrait and
+    one placeholder mark stand on all six cards, and each becomes a name, a
+    photograph, an employer and a profile link on the day that employer clears
+    it." Two facts in one sentence. The first is a claim the cards cannot show,
+    that the seats are real and working. The second was the disclosure that the
+    portrait and the mark on all six cards are placeholders.
+
+    The second one is now carried by the arrangement instead, and only by the
+    arrangement: six identical faces and six identical wordmarks are
+    self-evidently a placeholder rather than six practitioners, which is the
+    argument the imagery policy at the head of this file makes for allowing them
+    at all. That argument has a hard edge, and this removal moves the page right
+    up against it. The moment two different faces or two different marks appear
+    on these cards, the disclosure has to come back in words, because at that
+    point the set stops announcing itself as a stand-in and starts asserting a
+    roster.
   */
-  footnote:
-    "Every seat here is filled and reviewing. One stand-in portrait and one placeholder mark stand on all six cards, and each becomes a name, a photograph, an employer and a profile link on the day that employer clears it.",
 } as const;
 
 /*
@@ -1281,10 +1379,25 @@ export const faqs = [
   concrete ("pick the path closest to your job, watch the first lesson"), the
   price is the first word, and the payoff is a written baseline of one process
   they own, which is a thing rather than a decision.
+
+  CUT TO ONE SENTENCE on 7 Aug, and the duration came out of the headline with it.
+
+  "Start free, in 14 minutes" sized the page's closing argument by its smallest
+  number. A reader who has scrolled 8,000px to reach this band has already been
+  told the course is free three times and is deciding whether to begin; answering
+  that with a fourteen-minute quote is the same mistake the third hero stat used to
+  make, which is to price the offer by its cheapest part. The figure is still on
+  the page where a duration is useful, on the lesson card in the fold, next to the
+  video it describes.
+
+  The body was three sentences saying one thing twice: "you will have picked one
+  process you own and written down what it costs you today" and then "that page is
+  the baseline everything else is measured against". One sentence carries all of
+  it, and it is shorter than either half of the pair it replaces.
 */
 export const closing = {
-  headline: "Start free, in 14 minutes",
-  body: "Pick the path closest to your job and watch the first lesson. By the end you will have picked one process you own and written down what it costs you today. That page is the baseline everything else is measured against.",
+  headline: "Start with your first lesson",
+  body: "Pick the path closest to your job, watch the first lesson, and finish with a written baseline for one process you own.",
   reassurance: "Lesson one plays for everyone. A free account opens the rest.",
   routesLabel: "Or start somewhere else",
   routes: [

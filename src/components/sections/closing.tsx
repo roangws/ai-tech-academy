@@ -1,8 +1,8 @@
 import { ArrowRightIcon, PlayCircleIcon, SquaresFourIcon, UsersThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { ButtonLink, Panel, Section } from "@/components/ui";
-import { closing, cta } from "@/lib/content";
+import { EnrollButton, Panel, Section } from "@/components/ui";
+import { closing } from "@/lib/content";
 
 /**
  * The close, as one inset dark panel. This was two sections.
@@ -51,10 +51,11 @@ export function Closing() {
             </h2>
             <p className="t-body mt-3 max-w-[46ch] text-[#c3d2dc]">{closing.body}</p>
 
-            <ButtonLink href="#paths" tone="onDark" className="mt-7">
-              {cta.primary}
-              <ArrowRightIcon size={14} weight="bold" />
-            </ButtonLink>
+            {/* No arrow beside the label any more. The control carries two
+                lines now, and a glyph vertically centred against a two-line
+                block has no line of its own to sit on: it landed in the gutter
+                between "Enroll for free" and the date under it. */}
+            <EnrollButton withDate tone="onDark" className="mt-7" />
 
             <p className="t-meta mt-3 text-[#9db0bd]">{closing.reassurance}</p>
           </div>

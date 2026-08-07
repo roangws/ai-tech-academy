@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { StartDate } from "@/components/start-date";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
-import type { Img } from "@/lib/content";
+import { cta, startsOn, type Img } from "@/lib/content";
 
 /**
  * Shared primitives, built to references/DESIGN-SPEC.md.
@@ -137,29 +138,52 @@ export function Panel({
   );
 }
 
-/** Eyebrow, section heading and intro as one 640px-capped block. */
+/**
+ * Eyebrow, section heading and intro as one 640px-capped block.
+ *
+ * `wide` raises the intro's cap to 760px, and exactly one section uses it.
+ *
+ * It exists because #course has a hard height budget: the band has to fit one
+ * desktop screen, and its rewritten intro is 1,392px of type on one line, which
+ * is three lines at 640 and 72px of a 777px section. At 760 it is two, and the
+ * 24px that buys is the difference between the band fitting and not. The
+ * alternatives were all worse: another 24px off a band whose padding is already
+ * two thirds of its neighbours', or 4px off each of five outline rows that are
+ * already at 56.
+ *
+ * The cost is a 95-character measure against the 75 the rest of the page holds,
+ * which is why this is a flag on one section rather than a change to the default.
+ */
 export function SectionHeader({
   label,
   heading,
   intro,
   id,
   action,
+  wide = false,
 }: {
   label?: string;
   heading: string;
   intro?: string;
   id?: string;
   action?: ReactNode;
+  wide?: boolean;
 }) {
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 md:mb-6">
-      <div className="max-w-[680px]">
+      <div className={wide ? "max-w-[780px]" : "max-w-[680px]"}>
         {label ? <p className="t-label mb-2 text-ink-muted">{label}</p> : null}
         <h2 id={id} className="t-h2 text-ink">
           {heading}
         </h2>
         {intro ? (
-          <p className="t-body mt-2.5 max-w-[640px] text-ink-secondary md:mt-3">{intro}</p>
+          <p
+            className={`t-body mt-2.5 text-ink-secondary md:mt-3 ${
+              wide ? "max-w-[760px]" : "max-w-[640px]"
+            }`}
+          >
+            {intro}
+          </p>
         ) : null}
       </div>
       {action}
@@ -206,6 +230,83 @@ export function ButtonLink({
     <LiquidButton asChild variant={toneToVariant[tone]} size={size} className={`t-button ${className}`}>
       <Link {...props}>{children}</Link>
     </LiquidButton>
+  );
+}
+
+/**
+ * The enrol control, which is the same button everywhere and says one extra
+ * thing in the body of the page.
+ *
+ * Roan's split: the chrome carries the label alone, because a sticky bar has to
+ * stay a bar and a two-line control in a 72px tier is a second tier. Every
+ * in-page instance carries the date under it, because that is where a reader is
+ * deciding and "starts today" is the fact that makes the decision easy.
+ *
+ * The second line is a fact rather than a flourish, so it is set as one: 12px,
+ * 80% white, on the same centre line as the label. It reads as the button's own
+ * subtitle rather than as a caption that happens to be inside a pill.
+ *
+ * `h-auto` is doing real work. Every `size` in the button variants sets a fixed
+ * height, correctly, because a row of controls whose heights are decided by their
+ * labels is a ragged row. Two lines need that released, and `cn` is
+ * tailwind-merge, so the class arriving last through `className` wins over the
+ * variant's `h-12` rather than fighting it at equal specificity.
+ *
+ * `leading-tight` and not the type scale: this is the one place on the page
+ * where two lines share a control, and the scale's 20px and 18px leadings stack
+ * to 38px inside a 48px pill, which puts 5px above the cap line and reads as
+ * type that has slipped.
+ */
+export function EnrollButton({
+  href = "#paths",
+  withDate = false,
+  tone = "primary",
+  size = "lg",
+  className = "",
+  ...props
+}: Omit<ComponentProps<typeof Link>, "href" | "children"> & {
+  href?: ComponentProps<typeof Link>["href"];
+  withDate?: boolean;
+  tone?: "primary" | "secondary" | "onDark";
+  size?: "md" | "lg";
+}) {
+  if (!withDate) {
+    return (
+      <ButtonLink href={href} tone={tone} size={size} className={className} {...props}>
+        {cta.primary}
+      </ButtonLink>
+    );
+  }
+
+  return (
+    <ButtonLink
+      href={href}
+      tone={tone}
+      size={size}
+      className={`h-auto py-2.5 ${className}`}
+      {...props}
+    >
+      <span className="flex flex-col items-center leading-tight">
+        <span>{cta.primary}</span>
+        {/*
+          `new Date()` runs here, on the server, and its only job is to be the
+          string hydration matches. StartDate replaces it with the reader's own
+          date on mount; that file has the note on why the authority has to sit
+          on the client.
+        */}
+        {/*
+          90%, not 80%. The subtitle has to stay subordinate to the label, and at
+          80% white it measured 4.29:1 against the resting fill, which is under the
+          4.5 that AA asks of 12px type. 90% is 4.7:1 and still a visible step down
+          from the label above it.
+        */}
+        <span
+          className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
+        >
+          Starts <StartDate initial={startsOn(new Date())} />
+        </span>
+      </span>
+    </ButtonLink>
   );
 }
 
@@ -445,9 +546,15 @@ export function PathCover({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-[rgb(13_26_34/0.92)] via-[rgb(13_26_34/0.22)] via-38% to-transparent"
           />
+          {/* 0.62, up from 0.48. The badge chip and the audience line sit in this
+              band, and measured against the frames actually behind them the
+              audience line came out 3.68:1 on Path E and 2.7:1 over the bright
+              window in Path D, both under AA for 13px type. The band is 80px on a
+              cover of at least 134, so this buys the type its contrast without
+              reaching the face below it. */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-20 bg-linear-to-b from-[rgb(13_26_34/0.48)] to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-20 bg-linear-to-b from-[rgb(13_26_34/0.62)] to-transparent"
           />
         </>
       ) : null}

@@ -125,7 +125,9 @@ export function Board() {
         })}
       </CarouselRail>
 
-      <p className="t-meta mt-5 max-w-[68ch] text-ink-muted">{board.footnote}</p>
+      {/* No footnote. It went on 7 Aug at Roan's request, and content.ts carries
+          the note on what it was disclosing and the condition under which that
+          disclosure has to come back in words. */}
     </Section>
   );
 }

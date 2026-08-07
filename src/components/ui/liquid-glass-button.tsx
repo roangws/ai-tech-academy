@@ -114,8 +114,20 @@ const liquidButtonVariants = cva(
   {
     variants: {
       variant: {
-        /** Glass over whatever is behind it. The reference's own default. */
-        default: "text-ink hover:shadow-[0_8px_24px_rgb(16_24_32/0.10)]",
+        /**
+         * Glass over whatever is behind it. The reference's own default.
+         *
+         * `hover:text-accent` is not decoration. This variant is the enrol control
+         * on four of the five catalog cards, and its hover was `bg-white/35` going
+         * to `bg-white/55` over a white card: a pixel diff across the face of the
+         * pill measured zero, so the only thing that changed was a drop shadow
+         * behind the control the cursor was on. Next to a filled blue button on the
+         * fifth card it read as the one that could not be pressed. The label going
+         * accent, with the tint going to `--accent-tint` below, is feedback a
+         * reader can see without spending a second saturated fill on a band that
+         * already has one.
+         */
+        default: "text-ink hover:text-accent hover:shadow-[0_8px_24px_rgb(16_24_32/0.10)]",
         /** The page's primary control. `--accent` moved onto the glass tint. */
         accent: "text-white hover:shadow-[0_10px_28px_rgb(10_63_224/0.30)]",
         /** For a dark panel, where a pale fill is the primary control. */
@@ -177,15 +189,48 @@ const TINTS = {
  * the same blue two steps down in lightness, so pressing toward it reads as the
  * surface taking the weight of the pointer.
  *
- * It goes to 95% rather than staying at 90%. Hover is a transient state and the
- * glass reads more solid under the cursor, which is also what makes the
- * pointer highlight above it land: a brighter specular on a darker body.
- * White on `#0832b4` at 95% over white is 9.8:1.
+ * The accent goes fully opaque on hover, and that is a correction rather than a
+ * tweak. Roan's report was that pointing at the primary control turned it a pale
+ * blue-white, which is the opposite of what hover here is meant to say, and two
+ * things were making it happen at once: the tint stopped at 95% so the frosted
+ * white page behind it still showed through, and the pointer light above it
+ * painted a 0.55 white core across the middle of the pill. Together they lifted
+ * a saturated blue toward white at exactly the moment the cursor arrived.
+ *
+ * At 100% the tint is `#0832b4`, which is unambiguously a darker blue than the
+ * resting fill: measured through the whole stack the face of the pill goes
+ * rgb(41,88,229) to rgb(21,61,184), a 47% drop in luminance, and white on it goes
+ * from 5.8:1 to 8.8:1. Not `#0832b4` exactly, because the body highlight and the
+ * pointer light are both `-z-10` after the tint in DOM order and still paint over
+ * it, which is what keeps it reading as glass rather than as a flat pill.
+ *
+ * `default` gets the accent tint rather than more white. Its old hover was
+ * `bg-white/35` to `bg-white/55` on a white card, which is invisible; see the note
+ * on the variant itself. See GLOW below for the other half of the accent fix.
  */
 const TINT_HOVER = {
-  default: "group-hover/glass:bg-white/55",
-  accent: "group-hover/glass:bg-accent-hover/95",
+  default: "group-hover/glass:bg-accent-tint/85",
+  accent: "group-hover/glass:bg-accent-hover",
   onDark: "group-hover/glass:bg-white/95",
+} as const;
+
+/**
+ * How hard the pointer light burns, per variant.
+ *
+ * One value for all three was the second half of the pale-hover fault. A 0.55
+ * white core is right on clear glass, where the light is the whole effect and
+ * there is nothing underneath for it to wash out. On a saturated fill it is a
+ * spotlight on a blue surface, and the surface loses.
+ *
+ * The accent keeps a specular, because a lens with no highlight is a pill, but
+ * at a quarter of the strength: enough to read as light moving across a curved
+ * face, not enough to move the fill's hue. `onDark` sits between them, since a
+ * white pill on an ink panel can take some light without changing colour.
+ */
+const GLOW = {
+  default: { core: 0.55, bloom: 0.22 },
+  accent: { core: 0.14, bloom: 0.06 },
+  onDark: { core: 0.4, bloom: 0.16 },
 } as const;
 
 /** Per-variant body highlight. See the note at TINTS. */
@@ -352,8 +397,8 @@ export function LiquidButton({
         style={{
           opacity: "var(--glow)",
           background:
-            "radial-gradient(60px circle at var(--gx) var(--gy), rgb(255 255 255 / 0.55), transparent 65%)," +
-            "radial-gradient(160px circle at var(--gx) var(--gy), rgb(255 255 255 / 0.22), transparent 70%)",
+            `radial-gradient(60px circle at var(--gx) var(--gy), rgb(255 255 255 / ${GLOW[v].core}), transparent 65%),` +
+            `radial-gradient(160px circle at var(--gx) var(--gy), rgb(255 255 255 / ${GLOW[v].bloom}), transparent 70%)`,
         }}
       />
 

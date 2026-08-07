@@ -98,6 +98,23 @@ import { Teams } from "@/components/sections/teams";
   white run that closes the page. A tinted band already draws its own, so asking
   for a hairline under one stacks two rules into a 2px line.
 */
+/**
+ * One hour, and the enrol button is the only reason for it.
+ *
+ * The page is otherwise entirely static and should be: nothing on it is
+ * per-request. But the enrol control now prints today's date, and a fully
+ * prerendered page bakes in whatever the date was at build time, so a site
+ * deployed on Monday would still be telling Friday's reader that it starts on
+ * Monday for the one frame before hydration.
+ *
+ * `StartDate` corrects it on the client, which is where the reader's own
+ * timezone lives, so this is belt and braces rather than the mechanism: it caps
+ * how stale the prerendered string can be at an hour instead of at a deploy.
+ * That matters for a reader whose JavaScript has not arrived yet, and for
+ * anything that reads the HTML without running it.
+ */
+export const revalidate = 3600;
+
 export default function HomePage() {
   return (
     <>

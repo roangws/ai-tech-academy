@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
-  ButtonLink,
+  EnrollButton,
   PathCover,
   Section,
   SectionHeader,
@@ -180,8 +180,21 @@ function FeaturedCard({ path }: { path: Path }) {
               className="absolute left-[11px] top-3 bottom-3 w-px bg-line"
             />
 
+            {/*
+              `py-2`, up from 5px. The four cards beside this one each grew by
+              about 40px in this pass, from the module-count label and the enrol
+              control, and the row's height is set by the tallest of them, so all
+              of that arrived here as slack above the footer rule. The rail is the
+              right place to spend it: five rows at 18px apart is a readable list
+              and it is the one block in this card that was tighter than it needed
+              to be.
+
+              Not `flex-1` on the list, which is the obvious way to absorb the
+              rest of it and the way that produced the 78px inter-row gaps this
+              card shipped with two passes ago.
+            */}
             {path.curriculum.map((m) => (
-              <li key={m.n} className="relative flex items-center gap-3 py-[5px]">
+              <li key={m.n} className="relative flex items-center gap-3 py-2">
                 <span
                   aria-hidden="true"
                   className={`relative z-10 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full border text-[11px] font-semibold leading-none ${
@@ -213,10 +226,21 @@ function FeaturedCard({ path }: { path: Path }) {
           remains here, where a gap above a button row is a margin rather than a
           hole.
         */}
+        {/*
+          The one filled control in this section, and it is here rather than
+          nowhere.
+
+          All five cards close with the same pair now, and five saturated blue
+          buttons in one band would break the accent lock in globals.css: one
+          filled primary per section, or the colour stops meaning "this is the
+          thing to press". Five glass ones keep the lock and give the section no
+          entry point at all, which is the failure the lead card exists to
+          prevent. So the lead card's is filled and the four beside it are glass,
+          which is the same hierarchy the cards already have in every other
+          respect.
+        */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
-          <ButtonLink href="#paths" tone="secondary" size="md">
-            {cta.primary}
-          </ButtonLink>
+          <EnrollButton withDate size="md" />
           <TextAction href={`/paths/${path.id}`}>
             {cta.path}
             <ArrowRightIcon size={14} weight="bold" />
@@ -241,6 +265,29 @@ function FeaturedCard({ path }: { path: Path }) {
  *
  * Module 01 stays, on its own, because it is the free one and that "Open" chip
  * is the offer.
+ *
+ * ---------------------------------- TWO REAL CONTROLS, at Roan's instruction
+ *
+ * All five paths are available, so all five cards now close with the same pair
+ * the lead card closes with: enrol, and view the path. These four used to close
+ * with one word of blue text reading "View path" that was `aria-hidden` and did
+ * nothing, because the whole card was a link: the title carried
+ * `before:absolute before:inset-0` and the arrow was a picture of an affordance
+ * rather than one.
+ *
+ * That pattern and two real buttons cannot coexist. A stretched pseudo-element
+ * covers its own card, so any control placed under it is unreachable, and
+ * raising the controls back out with `relative z-10` leaves a card where two
+ * thirds of the surface goes one place and two islands go two others. So the
+ * stretched link is gone and the title is an ordinary link. The card loses its
+ * click-anywhere, and gains the enrol control the section is for.
+ *
+ * `path.modules` moved with it. It was the left half of the old footer row, and
+ * with the footer now holding a button and a link there is nowhere in it for a
+ * bare "5 modules" to sit that does not read as a third action. It labels the
+ * module preview instead, which is what the lead card does with the same fact
+ * and reads better than it did: "5 modules", then the first one, then its Open
+ * chip.
  */
 function PathCard({ path }: { path: Path }) {
   const first = path.curriculum[0];
@@ -268,7 +315,7 @@ function PathCard({ path }: { path: Path }) {
         <h3 className="t-card-title clamp-2 min-h-[44px] text-ink md:min-h-[50px]">
           <Link
             href={`/paths/${path.id}`}
-            className="text-ink no-underline before:absolute before:inset-0"
+            className="text-ink no-underline hover:underline"
           >
             {path.title}
           </Link>
@@ -288,22 +335,33 @@ function PathCard({ path }: { path: Path }) {
         {/* Module 01, the free one, and nothing else from the curriculum.
             Two lines are allowed now that it is not sharing the block with two
             more rows, so the title states itself instead of truncating. */}
-        <div className="mt-3 flex items-start gap-2.5 border-t border-line pt-3">
-          <span className="t-meta w-5 flex-none pt-px text-ink-muted">{first.n}</span>
-          <span className="t-body-sm clamp-2 min-w-0 flex-1 text-ink-secondary">{first.name}</span>
-          {first.open ? <StatusChip open>Open</StatusChip> : null}
+        {/* The count labels the block, the way "The five modules" labels the
+            lead card's rail. See the note at the head of this component for
+            where it came from. */}
+        <div className="mt-3 border-t border-line pt-3">
+          <p className="t-field text-ink-muted">{path.modules}</p>
+          <div className="mt-1.5 flex items-start gap-2.5">
+            <span className="t-meta w-5 flex-none pt-px text-ink-muted">{first.n}</span>
+            <span className="t-body-sm clamp-2 min-w-0 flex-1 text-ink-secondary">
+              {first.name}
+            </span>
+            {first.open ? <StatusChip open>Open</StatusChip> : null}
+          </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3">
-          <span className="t-meta text-ink-muted">{path.modules}</span>
-          <span aria-hidden="true" className="t-button inline-flex items-center gap-1 text-accent">
+        {/* The same two controls the lead card closes with, in the same order.
+            `gap-y-2.5` rather than the lead's `gap-y-3`, because at 292px these
+            two can wrap onto separate lines and the lead's never do. */}
+        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2.5 border-t border-line pt-3.5">
+          <EnrollButton withDate tone="secondary" size="md" />
+          <TextAction href={`/paths/${path.id}`}>
             {cta.path}
             <ArrowRightIcon
               size={13}
               weight="bold"
               className="transition-transform duration-150 group-hover:translate-x-0.5"
             />
-          </span>
+          </TextAction>
         </div>
       </div>
     </article>

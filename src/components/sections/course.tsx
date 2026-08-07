@@ -1,7 +1,7 @@
 import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
 import { VideoPlayer } from "@/components/video-player";
-import { ButtonLink, Section, SectionHeader, StatusChip } from "@/components/ui";
-import { course, cta } from "@/lib/content";
+import { EnrollButton, Section, SectionHeader, StatusChip } from "@/components/ui";
+import { course } from "@/lib/content";
 
 /**
  * The course preview plays here.
@@ -15,17 +15,49 @@ import { course, cta } from "@/lib/content";
  * on. The includes strip dropped from five columns to three, since at 1216px
  * five columns broke every item onto two ragged lines. And the button reads
  * "Watch module 1" rather than repeating the header's label a third time.
+ *
+ * ---------------------------------------- ONE SCREEN ON DESKTOP, as of 7 Aug
+ *
+ * Roan's requirement: the whole section, heading to the last item of the
+ * includes strip, has to be readable without scrolling on a desktop. It ran
+ * 855px, against roughly 780px of viewport on a 1440 x 900 laptop once the
+ * browser has taken its chrome and the sticky header its 72, so a reader always
+ * met it in two pieces.
+ *
+ * 116px came off, and none of it from content. Nothing here says less than it
+ * did; five things that were each slightly larger than they needed to be are now
+ * the size they need to be:
+ *
+ *   - `compressed` on the band, 64/64 down to 40/40. This section's own content
+ *     is two large rectangles, which do their own separating; the padding was
+ *     buying air next to air.
+ *   - The columns are even, 1fr and 1fr, rather than 1.15 and 1. The video was
+ *     the taller of the two halves at 1.15 and it was setting the row height
+ *     while the outline beside it had room to spare, so the wider video was
+ *     costing height on both sides of the grid.
+ *   - Outline rows 64px to 56px. The tallest row's content is 43px, so 64 was
+ *     21px of padding per row, five times over.
+ *   - The includes strip comes up 16px closer, and its rows 2px.
+ *
+ * What was explicitly not done is dropping the includes strip, tightening the
+ * type scale, or clipping the outline to four rows. A section that fits on one
+ * screen by saying less has not been fixed.
+ *
+ * Which is why the 7 Aug copy rewrite, whose intro is twice the length of the one
+ * it replaced, is paid for with the header's measure rather than with any of the
+ * above: `wide` on the SectionHeader below, and the note there on the trade.
  */
 export function Course() {
   return (
-    <Section id="course">
-      <SectionHeader
-        label={course.label}
-        heading={course.headline}
-        intro={course.intro}
-      />
+    <Section id="course" compressed>
+      {/* `wide`, and this is the only section that asks for it. The rewritten
+          intro is three lines at the default 640px cap and two at 760, and those
+          24px are the whole margin this band has left; `SectionHeader` carries the
+          note on why the height came from the measure rather than from the padding
+          or the outline rows. */}
+      <SectionHeader wide label={course.label} heading={course.headline} intro={course.intro} />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-8">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-8">
         <figure className="m-0 min-w-0">
           <VideoPlayer
             src={course.video.src}
@@ -69,7 +101,7 @@ export function Course() {
             {course.outline.map((m) => (
               <li
                 key={m.n}
-                className="flex min-h-[56px] items-center gap-3 border-b border-line px-4 py-3 last:min-h-[55px] last:border-b-0 sm:h-[64px] sm:py-0 sm:last:h-[63px]"
+                className="flex min-h-[56px] items-center gap-3 border-b border-line px-4 py-3 last:min-h-[55px] last:border-b-0 sm:h-[56px] sm:py-0 sm:last:h-[55px]"
               >
                 {/*
                   Numeral and title share a line, and that is the whole reason
@@ -130,9 +162,7 @@ export function Course() {
           </ol>
           <p className="t-body-sm mt-3 text-ink-secondary">{course.outlineNote}</p>
 
-          <ButtonLink href="#paths" className="mt-4">
-            {cta.primary}
-          </ButtonLink>
+          <EnrollButton withDate className="mt-4" />
         </div>
       </div>
 
@@ -153,12 +183,14 @@ export function Course() {
         rather than a fresh pair capped at some width. Capping it at 880px was
         the first attempt and it put this list's second column at x=568 against
         the grid's 777, a 209px miss directly under a block whose own columns
-        the reader has just finished scanning. Borrowing the grid's track sizes
-        is the only version where the strip belongs to the section above it.
+        the reader has just finished scanning. Matching the grid's track sizes
+        is the only version where the strip belongs to the section above it, and
+        since that grid went to even columns in the one-screen pass, this is a
+        plain `sm:grid-cols-2` with nothing to restate at lg.
       */}
-      <div className="mt-8 md:mt-12">
+      <div className="mt-6 md:mt-8">
         <p className="t-meta font-semibold text-ink-secondary">{course.includesLabel}</p>
-        <ul className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2 md:gap-y-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-x-8">
+        <ul className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2">
           {course.includes.map((item) => (
             <li key={item} className="flex items-start gap-2.5">
               <CheckIcon size={16} weight="bold" className="mt-0.5 flex-none text-ink" />

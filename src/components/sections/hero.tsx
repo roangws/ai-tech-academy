@@ -1,7 +1,7 @@
 import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
-import { ButtonLink, Container, Photo, StatusChip, TextAction } from "@/components/ui";
+import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
 import { cta, hero, instructors } from "@/lib/content";
 
 /**
@@ -45,23 +45,30 @@ export function Hero() {
         <div className="max-w-[600px]">
           <StatusChip open>{hero.eyebrow}</StatusChip>
 
-          <h1 className="t-display mt-4 text-ink">{hero.headline}</h1>
+          {/*
+            `balance`, not the base rule's `pretty`.
+
+            The new headline is 55 characters, which at 44px in a 600px column is
+            three lines however it breaks, and `pretty` only guarantees that the
+            last line is not a single short word — it took "Practical AI training
+            that / ends with a deployed / workflow", a 25/22/8 split with one word
+            alone on the third line. `balance` evens all three instead, which is
+            what it is for and what a three-line display heading needs. It is
+            scoped here rather than added to the base rule because `balance` is
+            capped at a few lines by every engine that implements it, and the base
+            rule covers every h2 and h3 on the page.
+          */}
+          <h1 className="t-display mt-4 text-ink [text-wrap:balance]">{hero.headline}</h1>
 
           <p className="t-body mt-4 max-w-[520px] text-ink-secondary">{hero.subtext}</p>
 
           {/*
-            The shape of the program, before the offer.
-
-            It is set on a rule rather than as a third paragraph, because it is
-            a different kind of sentence from the two above it: those sell, this
-            one describes. Left rule and one step down in size is the quietest
-            way to mark that without adding a card, a box or an icon to a fold
-            that already carries a chip, a heading, a paragraph, three stats, a
-            control, a link and a facepile.
+            Two paragraphs used to sit here, one on a left rule stating the shape
+            of the program and one under the control stating the access model.
+            Both are gone at Roan's request; content.ts has the note on where
+            each of their facts is carried now, and why nothing in this sequence
+            has room for a paragraph that explains the sequence.
           */}
-          <p className="t-body-sm mt-4 max-w-[520px] border-l-2 border-line pl-3.5 text-ink-secondary">
-            {hero.structure}
-          </p>
 
           {/*
             A three-column grid rather than a wrapping flex row. Flex put the
@@ -91,54 +98,89 @@ export function Hero() {
           </ul>
 
           <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-1 md:mt-8">
-            <ButtonLink href="#paths">{cta.primary}</ButtonLink>
+            <EnrollButton withDate />
             <TextAction href="#course">
               {cta.course}
               <ArrowRightIcon size={14} weight="bold" />
             </TextAction>
           </div>
 
-          {/* The access model, directly under the control it qualifies. It was
-              stated four times on this page and never once beside the button.
-              content.ts has the note. */}
-          <p className="t-meta mt-3 max-w-[46ch] text-ink-muted">{hero.access}</p>
-
           {/*
-            The byline, as a facepile.
+            The byline, as a facepile, with the faces after the words.
 
-            The rule above it is gone. It drew a boundary between the offer and
-            the person making it, and it was the only hairline in the fold, so
-            it also left the avatar hanging 16px below a line that ran the full
-            column width while the text beside it started at the avatar. Without
-            it the block sits directly under the controls on the same left edge
-            as everything else in the column.
+            Three changes on 7 Aug, all Roan's, and the first two are one
+            decision. The pile moved to the right of the text and grew 30%, from
+            36px circles to 47px.
 
-            Five circles rather than one, because the roster is five people and
-            the fold was crediting one of them. They overlap by a third, which
-            is what makes a row of portraits read as a group rather than as a
-            list, and the ring is the page ground so the overlap stays legible
-            on white.
+            Those had to happen together. At 36px on the left the pile was a
+            36px-tall object leading a 36px-tall two-line paragraph, so the two
+            read as one row of the same weight and the faces were decoration in
+            front of a sentence. Moved after the text and set larger than the
+            block they sit beside, they become the thing the sentence points at,
+            which is the only reason a fold shows five faces at all. `ml-auto`
+            puts them at the right edge of the 600px column rather than 12px
+            after whatever length the sentence happens to be, so the pile lines
+            up with the collage in the column beside it instead of floating.
+
+            The overlap is a third of a circle, unchanged, because that is what
+            makes a row of portraits read as a group rather than as a list, and
+            the ring is the page ground so the overlap stays legible on white.
+
+            And the block is a link now: five faces and a sentence naming a room
+            of practitioners is the strongest invitation in the fold and it was
+            the only element down here that went nowhere.
           */}
-          <div className="mt-6 flex items-center gap-3 md:mt-8">
-            <ul className="flex flex-none items-center">
+          {/*
+            Stacked below sm, side by side above it.
+
+            Five 47px circles overlapping by a third measure 187px, and at 390px
+            that leaves the sentence 155px of a 358px row: "Taught by Roan Weigert
+            and 4 guest instructors" broke over two lines, the roster note over
+            three, and "Meet the instructors" put its arrow on a line of its own.
+            At sm the same row has 397px for the text, which is 100px more than the
+            longest of the three lines needs, so the split is exactly where it stops
+            working rather than at a breakpoint chosen for tidiness.
+
+            The pile stays after the text in both, so the reading order is the same
+            on a phone as on a desktop: who teaches it, then their faces.
+          */}
+          <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 md:mt-8">
+            <div className="min-w-0">
+              <p className="t-meta text-ink-muted">
+                <span className="block font-semibold text-ink-secondary">
+                  Taught by {hero.instructor.name} and {instructors.people.length - 1} guest
+                  instructors
+                </span>
+                {hero.instructor.rosterNote}
+              </p>
+
+              {/* A sibling of the paragraph rather than a child of it. `TextAction`
+                  carries `t-button` and a 44px tap target, and nesting it in the
+                  `<p>` put both inside a 13px line box for no gain. */}
+              <TextAction href="#instructors" className="whitespace-nowrap">
+                Meet the instructors
+                <ArrowRightIcon size={13} weight="bold" />
+              </TextAction>
+            </div>
+
+            {/* `aria-hidden`, because every one of these five portraits carries a
+                real alt text and the sentence beside them already names the room.
+                Announcing "Portrait of ..." five times after it is the same fact
+                read twice, once usefully. */}
+            {/* `sm:ml-auto`, not `ml-auto`. Stacked below sm this is a block in a
+                column and `auto` on the inline-start margin would push it to the
+                right edge on its own line, away from the text it belongs to. */}
+            <ul aria-hidden="true" className="flex flex-none items-center sm:ml-auto">
               {instructors.people.map((person) => (
-                <li key={person.id} className="-ml-2.5 first:ml-0">
-                  <span className="block h-9 w-9 overflow-hidden rounded-full bg-surface-sunken ring-2 ring-surface">
+                <li key={person.id} className="-ml-3 first:ml-0">
+                  <span className="block h-[47px] w-[47px] overflow-hidden rounded-full bg-surface-sunken ring-2 ring-surface">
                     {person.photo ? (
-                      <Photo image={person.photo} width={96} height={96} sizes="36px" />
+                      <Photo image={person.photo} width={128} height={128} sizes="47px" />
                     ) : null}
                   </span>
                 </li>
               ))}
             </ul>
-
-            <p className="t-meta text-ink-muted">
-              <span className="block font-semibold text-ink-secondary">
-                Taught by {hero.instructor.name} and {instructors.people.length - 1} guest
-                instructors
-              </span>
-              {hero.instructor.rosterNote}
-            </p>
           </div>
         </div>
 

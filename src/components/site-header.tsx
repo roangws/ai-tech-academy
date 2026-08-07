@@ -12,8 +12,8 @@ import {
 } from "motion/react";
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
-import { ButtonLink, Container } from "@/components/ui";
-import { cta, nav } from "@/lib/content";
+import { ButtonLink, Container, EnrollButton } from "@/components/ui";
+import { nav } from "@/lib/content";
 
 /**
  * Single-tier product header, 72px.
@@ -74,6 +74,22 @@ export function SiteHeader() {
   const [active, setActive] = useState<string>("");
   const [hovered, setHovered] = useState<string | null>(null);
 
+  /**
+   * Bumped on resize, purely to re-run the pill's placement effect.
+   *
+   * The effect keyed only on which item was lit, so the pill measured once and
+   * never again. Two ways that showed: at 1440 with Methodology lit, narrowing to
+   * 1100 left a 116px lozenge hanging 100px past the end of the nav, under
+   * nothing; and any resize across xl moved every item's `offsetLeft`, because the
+   * link padding steps there, so the pill sat 16px left of and 8px narrower than
+   * the item it was marking.
+   *
+   * The section tracker below has its own resize listener and it cannot do this
+   * job: it only calls `setActive`, which is a no-op when the section on screen has
+   * not changed, so `lit` never changes and the effect never re-runs.
+   */
+  const [remeasure, setRemeasure] = useState(0);
+
   const navRef = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
@@ -116,8 +132,18 @@ export function SiteHeader() {
     }
 
     const el = host.querySelector<HTMLElement>(`[data-nav="${CSS.escape(lit)}"]`);
-    if (!el) {
+    /*
+      `offsetParent` as well as existence, because one item is `hidden` below xl
+      now. A `display: none` element is still in the DOM and still matches, and it
+      reports offsetLeft 0 and offsetWidth 0, so reading Methodology's geometry at
+      1024 would put a zero-width pill at the left edge of the nav and leave it
+      there, visible, for as long as that section was on screen.
+    */
+    if (!el || el.offsetParent === null) {
       opacity.set(0);
+      // `placed` has to reset with it. Left true, the next item that does resolve
+      // springs in from wherever the pill was parked instead of jumping to itself.
+      placed.current = false;
       return;
     }
 
@@ -132,7 +158,31 @@ export function SiteHeader() {
       width.set(el.offsetWidth);
     }
     opacity.set(1);
-  }, [lit, reduced, x, width, opacity]);
+  }, [lit, reduced, remeasure, x, width, opacity]);
+
+  /*
+    A resize re-measures the pill. `remeasure` rather than reading geometry here,
+    so there is one place that decides where the pill goes; see the note on that
+    state above for the two artefacts this fixes. The placement is a jump on
+    resize, not a spring, because `placed` is irrelevant to a layout change and a
+    pill springing across a nav while somebody drags a window edge is noise.
+  */
+  useEffect(() => {
+    let frame = 0;
+    function onResize() {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        placed.current = false;
+        setRemeasure((n) => n + 1);
+      });
+    }
+    window.addEventListener("resize", onResize);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   /* --------------------------------------------------------- mobile menu a11y */
 
@@ -275,7 +325,11 @@ export function SiteHeader() {
         }`}
       />
 
-      <Container className="flex h-[72px] items-center gap-3 sm:gap-4 lg:gap-6">
+      {/* `lg:gap-3` rather than `lg:gap-6`. Twelve of the ninety-five pixels the
+          sixth nav item needs at 1024; content.ts has the rest of the accounting.
+          `ml-auto` on the controls means only the first of these gaps is ever
+          spent, so this is a straight 12px. */}
+      <Container className="flex h-[72px] items-center gap-3 sm:gap-4 lg:gap-3 xl:gap-6">
         {/*
           The lockup carries its descriptor line here. It fits because the
           search field released roughly 300px of the row, and the two stacked
@@ -298,7 +352,7 @@ export function SiteHeader() {
         <nav
           ref={navRef}
           aria-label="Primary"
-          className="relative hidden items-center gap-0.5 lg:flex"
+          className="relative hidden items-center gap-0 lg:flex xl:gap-0.5"
           onMouseLeave={() => setHovered(null)}
         >
           {/* The travelling pill. `aria-hidden` because the item it is under
@@ -322,7 +376,12 @@ export function SiteHeader() {
                 onMouseEnter={() => setHovered(item.href)}
                 onFocus={() => setHovered(item.href)}
                 onBlur={() => setHovered(null)}
-                className={`t-nav relative rounded-full px-3 py-2 no-underline transition-colors duration-200 xl:px-3.5 ${
+                /* `px-2` below xl, down from `px-3`. Six labels at lg need 24px
+                   back from somewhere and this is the cheapest of the four places
+                   it came from; content.ts has the whole measurement. The pill
+                   still clears the type, because it takes its width from the item
+                   rather than from a number. */
+                className={`t-nav relative rounded-full px-2 py-2 no-underline transition-colors duration-200 xl:px-3.5 ${
                   isLit ? "text-accent" : "text-ink-secondary"
                 }`}
               >
@@ -349,19 +408,30 @@ export function SiteHeader() {
               display utilities wins is decided by the order Tailwind emits
               them, not by the attribute. `inline-flex` won once and this
               control rendered at 390px next to the hamburger. */}
+          {/* `max-xl:px-4`, 8px a side, on both controls. Sixteen of the
+              ninety-five the sixth nav item needs at 1024, and the last place they
+              could come from that is not a route to something: hiding Sign in
+              between lg and xl would leave it unreachable, because the mobile panel
+              that also carries it stops at lg. content.ts has the accounting. */}
           <div className="hidden lg:block">
-            <ButtonLink href="/sign-in" tone="secondary" size="md">
+            <ButtonLink href="/sign-in" tone="secondary" size="md" className="max-xl:px-4">
               Sign in
             </ButtonLink>
           </div>
 
-          {/* The primary CTA stays visible at every width. It runs a size down
-              below sm: at 320px the lockup, this control and the menu button
-              measured 320 inside a 288px content box, and the document grew a
-              horizontal scrollbar. */}
-          <ButtonLink href="#paths" size="md" className="max-sm:h-10 max-sm:px-3.5 max-sm:text-[13px]">
-            {cta.primary}
-          </ButtonLink>
+          {/* The primary CTA stays visible at every width, and carries the label
+              alone: the dated second line is for the body of the page, where a
+              reader is deciding. `EnrollButton` owns that split.
+
+              It runs a size down below sm: at 320px the lockup, this control and
+              the menu button measured 320 inside a 288px content box, and the
+              document grew a horizontal scrollbar. `h-11` rather than `h-10`,
+              because 40px is under the 44px target the rest of the page holds and
+              height was never what overflowed at 320 — the padding was. */}
+          <EnrollButton
+            size="md"
+            className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
+          />
 
           <button
             ref={toggleRef}
@@ -396,10 +466,16 @@ export function SiteHeader() {
                 </Link>
               ))}
             </nav>
+            {/* The label alone, like the bar it belongs to. This panel is the main
+                menu at the widths that have one, and Roan's split puts the date on
+                the controls in the body of the page rather than on the chrome.
+
+                It is also the reason `EnrollButton` has a branch that never touches
+                the clock. This is the one call site inside a client component, and
+                a `new Date()` rendered here would be evaluated once on the server
+                and again during hydration. */}
             <div className="mt-4 flex flex-col gap-2.5 pb-1">
-              <ButtonLink href="#paths" onClick={closeMenu}>
-                {cta.primary}
-              </ButtonLink>
+              <EnrollButton onClick={closeMenu} />
               <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
                 Sign in
               </ButtonLink>
