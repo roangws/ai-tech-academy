@@ -694,6 +694,14 @@ export type Person = {
    * pasted in. Nothing else goes here.
    */
   role?: string;
+  /**
+   * A second affiliation, under the headline. The company a person co-founded
+   * rather than the one that employs them, in every case here.
+   *
+   * `url` is only set where a URL was actually supplied. An org with no link
+   * renders as plain text rather than as a guess at its domain.
+   */
+  org?: { name: string; url?: string };
   /** A sentence about what this person does. Same rule as `role`. */
   detail?: string;
   /** What this person records or reviews, printed as the card's head. Same rule. */
@@ -702,11 +710,23 @@ export type Person = {
   ground: string;
   /** Portrait. Absent means the slot renders marked-empty rather than faked. */
   photo?: Img;
-  /** Employer mark, once that employer has cleared the use of it. */
+  /**
+   * Employer mark, drawn on a light chip in the card's top corner.
+   *
+   * All four are normalised to a common height by scripts/prepare-logos.mjs,
+   * which trims each file to the box its own ink occupies first. Without that
+   * step the Berkeley wordmark rendered about six pixels tall next to an
+   * eighteen-pixel CodeRabbit typemark, because its source canvas is square and
+   * the mark floats in the middle of it.
+   */
   logo?: Img;
   lead?: boolean;
   /** Full LinkedIn profile URL. Renders the profile link when present. */
   linkedin?: string;
+  /** One more link chip beside LinkedIn: a personal site or a company. */
+  site?: { label: string; href: string };
+  /** Companies this person has invested in. Named and linked, never counted. */
+  investments?: readonly { label: string; href: string }[];
 };
 
 /*
@@ -755,9 +775,18 @@ export const instructors = {
     that is what this one gives: four disciplines, named. Nothing is lost,
     because the arrangement is visible in the layout and the detail is on the
     cards.
+
+    Corrected 7 Aug, when the roster stopped being placeholders. The line read
+    "revenue operations, media production, data governance, and AI
+    infrastructure", which described the four invented seats it was written
+    against. The real four are a developer experience engineer, a developer
+    advocate, an academic dean and an AI strategy lead in higher education, and
+    none of them is any of those. An intro that summarises a roster has to be
+    re-derived every time the roster changes, or it quietly becomes a claim
+    about specific people that none of them would recognise.
   */
   intro:
-    "Working practitioners across revenue operations, media production, data governance, and AI infrastructure.",
+    "Working practitioners across developer experience, AI tooling, higher education, and film.",
   /*
     The footnote is gone. It ran three lines explaining that the portraits are
     illustrations and that names arrive when employers clear them, under a grid
@@ -773,49 +802,98 @@ export const instructors = {
     {
       id: "roan",
       name: "Roan Weigert",
-      role: "Lead instructor, San Francisco",
+      /*
+        Taken from roanweigert.com's own llms.txt, which is as close to a
+        self-description as this gets. The site's summary is "Developer
+        Relations AI Engineer, hackathon judge, and AI content creator in San
+        Francisco"; the headline keeps the title and the city, and the two
+        supporting facts move into the detail so the role line stays a role.
+      */
+      role: "Developer Relations AI Engineer, San Francisco",
       detail:
-        "Builds multimodal agent workflows for go-to-market and production teams. Writes the curriculum and records every core lesson.",
+        "Hackathon judge and AI content creator, and host of the AI Insights San Francisco podcast. Writes this curriculum and records every core lesson.",
       scope: "All five paths",
       ground: "var(--accent)",
       photo: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
       linkedin: "https://www.linkedin.com/in/-roan/",
+      site: { label: "roanweigert.com", href: "https://roanweigert.com/" },
+      /*
+        Named and linked rather than counted. "Investor in three companies" is
+        the kind of line that asks to be believed; three names a reader can open
+        is the kind that can be checked, which is the standard the rest of this
+        page holds itself to.
+      */
+      investments: [
+        { label: "Destaquei", href: "https://destaquei.com.br/" },
+        { label: "Produtoras de Video", href: "https://www.produtorasdevideo.com.br/" },
+        { label: "Bayhaus Creative", href: "https://bayhauscreative.com/" },
+      ],
       lead: true,
     },
     /*
-      The four specialists, in alphabetical order by the name each was given in.
+      The four specialists, in alphabetical order by first name.
 
-      No ranking is implied by the order and none should be: whatever ordering
-      looked meaningful here would be a claim too, and until the headlines land
-      there is nothing to rank on. Alphabetical is the one order that says
-      nothing.
+      No ranking is implied and none should be. Whatever ordering looked
+      meaningful here would be a claim of its own, and these four do four
+      unrelated jobs; alphabetical is the one order that says nothing.
+
+      Headlines are each person's own, as they write them on LinkedIn. That was
+      Roan's instruction and it is also the safest rule available: a headline is
+      the one description of somebody that they authored themselves, so nothing
+      on these cards is this site's characterisation of a real person.
+
+      Still missing, and still deliberately absent rather than guessed: which
+      path each one records. `scope` stays off until somebody says.
     */
     {
       id: "aaron",
       name: "Aaron Jimenez",
+      role: "Developer Experience Engineer",
+      org: { name: "Co-founder, n-aible" },
       ground: "var(--path-a)",
       photo: { src: "/images/people/aaron-jimenez.jpg", alt: "Portrait of Aaron Jimenez" },
+      logo: { src: "/images/logos/n-aible.png", alt: "n-aible" },
       linkedin: "https://www.linkedin.com/in/aaron-jimenez-086ba4181/",
     },
     {
       id: "hendrik",
-      name: "Hendrik",
+      name: "Hendrik Krack",
+      role: "Developer Advocate at CodeRabbit",
+      org: { name: "Co-founder, n-aible" },
       ground: "var(--path-b)",
-      photo: { src: "/images/people/hendrik.jpg", alt: "Portrait of Hendrik" },
+      photo: { src: "/images/people/hendrik.jpg", alt: "Portrait of Hendrik Krack" },
+      /* The employer mark, not the company he co-founded: Aaron's card carries
+         n-aible and two identical marks side by side would read as one
+         organisation with two seats rather than as two people. */
+      logo: { src: "/images/logos/coderabbit.png", alt: "CodeRabbit" },
       linkedin: "https://www.linkedin.com/in/climateadvocateaienthusiast/",
     },
     {
       id: "loc",
-      name: "Loc",
+      name: "Loc H. Nguyen, Ed.D.",
+      role: "AI Strategy and Transformation for Higher Education",
+      org: { name: "Co-founder, Bayhaus Creative", url: "https://bayhauscreative.com/" },
       ground: "var(--path-c)",
-      photo: { src: "/images/people/loc-nguyen.jpg", alt: "Portrait of Loc" },
+      photo: { src: "/images/people/loc-nguyen.jpg", alt: "Portrait of Loc H. Nguyen" },
+      logo: { src: "/images/logos/bayhaus.png", alt: "Bayhaus Creative" },
       linkedin: "https://www.linkedin.com/in/lhnguyen2/",
     },
     {
       id: "patrick",
       name: "Patrick Kriwanek",
+      role: "Academic Dean, The Berkeley Film School",
       ground: "var(--path-d)",
       photo: { src: "/images/people/patrick-kriwanek.jpg", alt: "Portrait of Patrick Kriwanek" },
+      /*
+        FLAG, because it is the one asset here that asserts something nobody has
+        confirmed. The mark supplied for this seat is the University of
+        California, Berkeley wordmark, and the title names The Berkeley Film
+        School. If those are the same institution this is correct; if they are
+        not, the card is putting a university's registered mark against a
+        school that does not hold it. Worth a check before this goes near a
+        press page.
+      */
+      logo: { src: "/images/logos/berkeley.png", alt: "Berkeley" },
       linkedin: "https://www.linkedin.com/in/patrick-kriwanek-92a3203/",
     },
   ] as readonly Person[],

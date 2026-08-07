@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LinkedinLogoIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRightIcon, LinkedinLogoIcon } from "@phosphor-icons/react/dist/ssr";
 import { Photo, Section, SectionHeader } from "@/components/ui";
 import { instructors, type Person } from "@/lib/content";
 
@@ -130,7 +130,11 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
       className={`group/tile relative w-full overflow-hidden rounded-[var(--radius-feature)] bg-ink-band ${
         /* No `min-h` on the lead any more. It takes the row the four specialists
            set; see the note at the rail. */
-        lead ? "h-[380px] sm:h-[430px] lg:h-full" : "h-[250px] lg:h-full"
+        /* The lead runs taller on a phone than it used to. Its text block now
+           carries a headline, a three-line blurb, an investor line and two link
+           chips, which is about 270px; at the old 380 that left roughly a
+           hundred pixels of face above it. */
+        lead ? "h-[470px] sm:h-[500px] lg:h-full" : "h-[250px] lg:h-full"
       }`}
     >
       {/*
@@ -198,15 +202,30 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
         was a fifth stripe of colour doing a job three other elements had
         already done. It also cut a hard line across the top of a photograph.
       */}
+      {/*
+        The employer mark, on a light chip.
+
+        Two of these four marks are dark by design (a navy university wordmark
+        and a black app icon), so laying them straight onto a dark photograph
+        would show two of the four and lose two. A chip makes the card's
+        treatment independent of what colour anyone's brand happens to be, which
+        is the only version of this that keeps working as marks are added.
+
+        `alt=""` on purpose. The organisation is named in text directly below,
+        so a screen reader announcing the mark would read the same employer
+        twice per card.
+      */}
       {person.logo ? (
-        <Image
-          src={person.logo.src}
-          alt=""
-          width={260}
-          height={84}
-          sizes="88px"
-          className="absolute right-4 top-5 h-[15px] w-auto opacity-80"
-        />
+        <span className="absolute right-3 top-4 inline-flex h-8 items-center rounded-[7px] bg-white/92 px-2 shadow-[0_1px_3px_rgb(0_0_0/0.25)]">
+          <Image
+            src={person.logo.src}
+            alt=""
+            width={260}
+            height={36}
+            sizes="130px"
+            className="h-[18px] w-auto"
+          />
+        </span>
       ) : null}
 
       {person.lead ? (
@@ -236,7 +255,26 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
         </h3>
 
         {person.role ? (
-          <p className={`mt-0.5 text-white/70 ${lead ? "t-body-sm" : "t-meta"}`}>{person.role}</p>
+          <p className={`mt-0.5 text-white/75 ${lead ? "t-body-sm" : "t-meta"}`}>{person.role}</p>
+        ) : null}
+
+        {/* The second affiliation. Linked where a URL was supplied and plain
+            text where one was not, rather than guessing at a domain. */}
+        {person.org ? (
+          <p className="t-meta mt-0.5 text-white/55">
+            {person.org.url ? (
+              <a
+                href={person.org.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white hover:decoration-white/70"
+              >
+                {person.org.name}
+              </a>
+            ) : (
+              person.org.name
+            )}
+          </p>
         ) : null}
 
         {/*
@@ -267,18 +305,71 @@ function PersonTile({ person, lead = false }: { person: Person; lead?: boolean }
           reading "View profile" in a row is five identical destinations to
           anyone reading the page through the link list.
         */}
-        {person.linkedin ? (
-          <a
-            href={person.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${person.name} on LinkedIn`}
-            className="t-meta mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 font-medium text-white no-underline ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/25"
-          >
-            <LinkedinLogoIcon size={14} weight="fill" aria-hidden="true" className="flex-none" />
-            View profile
-          </a>
+        {/*
+          The investor line, for the one person who has one.
+
+          Named and linked rather than counted: "investor in three companies"
+          asks to be believed, three names a reader can open can be checked, and
+          that is the standard the rest of this page holds itself to.
+        */}
+        {person.investments?.length ? (
+          <p className="t-micro mt-2 text-white/55">
+            Investor in{" "}
+            {person.investments.map((inv, i) => (
+              <span key={inv.href}>
+                {i > 0 ? (i === person.investments!.length - 1 ? " and " : ", ") : null}
+                <a
+                  href={inv.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/75 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white hover:decoration-white/70"
+                >
+                  {inv.label}
+                </a>
+              </span>
+            ))}
+          </p>
         ) : null}
+
+        {(person.linkedin || person.site) && (
+          <span className="mt-2.5 flex flex-wrap items-center gap-2">
+            {person.linkedin ? (
+              <a
+                href={person.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${person.name} on LinkedIn`}
+                className="t-meta inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 font-medium text-white no-underline ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/25"
+              >
+                <LinkedinLogoIcon
+                  size={14}
+                  weight="fill"
+                  aria-hidden="true"
+                  className="flex-none"
+                />
+                View profile
+              </a>
+            ) : null}
+
+            {person.site ? (
+              <a
+                href={person.site.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${person.name} at ${person.site.label}`}
+                className="t-meta inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 font-medium text-white no-underline ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/25"
+              >
+                <ArrowUpRightIcon
+                  size={13}
+                  weight="bold"
+                  aria-hidden="true"
+                  className="flex-none"
+                />
+                {person.site.label}
+              </a>
+            ) : null}
+          </span>
+        )}
       </div>
     </article>
   );
