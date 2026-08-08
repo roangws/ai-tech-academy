@@ -10,7 +10,7 @@ import {
   StatusChip,
   TextAction,
 } from "@/components/ui";
-import { courses, cta, moduleCount, type Course } from "@/lib/content";
+import { courseHref, courses, cta, moduleCount, type Course } from "@/lib/content";
 
 /**
  * One catalog, one reading order.
@@ -114,9 +114,7 @@ function FeaturedCard({ course }: { course: Course }) {
         <span className="block md:hidden">
           <CourseCover
             ground={course.ground}
-            badge={course.badge}
             letter={coverLetter(course.badge)}
-            audience={course.coverAudience}
             build={course.coverBuild}
             image={course.cover}
           />
@@ -124,9 +122,7 @@ function FeaturedCard({ course }: { course: Course }) {
         <span className="hidden h-full md:block">
           <CourseCover
             ground={course.ground}
-            badge={course.badge}
             letter={coverLetter(course.badge)}
-            audience={course.coverAudience}
             build={course.coverBuild}
             image={course.cover}
             fill
@@ -171,7 +167,7 @@ function FeaturedCard({ course }: { course: Course }) {
             title did not reach its course. */}
         <h3 className="t-h3 text-ink">
           <Link
-            href={`/courses/${course.id}`}
+            href={courseHref(course.id)}
             className="text-ink no-underline hover:underline"
           >
             {course.title}
@@ -193,11 +189,20 @@ function FeaturedCard({ course }: { course: Course }) {
         </p>
 
         <div className="mt-4 border-t border-line pt-3.5">
-          <p className="t-field text-ink-muted">The five modules</p>
+          {/* No number in this label, and there was one. It read "The five
+              modules" over a list that renders `curriculum.length` rows, so
+              after the move from five modules to eight it sat directly above
+              01..08 and 14px below a chip already reading "8 modules" — the
+              card contradicted itself twice over in one column.
+
+              `{moduleCount(course)}` would fix the count and print the same
+              figure twice inside 14px. The list states its own length by being
+              a list, so the label just names it. */}
+          <p className="t-field text-ink-muted">The modules</p>
 
           <ol className="relative mt-2.5">
-            {/* The rail runs node centre to node centre, so it stops at module
-                05 rather than trailing into the padding below it. */}
+            {/* The rail runs node centre to node centre, so it stops at the
+                last module rather than trailing into the padding below it. */}
             <span
               aria-hidden="true"
               className="absolute left-[11px] top-3 bottom-3 w-px bg-line"
@@ -264,7 +269,7 @@ function FeaturedCard({ course }: { course: Course }) {
         */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
           <EnrollButton withDate size="md" />
-          <TextAction href={`/courses/${course.id}`}>
+          <TextAction href={courseHref(course.id)}>
             {cta.view}
             <ArrowRightIcon size={14} weight="bold" />
           </TextAction>
@@ -317,9 +322,7 @@ export function CourseCard({ course }: { course: Course }) {
     <article className="group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-e2">
       <CourseCover
         ground={course.ground}
-        badge={course.badge}
         letter={coverLetter(course.badge)}
-        audience={course.coverAudience}
         build={course.coverBuild}
         image={course.cover}
       />
@@ -335,7 +338,7 @@ export function CourseCard({ course }: { course: Course }) {
         */}
         <h3 className="t-card-title clamp-2 min-h-[44px] text-ink md:min-h-[50px]">
           <Link
-            href={`/courses/${course.id}`}
+            href={courseHref(course.id)}
             className="text-ink no-underline hover:underline"
           >
             {course.title}
@@ -392,7 +395,13 @@ export function CourseCard({ course }: { course: Course }) {
 
           `facts` and `level` stay in content.ts: the course page reads both.
         */}
-        <div className="mt-3 border-t border-line pt-3">
+        {/* `py-3`, not `pt-3`. With padding on the top only, the rule above the
+            facts sat 12px off the type and the rule below sat on it: the next
+            block's `border-t` lands on this one's bottom edge, and this one had no
+            bottom edge to speak of. Measured 13px above and 0 below, which is what
+            made the line look welded to the buttons rather than sitting in its own
+            band. Even padding gives 12 of clear space on each side of the type. */}
+        <div className="mt-3 border-t border-line py-3">
           <FactsLine items={[moduleCount(course), course.duration]} />
         </div>
 
@@ -401,7 +410,7 @@ export function CourseCard({ course }: { course: Course }) {
             two can wrap onto separate lines and the lead's never do. */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2.5 border-t border-line pt-3.5">
           <EnrollButton withDate tone="secondary" size="md" />
-          <TextAction href={`/courses/${course.id}`}>
+          <TextAction href={courseHref(course.id)}>
             {cta.view}
             <ArrowRightIcon
               size={13}

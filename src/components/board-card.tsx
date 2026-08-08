@@ -12,6 +12,7 @@ export function BoardCard({
   courseTitle,
   checksAlwaysVisible = false,
   href,
+  id,
   className = "",
 }: {
   member: Seat;
@@ -40,11 +41,27 @@ export function BoardCard({
    * than the whole card read out as one link label.
    */
   href?: string;
+  /**
+   * The anchor id, and it is passed in rather than taken from `member.id`.
+   *
+   * It used to be `id={member.id}`, unconditionally, which is correct on the
+   * roster page — the homepage teaser deep-links to `/review-judge-board#<id>`
+   * and every seat needs a landing target — and wrong on the homepage, where
+   * `CarouselRail` renders its children a second time to make the loop. Six
+   * seats rendered twice put six duplicated ids in the homepage document.
+   *
+   * Nothing on the homepage points at them: the teaser's own links are
+   * cross-page, so the duplicates broke no behaviour and only made the markup
+   * invalid. But an id that exists for a target on another page has no reason
+   * to be emitted by the page that has no target, and deriving it here meant
+   * the carousel could not opt out.
+   */
+  id?: string;
   className?: string;
 }) {
   return (
     <article
-      id={member.id}
+      id={id}
       className={`group/card relative h-[300px] w-full overflow-hidden rounded-[var(--radius-feature)] bg-ink-band scroll-mt-24 sm:h-[340px] ${className}`}
     >
       {member.photo ? (

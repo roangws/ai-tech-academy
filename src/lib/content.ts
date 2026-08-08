@@ -73,7 +73,54 @@
  * changing one line here.
  */
 
-export type Img = { src: string; alt: string };
+export type Img = {
+  src: string;
+  alt: string;
+  /**
+   * Where the subject is, as a CSS `object-position` value.
+   *
+   * Added 8 Aug because the course hero band crops these hard and was cropping
+   * past the person in them. The band is full-viewport and about 340px tall,
+   * which is roughly 4.2:1, and every one of these frames is 16:9 or taller, so
+   * `object-fit: cover` scales to the width and throws away most of the height.
+   * At the default `50% 50%` the GTM frame resolved to a strip of desk and
+   * ceiling with the woman's face a long way above it.
+   *
+   * WHAT EACH AXIS ACTUALLY DOES HERE, because they are not symmetrical and it
+   * is the first thing that will confuse the next person to tune one. `cover`
+   * only leaves overflow on the axis where the image is proportionally larger,
+   * and position only moves the image along an axis that has overflow:
+   *
+   *   - The vertical value is the one that works on the hero band at every
+   *     desktop width. That is the "move it up" control.
+   *   - The horizontal value does nothing on that band above about 700px,
+   *     because no frame here is proportionally wider than 4.2:1, so there is
+   *     no horizontal overflow to pan through. It does take effect on a phone,
+   *     where the band is nearer 1.2:1, and on the catalog covers, which are
+   *     16:9 and 16:6. Both values are written for that reason.
+   *
+   * Percentages, not keywords: `top` and `center` cannot say "a third of the
+   * way down", which is where most of these faces are.
+   */
+  focus?: string;
+  /**
+   * The file's real pixel dimensions, for `openGraph.images`.
+   *
+   * Three call sites were declaring `width: 1600, height: 900` over whatever
+   * file they happened to be pointing at, and not one of the assets is that
+   * size: the four landscape covers are 1400x781, `gtm.jpg` is 1127x1400 — a
+   * portrait — and the site-wide poster is 1600x886. A social card renderer
+   * lays out against the declared numbers before it has the bytes, so the four
+   * that were close came out slightly wrong and the GTM course, which is the
+   * image on both its own page and the /courses index, was declared landscape
+   * and is not.
+   *
+   * Carried on the image rather than at the call sites so the number lives next
+   * to the `src` it describes and cannot drift from it again.
+   */
+  width?: number;
+  height?: number;
+};
 
 /*
   One name for the thing, everywhere.
@@ -97,6 +144,26 @@ export const brand = {
   tagline: "free courses by Roan Weigert",
   domain: "AITechEducation.academy",
   program: "Applied AI Implementation",
+} as const;
+
+/**
+ * The one origin, for everything that has to print an absolute URL.
+ *
+ * It was a `const siteUrl` inside app/layout.tsx, which was the only file that
+ * needed it until three others did: the sitemap, the robots policy and the
+ * JSON-LD graph all emit absolute URLs, and structured data in particular is
+ * silently wrong rather than broken if its `@id` origin drifts from the
+ * canonical the same page declares.
+ *
+ * `brand.domain` is the human spelling, capitalised for display. This is the
+ * machine one and they are deliberately separate values rather than one derived
+ * from the other: a URL that is case-folded and protocol-prefixed at three call
+ * sites is a URL that will be assembled differently at the fourth.
+ */
+export const site = {
+  url: "https://aitecheducation.academy",
+  description:
+    "A free, project-based applied AI course. Five role-based courses. Build an AI workflow on your own data, deploy it, and measure the result. Module 1 is open.",
 } as const;
 
 /**
@@ -231,11 +298,62 @@ export function startsOn(date: Date): string {
   foot rather than the band. It is also the shorter of the two, which the row's
   6px of clear air at 1024 does not mind at all.
 */
-export const nav = [
-  { label: "Courses", href: "/#courses" },
+/**
+ * `menu` is optional and only one item sets it.
+ *
+ * The array carried `as const` and the type was inferred, which made `menu` a
+ * property of exactly one member of a six-way union — so `item.menu` was a type
+ * error on the other five and the header could not branch on it. An explicit
+ * element type says once that a nav item may have a menu, which is the fact,
+ * and costs the literal-type narrowing nothing here depends on.
+ */
+export type NavItem = { label: string; href: string; menu?: "courses" };
+
+export const nav: readonly NavItem[] = [
+  /*
+    A ROUTE AND A MENU, from 8 Aug, and it was `/#courses` until then.
+
+    Two things were wrong with the fragment and the second is the one that
+    mattered. The obvious one: the first item of the primary nav was the only
+    one that scrolled the homepage instead of going somewhere, so from any other
+    route it navigated home and then jumped two thirds of the way down. The
+    other: the five course pages had no parent, so their own breadcrumb — which
+    reads "Courses / <this course>" — pointed its first item at a scroll
+    position. `/courses` is a real page now and this is what points at it.
+
+    `menu` is the only field in this array that changes how an item renders.
+    Five courses behind one label is the difference between a nav that admits
+    the catalog exists and one that makes a reader load a page to find out what
+    is in it, and the header builds the panel from `courses` rather than from a
+    second list written here — a menu that can disagree with the catalog is a
+    menu that eventually will.
+
+    IT COSTS 14px AT 1024, which is the width this row is always decided at: the
+    label is unchanged and the caret is 12px plus a 2px gap. The note below
+    measured 54px of clear air after "Judges", so the row finishes with 40. That
+    is still the tightest item in the chrome and the next thing added to it has
+    to be measured before it is written, exactly as before.
+  */
+  { label: "Courses", href: "/courses", menu: "courses" },
   { label: "Method", href: "/#method" },
   { label: "Outcomes", href: "/#outcomes" },
-  { label: "Instructors", href: "/#instructors" },
+  /*
+    A ROUTE FROM 8 AUG, when the roster got its own page, and it moves for the
+    same reason the board item did: the homepage band is one screen of five
+    cards in a column of nine other bands, and the page is the thing a reader
+    who clicked "Instructors" wants — five full cards, each with a profile to
+    check, on a URL that can be shared, indexed and landed on.
+
+    It keeps its slot. The band it used to point at is still the fourth one
+    under the hero, so the item stays fourth in this list and the underline
+    still travels forwards as a reader scrolls down the homepage; the note under
+    "Judges" below is the long version of why that matters.
+
+    The band keeps `id="instructors"` and its own place in the page. Nothing on
+    the site points a fragment at it now, but an id costs nothing and a section
+    that has always been addressable should stay addressable.
+  */
+  { label: "Instructors", href: "/instructors" },
   /*
     A NEW ITEM, and the first one that is a route rather than a section.
 
@@ -271,7 +389,7 @@ export const nav = [
   */
   { label: "Judges", href: "/review-judge-board" },
   { label: "FAQ", href: "/#faq" },
-] as const;
+];
 
 export const hero = {
   /*
@@ -396,11 +514,30 @@ export const hero = {
     rosterNote: "Practitioners who run these systems in production",
     image: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
   },
+  /*
+    The card in the third slot of the fold, and every field on it is a claim
+    about one specific lesson: it says "Module 1, lesson 1", it says "14 min",
+    and its action links to `courseHref("gtm", "curriculum")`.
+
+    So it has to name that lesson. It said "Profile the workflow you want to
+    improve", which is the method's first step rather than a lesson title, and
+    no course on this site has a lesson called that — a reader who pressed Watch
+    now landed on an outline whose first row said something else. The body had
+    drifted a row further: "record how long it takes today, and write the brief"
+    describes lesson 3, the lab "Record your baseline on time, cost or quality".
+
+    Both now come from `courses[0].curriculum[0]`, where `lessons[0]` carries
+    `minutes: 14` — which is where the duration on this card comes from too.
+    Typed rather than derived because `hero` is declared above `courses` in this
+    file and reading it here would hit the temporal dead zone; if the GTM
+    course's first lesson is ever renamed, this card is the other half of that
+    edit.
+  */
   lesson: {
     label: "Module 1, lesson 1",
     status: "Open",
-    title: "Profile the workflow you want to improve",
-    body: "A working session. Pick one process you own, record how long it takes today, and write the brief you will build against.",
+    title: "Map your customer journey end to end",
+    body: "A working session. Map the revenue process you own from first touch to renewal, mark every handoff, and pick the one part of it you will rebuild.",
     duration: "14 min",
     access: "Open to everyone",
     action: "Watch now",
@@ -493,9 +630,17 @@ export const hero = {
   method is the same in every course, and what a module is made of. Those are
   also the two sentences that used to open `moduleFormat`.
 
-  It is 66px of the band's height, which matters here more than anywhere else on
-  the page: the merged section has to fit a 14in MacBook without scrolling, and
-  modules.tsx has the full accounting.
+  It buys no height, and this note said it bought 66px until the claim was
+  measured. In the band's final layout the intro sits beside the heading rather
+  than under it, in a 646px column, where the old three-sentence version sets to
+  four lines and still does not reach the height of the heading block next to
+  it. The 66px was real against the stacked header this was written for and was
+  gone by the time the header changed. The band's height came from five other
+  things and modules.tsx has that accounting, measured item by item.
+
+  So this is an editorial edit and it stands on that: the card below states each
+  step in a full sentence, and an intro that walks the same five steps first is
+  the duplication this file keeps a standing note about.
 
   `access` is new on each step and only the homepage reads it. curriculum.tsx
   maps eight modules onto these five by `step` and reads `name` and `output`.
@@ -504,7 +649,16 @@ export const method = {
   eyebrow: "The method",
   headline: "Build, deploy, and document one workflow in five steps",
   intro:
-    "Every course here runs on the same five steps, whatever you build. Each module pairs one focused lesson with one guided lab you run on your own workflow.",
+    /* "Each module pairs one focused lesson with one guided lab" was a count,
+       and the curriculum has never matched it: modules run three to six items,
+       and the mix moves with the subject — literacy 05 is four lessons and no
+       lab because it is the module about where the material stops and counsel
+       starts, and starter 04 is two labs and a template because there is
+       nothing to explain, only something to do.
+
+       The claim worth making is the one that is true of all forty: recorded
+       lessons and guided labs, and the labs run on the reader's own work. */
+    "Every course here runs on the same five steps, whatever you build. Every module mixes recorded lessons with guided labs you run on your own workflow.",
   produces: "You produce",
   steps: [
     {
@@ -547,10 +701,33 @@ export const method = {
 
 export type Course = {
   id: string;
+  /**
+   * The URL segment, and it is not `id`.
+   *
+   * `/courses/gtm` was the route until 8 Aug and it was the wrong URL for three
+   * separate reasons. It carried no keyword a person or a crawler could read
+   * ("gtm" alone is an initialism with a dozen expansions); it was invisible as
+   * a search result, where the URL is printed under the title and is the one
+   * line that says what the page is; and it shared no vocabulary with the h1 it
+   * points at, so a link pasted into a chat window told the recipient nothing.
+   *
+   * The slugs are the titles, lowercased and hyphenated, which is the only rule
+   * worth having here: it needs no second decision per course, it cannot drift
+   * from the h1, and it puts the words somebody actually searches for
+   * ("applied ai", "gtm teams", "ai literacy") into the address.
+   *
+   * `id` stays, unchanged, and is still the key everything internal uses:
+   * `MoreCourses` filters on it, the badge order depends on it, and the five
+   * old URLs redirect from it. Two fields rather than one renamed field is
+   * deliberate — a slug is a public contract that changes when marketing copy
+   * changes, and an id is a private one that must not.
+   *
+   * next.config.ts carries a permanent redirect from each old id, so every link
+   * already in the wild still lands.
+   */
+  slug: string;
   badge: string;
   title: string;
-  /** Short audience line printed on the cover, under the badge. */
-  coverAudience: string;
   /** The artifact, printed as the largest line on the cover. */
   coverBuild: string;
   /** Ground token from globals.css, one hue per path. */
@@ -574,6 +751,21 @@ export type Course = {
   cover?: Img;
   level: string;
   duration: string;
+  /**
+   * Total hours of work, for `courseWorkload` in the JSON-LD.
+   *
+   * `duration` is a calendar span ("6 weeks") and was being converted straight
+   * into `courseWorkload: P6W`, which is a different claim: schema.org means
+   * that field as the effort a course asks for, so the structured data was
+   * telling a listing this course takes six weeks of work rather than six weeks
+   * of elapsed time at a few hours a week. The two differ by about 5x here.
+   *
+   * The number is the product of the hours-per-week line in `requirements` and
+   * the weeks in `duration`, typed rather than parsed out of that sentence:
+   * `requirements` is free copy and a regex over it would break the day
+   * somebody rewords it. If either factor changes, this changes with it.
+   */
+  workloadHours: number;
   /** The three facts on the card meta row, each one different per course. */
   facts: readonly { label: string; value: string }[];
   summary: string;
@@ -627,6 +819,56 @@ export type Course = {
     posterAlt: string;
     card: { title: string };
   };
+
+  /* ------------------------------------------------------ search listing only */
+
+  /**
+   * The `<title>`, which is not the h1.
+   *
+   * These pages were titled with `title` alone, so a result read "Applied AI for
+   * GTM teams | AI Tech Education Academy" — six words that assume the reader is
+   * already in the catalog. On the page that assumption is correct and the h1
+   * should stay exactly as it is. In a listing it is the whole of what the page
+   * gets to say, next to competitors stating the format, the level and the cost.
+   *
+   * So each of these leads with the differentiator ("Free"), keeps the phrase
+   * somebody would actually type, and states the outcome. The layout template
+   * appends " | AI Tech Education Academy", which is 28 characters, so these are
+   * written to sit near 45 and land inside the ~60 a result shows before it
+   * truncates.
+   *
+   * Every claim in here is one the page already makes: the courses are free,
+   * they are self-paced, and each finishes with a deployed workflow.
+   */
+  seoTitle: string;
+
+  /**
+   * The meta description, which is not the tagline.
+   *
+   * `tagline` runs 150 to 190 characters because it has a 620px column and a
+   * reader who has already arrived. A description is cut at roughly 155, and two
+   * of the five taglines were losing the clause that says what the reader ends
+   * up holding — the most persuasive part of the sentence, silently truncated.
+   *
+   * These are written to ~150, front-load the role, and close on the artifact.
+   * They are not a second promise: every one is a compression of the tagline
+   * above it, and if the tagline changes this has to change with it.
+   */
+  seoDescription: string;
+
+  /**
+   * Terms this course should be findable by.
+   *
+   * `keywords` carries no ranking weight at Google and has not since 2009, and
+   * that is not what these are for. They go into the page's metadata and into
+   * the JSON-LD `about` field, where they are the machine-readable statement of
+   * what the course covers — and they are the list to check a title and
+   * description against when either is rewritten.
+   *
+   * Drawn from the skills and the audience already in this record rather than
+   * invented, so there is nothing here the page does not teach.
+   */
+  keywords: readonly string[];
 };
 
 /** One row inside a module. */
@@ -687,6 +929,28 @@ export type CourseModule = {
  */
 export const moduleCount = (c: Course) => `${c.curriculum.length} modules`;
 
+/**
+ * The canonical path to a course, from its id.
+ *
+ * Every link to a course page goes through here rather than interpolating a
+ * segment at the call site, and that is the whole point of the function: when
+ * `/courses/gtm` became `/courses/applied-ai-for-gtm-teams` there were nine
+ * places that spelled the URL out, three of them inside this file, and a tenth
+ * would have been added by the next feature. One of them silently 404s if it is
+ * missed, because `dynamicParams = false` turns an unknown segment into a 404
+ * at the routing layer.
+ *
+ * Takes the id, not the slug, so a call site keeps naming the stable key while
+ * the public URL is free to change under it. Throws on an unknown id rather
+ * than returning a path that will 404: the ids are five literals in this file,
+ * so a miss here is a typo at author time and should fail the build, not ship.
+ */
+export function courseHref(id: string, hash?: string): string {
+  const course = courses.find((c) => c.id === id);
+  if (!course) throw new Error(`courseHref: no course with id "${id}"`);
+  return `/courses/${course.slug}${hash ? `#${hash}` : ""}`;
+}
+
 export const lessonCount = (m: CourseModule) =>
   `${m.lessons.length} ${m.lessons.length === 1 ? "lesson" : "lessons"}`;
 
@@ -735,18 +999,37 @@ export const totalLessons = (c: Course) =>
 */
 export const courses: readonly Course[] = [
   {
+    seoTitle: "Free AI course for GTM teams",
+    seoDescription:
+      "A free, self-paced course for marketing ops, RevOps and growth. Build an agent workflow on your pipeline data, launch it, and measure what it changed.",
+    keywords: [
+      "applied AI for GTM",
+      "AI for RevOps",
+      "AI for marketing operations",
+      "agent workflows",
+      "pipeline data",
+      "revenue analytics",
+      "multimodal APIs",
+      "automation design",
+      "free AI course",
+    ],
     id: "gtm",
+    slug: "applied-ai-for-gtm-teams",
     badge: "Course A",
     title: "Applied AI for GTM teams",
-    coverAudience: "Marketing ops, RevOps, growth",
     coverBuild: "An agent workflow on your live pipeline",
     ground: "var(--path-a)",
     cover: {
       src: "/images/paths/gtm.jpg",
+      width: 1127,
+      height: 1400,
       alt: "A marketing operations lead working from a laptop in a bright open-plan office",
+      /* her face sits 400px down a 1400px frame. */
+      focus: "49% 29%",
     },
     level: "Intermediate",
     duration: "6 weeks",
+    workloadHours: 24,
     facts: [
       { label: "Artifact", value: "Pipeline agent" },
       { label: "Runs on", value: "Your CRM data" },
@@ -760,7 +1043,7 @@ export const courses: readonly Course[] = [
       "Build a multimodal agent workflow on your own pipeline data, launch it in the revenue stack your team already works in, and measure what it changed.",
     stats: [
       { value: "Free", label: "Every module" },
-      { value: "8 modules", label: "Lesson and lab in each" },
+      { value: "8 modules", label: "Lessons and labs throughout" },
       { value: "6 weeks", label: "At your own pace" },
       { value: "Intermediate", label: "Recommended" },
     ],
@@ -915,18 +1198,36 @@ export const courses: readonly Course[] = [
     ],
   },
   {
+    seoTitle: "Free AI course for video and media",
+    seoDescription:
+      "A free, self-paced course for editors and post supervisors. Build an ingest and rough-cut workflow on your own footage, and measure the hours it returns.",
+    keywords: [
+      "applied AI for video",
+      "AI for post production",
+      "AI video editing workflow",
+      "footage intelligence",
+      "generative video",
+      "edit automation",
+      "pipeline design",
+      "free AI course",
+    ],
     id: "media",
+    slug: "applied-ai-for-video-and-media",
     badge: "Course B",
     title: "Applied AI for video and media",
-    coverAudience: "Editors, producers, post supervisors",
     coverBuild: "An ingest and rough-cut pipeline",
     ground: "var(--path-b)",
     cover: {
       src: "/images/paths/media.jpg",
+      width: 1400,
+      height: 781,
       alt: "A video editor at the desk in a dimly lit edit suite",
+      /* his face is 280 of 781, left of centre. */
+      focus: "37% 36%",
     },
     level: "Intermediate",
     duration: "6 weeks",
+    workloadHours: 24,
     facts: [
       { label: "Artifact", value: "Rough cut" },
       { label: "Runs on", value: "Your footage" },
@@ -940,7 +1241,7 @@ export const courses: readonly Course[] = [
       "Build an ingest, logging and rough-cut workflow on your own footage, run it inside your studio pipeline, and measure the hours it gives back.",
     stats: [
       { value: "Free", label: "Every module" },
-      { value: "8 modules", label: "Lesson and lab in each" },
+      { value: "8 modules", label: "Lessons and labs throughout" },
       { value: "6 weeks", label: "At your own pace" },
       { value: "Intermediate", label: "Recommended" },
     ],
@@ -1100,18 +1401,37 @@ export const courses: readonly Course[] = [
     it. The baseline here is how the team handles data today, not a duration.
   */
   {
+    seoTitle: "Free AI literacy and compliance course",
+    seoDescription:
+      "A free, self-paced course for team leads, operations, HR and legal. Write the AI use policy your team will follow, put it in force, and measure it.",
+    keywords: [
+      "AI literacy",
+      "AI ethics",
+      "AI data compliance",
+      "AI use policy",
+      "data classification",
+      "policy design",
+      "AI governance",
+      "review and audit",
+      "free AI course",
+    ],
     id: "literacy",
+    slug: "ai-literacy-ethics-and-data-compliance",
     badge: "Course C",
     title: "AI literacy, ethics and data compliance",
-    coverAudience: "Team leads, operations, HR and legal",
     coverBuild: "An AI use policy your team runs on",
     ground: "var(--path-c)",
     cover: {
       src: "/images/paths/literacy.jpg",
+      width: 1400,
+      height: 781,
       alt: "Two colleagues reviewing printed pages beside a laptop in a meeting room",
+      /* two faces; biased to the right one, which is the half of the band the veil lets through. */
+      focus: "62% 41%",
     },
     level: "Foundational",
     duration: "4 weeks",
+    workloadHours: 12,
     facts: [
       { label: "Artifact", value: "Use policy" },
       { label: "Runs on", value: "Your own tools" },
@@ -1126,7 +1446,7 @@ export const courses: readonly Course[] = [
       "Write the AI use policy your team will actually follow, put it in force with a review step, and measure how the decisions change.",
     stats: [
       { value: "Free", label: "Every module" },
-      { value: "8 modules", label: "Lesson and lab in each" },
+      { value: "8 modules", label: "Lessons and labs throughout" },
       { value: "4 weeks", label: "At your own pace" },
       { value: "Foundational", label: "Recommended" },
     ],
@@ -1270,18 +1590,37 @@ export const courses: readonly Course[] = [
     ],
   },
   {
+    seoTitle: "Free applied AI infrastructure course",
+    seoDescription:
+      "A free, self-paced course for developers who own the serving layer. Deploy an AI service on GPU cloud with evaluation, cost control and a rollback.",
+    keywords: [
+      "applied AI infrastructure",
+      "model serving",
+      "GPU cloud",
+      "LLM inference",
+      "GPU orchestration",
+      "AI cost control",
+      "observability",
+      "MLOps",
+      "free AI course",
+    ],
     id: "infra",
+    slug: "applied-ai-infrastructure",
     badge: "Course D",
     title: "Applied AI infrastructure",
-    coverAudience: "Developers who own the serving layer",
     coverBuild: "Model serving on GPU cloud",
     ground: "var(--path-d)",
     cover: {
       src: "/images/paths/infra.jpg",
+      width: 1400,
+      height: 781,
       alt: "A platform engineer reading a terminal at a standing desk",
+      /* his face is 250 of 781, well left. */
+      focus: "33% 32%",
     },
     level: "Advanced",
     duration: "6 weeks",
+    workloadHours: 30,
     facts: [
       { label: "Artifact", value: "Serving stack" },
       { label: "Runs on", value: "GPU cloud" },
@@ -1295,7 +1634,7 @@ export const courses: readonly Course[] = [
       "Deploy a production-style AI service on GPU cloud, with an evaluation gate, a cost model, a runbook and a rollback you have demonstrated.",
     stats: [
       { value: "Free", label: "Every module" },
-      { value: "8 modules", label: "Lesson and lab in each" },
+      { value: "8 modules", label: "Lessons and labs throughout" },
       { value: "6 weeks", label: "At your own pace" },
       { value: "Advanced", label: "Recommended" },
     ],
@@ -1315,7 +1654,14 @@ export const courses: readonly Course[] = [
     ],
     description: [
       "This course is for developers who own the serving layer, and it is the catalog's advanced anchor. The GMI Cloud work behind it is where these patterns were run at production scale.",
-      "It is deliberately compact. The strongest comparable course on the market runs 61 hours, and depth there comes from repeated explanation. Roughly ten to sixteen hours with demanding labs and a real evaluation gate is a more credible claim, so the modules are dense and the labs are where the time goes.",
+      /* "Roughly ten to sixteen hours" sat two lines from a requirement reading
+         "About five hours a week for six weeks", which is thirty, and the two
+         read as one claim about the same quantity. They are not: the ten to
+         sixteen is instruction, the thirty is instruction plus the labs, and
+         the next clause in this very sentence says so ("the labs are where the
+         time goes"). Naming which one it is costs two words and keeps the
+         comparison against the 61-hour course intact. */
+      "It is deliberately compact. The strongest comparable course on the market runs 61 hours, and depth there comes from repeated explanation. Roughly ten to sixteen hours of instruction, with demanding labs and a real evaluation gate, is a more credible claim, so the modules are dense and the labs are where the time goes.",
       "The method is the one every course here runs on. You profile the workload and record what it costs and how it performs today. You build serving, packaging and observability across eight guided labs. You deploy to production infrastructure, then measure latency, utilisation and cost against your baseline.",
       "The capstone is a production-style service with an architecture decision record, a cost model, automated evaluation, a dashboard, a runbook, a threat model, and a rollback you have actually demonstrated.",
     ],
@@ -1439,18 +1785,35 @@ export const courses: readonly Course[] = [
     ],
   },
   {
+    seoTitle: "Free AI starter course for small business",
+    seoDescription:
+      "A free, self-paced course for owners and operators. Build one assistant for the task that eats your week, put it to work, and see the hours it saves.",
+    keywords: [
+      "AI for small business",
+      "AI starter course",
+      "practical prompting",
+      "simple automation",
+      "AI tool selection",
+      "AI for owners and operators",
+      "free AI course",
+    ],
     id: "starter",
+    slug: "ai-starter-for-small-business",
     badge: "Course E",
     title: "AI starter for small business",
-    coverAudience: "Owners and operators",
     coverBuild: "One assistant for your busiest task",
     ground: "var(--path-e)",
     cover: {
       src: "/images/paths/starter.jpg",
+      width: 1400,
+      height: 781,
       alt: "A small business owner working from a laptop behind their own counter",
+      /* he is standing, so his face is high in the frame at 170 of 781. */
+      focus: "54% 22%",
     },
     level: "Beginner",
     duration: "2 weeks",
+    workloadHours: 4,
     facts: [
       { label: "Artifact", value: "Task assistant" },
       { label: "Takes", value: "2 weeks" },
@@ -1773,7 +2136,23 @@ export type Person = {
    * `url` is only set where a URL was actually supplied. An org with no link
    * renders as plain text rather than as a guess at its domain.
    */
-  org?: { name: string; url?: string };
+  /**
+   * The organisation, with the person's role in it kept as a separate field.
+   *
+   * `name` used to hold the whole string — "Co-founder, n-aible" — because that
+   * is what the card prints, and `instructorsJsonLd` passes `name` straight into
+   * `affiliation`. So the structured data asserted the existence of companies
+   * literally called "Co-founder, n-aible" and "Co-founder, Bayhaus Creative":
+   * two organisations that do not exist, published as fact about two real
+   * people.
+   *
+   * Split rather than stripped at the markup layer. A regex taking everything
+   * before the first comma would mangle the first org name that contains one,
+   * and the fix belongs where the two facts are, not where they are rendered.
+   * The card still prints "role, name" — `InstructorCard` joins them — so
+   * nothing visible changes.
+   */
+  org?: { role?: string; name: string; url?: string };
   /** A sentence about what this person does. Same rule as `role`. */
   detail?: string;
   /** What this person records or reviews, printed as the card's head. Same rule. */
@@ -1862,6 +2241,41 @@ export const instructors = {
   intro:
     "Working practitioners across developer experience, AI tooling, higher education, and film.",
   /*
+    THE ROSTER PAGE, added 8 Aug when /instructors got its own route.
+
+    Three fields, and each one exists because a page a stranger can land on
+    cold has to answer a question the homepage band never has to: the band is
+    read after nine other sections, and the page is read first.
+
+    `pageIntro` is the band's `intro` plus the sentence the band leaves to its
+    own layout. On the homepage the division of labour is visible — one wide
+    dark card marked "Lead instructor" over four portraits — so writing it out
+    would be describing what a reader can see, which is the failure this file
+    keeps a note about. On a page that a search result drops somebody onto, the
+    same sentence is the first thing that explains the roster.
+
+    `seoDescription` is 148 characters, front-loaded with the four disciplines,
+    because a result line is truncated from the right at about 155 and the
+    disciplines are the part a query would match. It names no individual: a
+    person's name in a meta description is a promise that the page is about
+    them, and this one is about five people.
+
+    Nothing here characterises any of the five. The roles on the cards are still
+    each person's own LinkedIn headline, verbatim, per the note above.
+  */
+  pageIntro:
+    "Working practitioners across developer experience, AI tooling, higher education, and film. One lead instructor writes the curriculum and records every core lesson; four specialists record the deep dives.",
+  /*
+    "and who records what" was the tail of this line until it was checked
+    against the page. Only the lead has a `scope`; the four specialists
+    deliberately have none, because which path each of them records is the one
+    thing nobody has confirmed. A description that promises an answer the page
+    withholds is the same fabrication as printing the answer, moved to the one
+    place a reader cannot see it and a result page can.
+  */
+  seoDescription:
+    "The practitioners who teach here: developer experience, AI tooling, higher education and film. Five named instructors, each with a public profile.",
+  /*
     The footnote is gone. It ran three lines explaining that the portraits are
     illustrations and that names arrive when employers clear them, under a grid
     where both facts are already visible: the drawings are self-evidently
@@ -1923,7 +2337,7 @@ export const instructors = {
       id: "aaron",
       name: "Aaron Jimenez",
       role: "Developer Experience Engineer",
-      org: { name: "Co-founder, n-aible" },
+      org: { role: "Co-founder", name: "n-aible" },
       ground: "var(--path-a)",
       photo: { src: "/images/people/aaron-jimenez.jpg", alt: "Portrait of Aaron Jimenez" },
       logo: { src: "/images/logos/n-aible.png", alt: "n-aible" },
@@ -1933,7 +2347,7 @@ export const instructors = {
       id: "hendrik",
       name: "Hendrik Krack",
       role: "Developer Advocate at CodeRabbit",
-      org: { name: "Co-founder, n-aible" },
+      org: { role: "Co-founder", name: "n-aible" },
       ground: "var(--path-b)",
       photo: { src: "/images/people/hendrik.jpg", alt: "Portrait of Hendrik Krack" },
       /* The employer mark, not the company he co-founded: Aaron's card carries
@@ -1946,7 +2360,7 @@ export const instructors = {
       id: "loc",
       name: "Loc H. Nguyen, Ed.D.",
       role: "AI Strategy and Transformation for Higher Education",
-      org: { name: "Co-founder, Bayhaus Creative", url: "https://bayhauscreative.com/" },
+      org: { role: "Co-founder", name: "Bayhaus Creative", url: "https://bayhauscreative.com/" },
       ground: "var(--path-c)",
       photo: { src: "/images/people/loc-nguyen.jpg", alt: "Portrait of Loc H. Nguyen" },
       logo: { src: "/images/logos/bayhaus.png", alt: "Bayhaus Creative" },
@@ -1959,15 +2373,27 @@ export const instructors = {
       ground: "var(--path-d)",
       photo: { src: "/images/people/patrick-kriwanek.jpg", alt: "Portrait of Patrick Kriwanek" },
       /*
-        FLAG, because it is the one asset here that asserts something nobody has
-        confirmed. The mark supplied for this seat is the University of
-        California, Berkeley wordmark, and the title names The Berkeley Film
-        School. If those are the same institution this is correct; if they are
-        not, the card is putting a university's registered mark against a
-        school that does not hold it. Worth a check before this goes near a
-        press page.
+        NO MARK ON THIS SEAT, and the reason is the flag that used to stand here
+        rather than a design choice.
+
+        The asset supplied was `/images/logos/berkeley.png`, the University of
+        California, Berkeley wordmark, against a title reading "Academic Dean,
+        The Berkeley Film School". The flag asked for that to be confirmed
+        before the card went anywhere public and it shipped unconfirmed; it is
+        on /instructors now, which is exactly the page it was meant to be
+        checked before.
+
+        Two institutions share a city name here and nothing on file says they
+        share anything else, so the card was putting a university's registered
+        mark against a school that may not hold it — a fabricated credential of
+        the same kind as a rating, and the only one on the site that also
+        borrows somebody else's trademark to make it.
+
+        `InstructorCard` renders a seat with no `logo` (Roan's lead card has
+        none), so nothing breaks by leaving it out. If the affiliation is
+        confirmed, or a Berkeley Film School mark is supplied, this is one line
+        to put back.
       */
-      logo: { src: "/images/logos/berkeley.png", alt: "Berkeley" },
       linkedin: "https://www.linkedin.com/in/patrick-kriwanek-92a3203/",
     },
   ] as readonly Person[],
@@ -2136,6 +2562,20 @@ export const board = {
   headline: "Practitioners judge the curriculum and the events",
   intro:
     "Every judge on this board runs these systems in production. They read the courses each term, the lessons, the labs and the outcome sheet a learner leaves with, and they sit on the panel that judges the events where learners present the workflows they deployed.",
+  /*
+    A second, shorter version, for the three metadata slots only.
+
+    `intro` is 260 characters, which is right for a paragraph under a headline
+    and wrong everywhere a description is cut around 155: the route was serving
+    it as its meta description, its og:description and its twitter:description,
+    so all three ended mid-clause at "...the outcome sheet a learner", losing
+    both the sentence about the events and the point of the board.
+
+    Every other route on the site keeps this split — `seoDescription` beside the
+    visible copy rather than instead of it — and this was the one that did not.
+  */
+  seoDescription:
+    "The practitioners who read these courses each term and judge the events where learners present the workflows they deployed.",
   members: [
     {
       id: "revops",
@@ -2215,7 +2655,11 @@ export const board = {
       id: "smb",
       seat: "Small business operations",
       reviews: "Course E",
-      checks: "Confirms the starter course stays completable by a solo owner in one sitting.",
+      /* Not "in one sitting": the catalog sells this course as eight modules
+         over two weeks, so a board seat whose stated job is to confirm it fits
+         one sitting is checking against a promise the site does not make. */
+      checks:
+        "Confirms the starter course stays completable by a solo owner alongside the day job.",
       ground: "var(--path-e)",
       photo: {
         src: "/images/people/board-seat-placeholder.jpg",
@@ -2297,7 +2741,11 @@ export const faqs = [
   },
   {
     q: "What do I need access to?",
-    a: "One workflow you own, permission to change it, and the tools your team already uses. Course D also assumes access to a GPU cloud account, and Course E runs on everyday business tools.",
+    /* Titles, not badges. "Course D" and "Course E" are the cover labels on the
+       catalog cards; on a course page — where this FAQ also renders — there is
+       no lettered row in sight, so the answer referred a reader to two courses
+       by a name the page they are on never prints. */
+    a: "One workflow you own, permission to change it, and the tools your team already uses. Applied AI infrastructure also assumes access to a GPU cloud account, and AI starter for small business runs on everyday business tools.",
   },
   {
     q: "What is the outcome sheet?",
@@ -2378,13 +2826,17 @@ export const closing = {
       id: "module",
       title: "Watch the open module",
       detail: "Open to everyone, right away",
-      href: "/courses/gtm#curriculum",
+      href: courseHref("gtm", "curriculum"),
     },
     {
       id: "courses",
       title: "Compare all five courses",
       detail: "Pick by the work you own",
-      href: "/#courses",
+      /* The index, not the band. "Compare all five" is a promise the band
+         cannot keep — it is the same five cards this page already scrolled
+         past — and the header menu and the footer both send this label to
+         `/courses`. One label, one destination. */
+      href: "/courses",
     },
     {
       id: "teams",
@@ -2422,9 +2874,11 @@ export const closing = {
   been removed.
 
   It was five tiles between the credibility band and the method, each naming an
-  audience and linking to a path. Every one of those audiences is already the
-  `coverAudience` line on that path's card in the catalog, two sections down,
-  where it sits next to the artifact the path builds and the level it runs at.
+  audience and linking to a path. Every one of those audiences was already the
+  audience line on that path's card in the catalog, two sections down, where it
+  sat next to the artifact the path builds and the level it runs at. (That line
+  came off the cover itself on 8 Aug; the card still carries the same facts in
+  its meta row.)
   So the router asked for a decision at the one point in the page where the
   reader had the least to decide with, and the catalog then asked for the same
   decision again with the facts attached.
@@ -2441,8 +2895,8 @@ export const closing = {
   The skill cloud is gone, and the marketplace `categories` block with it.
 
   It rendered the five paths' `skills` arrays as five columns of chips, under a
-  header for each path carrying that path's badge and its `coverAudience`. Every
-  one of those strings is printed on that path's own cover in the catalog one
+  header for each path carrying that path's badge and its audience line. Every
+  one of those strings was printed on that path's own cover in the catalog one
   section above, so the block spent roughly 440px restating the row a reader had
   just scrolled past, in the same order, with the skills as the only addition.
 
@@ -2489,11 +2943,16 @@ export const footer = {
     {
       title: "Courses",
       links: [
-        { label: "GTM teams", href: "/courses/gtm" },
-        { label: "Video and media", href: "/courses/media" },
-        { label: "AI literacy and compliance", href: "/courses/literacy" },
-        { label: "AI infrastructure", href: "/courses/infra" },
-        { label: "Small business starter", href: "/courses/starter" },
+        /* The index first, and it is new on 8 Aug with the page itself. A footer
+           column headed "Courses" that listed five courses and not the page they
+           live on was the same gap the nav had: the catalog existed five times
+           and never once as a place. */
+        { label: "All five courses", href: "/courses" },
+        { label: "GTM teams", href: courseHref("gtm") },
+        { label: "Video and media", href: courseHref("media") },
+        { label: "AI literacy and compliance", href: courseHref("literacy") },
+        { label: "AI infrastructure", href: courseHref("infra") },
+        { label: "Small business starter", href: courseHref("starter") },
       ],
     },
     {
@@ -2510,7 +2969,10 @@ export const footer = {
     {
       title: "The program",
       links: [
-        { label: "Instructors", href: "/#instructors" },
+        /* Both of these are routes now, and by the rule stated on the board
+           link below rather than by coincidence: a footer is a sitemap, and a
+           sitemap points at routes wherever one exists. */
+        { label: "Instructors", href: "/instructors" },
         { label: "Learning as a team", href: "/#teams" },
         /* The page, not the homepage band. The band is a six-card teaser with a
            link to this; the footer is a sitemap, and a sitemap points at routes. */
@@ -2518,11 +2980,22 @@ export const footer = {
       ],
     },
   ],
+  /* Two entries, and there were four. "Accessibility" pointed at
+     `/accessibility` and "Data and records" at `/data`, neither of which is a
+     route: two 404s in the one row that renders on all twelve pages, which is
+     the worst place on a site to put a dead link because it is also the row a
+     reader goes to when they are checking whether an organisation is real.
+
+     Neither comes back by being repointed. `/data` at `/privacy` would list one
+     destination twice under two names, which is the thing the Courses column
+     above refuses to do, and the retention and rights sections it would be
+     aiming at are already inside the document "Privacy" links to. An
+     accessibility statement is a document nobody has written yet; when
+     `legal.accessibility` exists, the route is four lines beside /terms and the
+     entry comes back with it. */
   legal: [
     { label: "Terms", href: "/terms" },
     { label: "Privacy", href: "/privacy" },
-    { label: "Accessibility", href: "/accessibility" },
-    { label: "Data and records", href: "/data" },
   ],
 } as const;
 
@@ -2530,7 +3003,7 @@ export const footer = {
   The two auth screens.
 
   Every line here is a fact this site already states somewhere else, which is the
-  only reason there is copy on these screens at all. `moduleFormat.outlineNote`
+  only reason there is copy on these screens at all. `moduleFormat.accessNote`
   is the source for the unlock sentence, the hero is the source for the open
   first module, and `outcomes` is the source for what finishing means. Nothing
   on an auth screen may be the first place a claim appears: these are the two
@@ -2541,6 +3014,232 @@ export const footer = {
   exist yet, so the submit control posts nowhere and says so in the page rather
   than pretending. See src/components/auth/auth-screen.tsx.
 */
+/**
+ * The `/courses` index, which until 8 Aug did not exist.
+ *
+ * The catalog lived in one band on the homepage and nowhere else, so the five
+ * course pages had a parent that was a fragment (`/#courses`) rather than a
+ * page. Three things were wrong with that and only one of them is cosmetic:
+ *
+ *   - The breadcrumb on every course page reads "Courses / <this course>", and
+ *     its first item pointed at a scroll position on another page. A trail whose
+ *     parent is not a location is the thing the note in course/hero.tsx already
+ *     complains about, one level up.
+ *   - There was no page a search for "applied AI courses" could land on. The
+ *     five course pages compete with each other for it, and the homepage answers
+ *     it in a band two thirds of the way down.
+ *   - "Courses" in the nav scrolled the homepage, which meant the primary nav's
+ *     first item behaved differently from every other route on the site.
+ *
+ * ------------------------------------------------------------- WHY THE PROSE
+ *
+ * `intro` is the band's own copy and stops there. `body` is three short
+ * paragraphs under the grid, and they exist because an index page whose entire
+ * content is five cards has nothing on it a search engine can match against
+ * anything but the five titles it already has better pages for.
+ *
+ * They are not filler written to a word count. Each answers a question the five
+ * course pages cannot answer individually, because each is a question about the
+ * set: how the five differ, what every one of them has in common, and what
+ * "free" covers. Nothing here is a claim that is not made on the pages it
+ * summarises.
+ */
+export const catalog = {
+  seoTitle: "Free applied AI courses, by role",
+  seoDescription:
+    "Five free, self-paced applied AI courses for GTM, media, compliance, infrastructure and small business. Build one workflow on your own data and measure it.",
+  keywords: [
+    "applied AI courses",
+    "free AI courses",
+    "AI courses by role",
+    "self-paced AI course",
+    "project-based AI training",
+    "AI course for teams",
+    "deploy an AI workflow",
+  ],
+  label: "All courses",
+  heading: "Five courses, one method",
+  intro:
+    "Each course takes a different kind of work through the same five steps. Pick the one closest to your job, or read what they share below.",
+  /* One string per paragraph, so the 68-character measure the rest of the site
+     holds applies here too. */
+  body: [
+    {
+      heading: "How the five differ",
+      text: "The method does not change between courses. What changes is the work you point it at, the tools the labs assume you already have, and the artifact you finish holding. The GTM course runs on your CRM and pipeline data; the media course runs on your own footage; the compliance course produces a policy your team operates under; the infrastructure course puts a service on GPU cloud; the small business course builds one assistant for one task. Choose by which of those you could start on Monday.",
+    },
+    {
+      heading: "What every course has in common",
+      text: "Every course is project-based against your own work rather than a sample dataset, and every one finishes the same way: a recorded baseline, a thing you built, a deployment, and a measurement against the baseline you started from. Each module pairs a recorded lesson with a lab you run yourself, and each closes with one artifact you keep. Nothing is graded and there is no cohort to wait for.",
+    },
+    {
+      heading: "What free covers",
+      text: "Module 1 of every course opens with no account at all. A free account keeps your work and opens the rest, and there is nothing to pay at any point — no certificate fee, no upgrade, and no paid tier holding the useful half. If you want to run a course with a team, that is a conversation rather than a price list.",
+    },
+  ],
+} as const;
+
+/**
+ * Terms and Privacy, as data.
+ *
+ * ------------------------------------------------------------- READ THIS FIRST
+ *
+ * THESE ARE PLAIN-LANGUAGE DRAFTS AND THEY HAVE NOT BEEN REVIEWED BY A LAWYER.
+ * They describe what this site actually does today, which is the only thing that
+ * makes them safe to publish at all: there are no accounts, no payments and no
+ * analytics, so there is very little to get wrong. The moment any of those
+ * three exists, both documents are wrong and have to be rewritten by somebody
+ * qualified.
+ *
+ * `pending` marks every fact that has to come from Roan rather than from the
+ * code — the legal entity, the address, the governing law and the contact
+ * mailbox. They render as visible placeholders on the page rather than as
+ * invented text, because a privacy policy that names the wrong jurisdiction is
+ * worse than one that admits it does not have it yet.
+ *
+ * ----------------------------------------------------------- WHY NOT BOILERPLATE
+ *
+ * The obvious move is a generated policy covering cookies, third-party
+ * processors, advertising identifiers and international transfers. Every clause
+ * of that would be a description of something this site does not do, and a
+ * policy that overstates what is collected is not the safe direction — it
+ * licenses collection that is not happening and it trains a reader to skip the
+ * document. What is here is short because the site is.
+ */
+export const legal = {
+  /* Both documents state one date, and it is the date they were written. */
+  updated: "8 August 2026",
+  pending: {
+    entity: "[legal entity name]",
+    address: "[registered address]",
+    jurisdiction: "[governing law]",
+    contact: "[contact email]",
+  },
+  /*
+    Printed at the head of both documents. It is the same admission the auth
+    screens already make in `shellNote`, and for the same reason: a reader who
+    is about to hand over an email address should know what state the thing is
+    in before they do, not after.
+  */
+  draftNote:
+    "These terms are published in draft while the platform is being built. Accounts are not open yet and nothing on this site takes payment. When accounts open, this page will be reviewed and dated again, and anyone who has given us an email address will be told before anything here changes in a way that affects them.",
+  terms: {
+    title: "Terms of Use",
+    intro:
+      "These terms cover your use of this website and the course material published on it. They are written to be read, so they are short and in plain English.",
+    sections: [
+      {
+        heading: "Who runs this site",
+        body: [
+          "This site is operated by {entity}, at {address}. If anything here is unclear, or you think we have got something wrong, write to {contact} and a person will read it.",
+        ],
+      },
+      {
+        heading: "What you may do with the course material",
+        body: [
+          "The lessons, labs, templates and written material on this site are free to use for your own work and for the work of the organisation that employs you. You may run the labs on your own data, adapt the templates, and keep and use whatever you build. You do not owe us anything for it and you do not need to credit us.",
+          "What you may not do is republish the material as your own, sell it, or use it as the content of a competing course or training programme. The line is between using what you learn and redistributing what we wrote.",
+        ],
+      },
+      {
+        heading: "What you build is yours",
+        body: [
+          "Every course asks you to work against your own data, in your own tools. We claim no ownership of your data, your workflow, or anything you build during a course, and we do not need a copy of any of it to teach you.",
+        ],
+      },
+      {
+        heading: "Accounts",
+        body: [
+          "Module 1 of every course is open with no account. An account exists so that your progress and your written work are still there when you come back, and it is free. You are responsible for keeping your own sign-in details to yourself, and for what happens under your account.",
+          "You can close your account at any time by writing to {contact}. We will delete it and the work stored against it.",
+        ],
+      },
+      {
+        heading: "What we do not promise",
+        body: [
+          "The courses teach a method and a set of tools. They do not promise a job, a salary, a business result, or that any particular AI system will behave a particular way on your data. Where a course asks you to measure something, the number you get is yours and we make no claim about what it will be.",
+          "The AI tools the labs use are third-party services that change, and sometimes get things wrong. Check what they produce before you put it in front of a customer or a regulator. Nothing on this site is legal, financial, medical or safety advice, and the compliance course in particular is a course about writing a policy, not a substitute for your own legal counsel.",
+        ],
+      },
+      {
+        heading: "The site itself",
+        body: [
+          "We may change, add to, or withdraw course material, and we may take the site down for maintenance. We try not to break things people are part-way through, but this is a free service and we cannot guarantee it is always available.",
+          "To the extent the law allows, we are not liable for loss arising from your use of this site or the material on it. Nothing here limits liability that cannot legally be limited.",
+        ],
+      },
+      {
+        heading: "Governing law",
+        body: [
+          "These terms are governed by the law of {jurisdiction}, and any dispute goes to the courts there.",
+        ],
+      },
+    ],
+  },
+  privacy: {
+    title: "Privacy Policy",
+    intro:
+      "This policy says what we collect, why, and what we do with it. The short version: almost nothing, because there is almost nothing here that collects.",
+    sections: [
+      {
+        heading: "The short version",
+        body: [
+          "We do not run advertising, we do not sell or share data with anyone for their own purposes, and there is no third-party analytics or tracking script on this site. Browsing the course pages does not require an account and is not tied to you.",
+        ],
+      },
+      {
+        heading: "What we collect",
+        body: [
+          "If you create an account we collect the name and email address you give us, and the work you save while going through a course — your baseline, your notes, and the artifacts each module asks you to produce. If you tell us your company, your role, or how you heard about us, we collect that too. Those three are optional, and the form says so.",
+          "Our hosting provider keeps ordinary server logs, which include IP addresses, for a short period and for the purpose of running and securing the service. We do not use them to build a picture of individual visitors.",
+        ],
+      },
+      {
+        heading: "Why we collect it",
+        body: [
+          "Your name and email exist so you can sign in and so we can tell you about something that affects your account. Your saved work exists so it is there when you come back. The optional questions exist so we know which roles are actually turning up, which is how the next course gets chosen — they are used in aggregate and they do not change what you are shown.",
+        ],
+      },
+      {
+        heading: "What we do not do",
+        body: [
+          "We do not sell your data. We do not share it with advertisers or data brokers. We do not use your saved work to train a model, and we do not read it except where you have asked us to look at something. We do not send marketing email you did not ask for.",
+        ],
+      },
+      {
+        heading: "Who else touches it",
+        body: [
+          "Running a service means using other companies to host it and to send email. They process data on our instructions and for no purpose of their own. The specific providers will be named here before accounts open.",
+        ],
+      },
+      {
+        heading: "How long we keep it",
+        body: [
+          "For as long as your account is open, and then no longer. Close your account and the account and the work stored against it are deleted.",
+        ],
+      },
+      {
+        heading: "Your rights",
+        body: [
+          "You can ask for a copy of what we hold about you, ask us to correct it, or ask us to delete it, by writing to {contact}. We will not ask you why, and there is no charge. Depending on where you live you may also have the right to complain to a data protection regulator.",
+        ],
+      },
+      {
+        heading: "Cookies",
+        body: [
+          "There is no cookie banner because there are no tracking cookies. When accounts open, an account will need one cookie to keep you signed in, and that is the only one there will be.",
+        ],
+      },
+      {
+        heading: "Contact",
+        body: [
+          "Questions about any of this go to {contact}. The data controller is {entity}, at {address}.",
+        ],
+      },
+    ],
+  },
+} as const;
+
 export const auth = {
   signUp: {
     title: "Create your free account",
@@ -2559,6 +3258,137 @@ export const auth = {
       { name: "password", label: "Password", type: "password", autoComplete: "new-password", half: false },
     ],
   },
+  /*
+    Sign-up in three steps, from 8 Aug, at Roan's request for company, role and
+    referral source.
+
+    ------------------------------------------------------------- THE SEQUENCE
+
+    Roan asked for the questions and asked that the order be a good one, so the
+    order is the decision worth recording. It is:
+
+      1. the account       required
+      2. your work         optional
+      3. how you found us  optional
+
+    Required before optional, and the thing the reader came to do before the
+    thing we want. Somebody who abandons after step 1 has an account, which is
+    the outcome that matters; the reverse ordering trades a working account for
+    a demographic answer, which is a bad trade in both directions.
+
+    Within that, step 2 before step 3 because step 2 is about them and step 3 is
+    about us. A reader who has just typed their role is still describing
+    themselves; asking "where did you hear about us" first is asking a stranger
+    to do marketing research before they have been let in.
+
+    THE ALTERNATIVE WAS ROLE FIRST, and it is the conventional growth answer: a
+    one-tap question is a cheaper first step than a password field, and the
+    momentum carries into the form. It was rejected because it is not true here.
+    Every one of these questions is optional and the page says so, so leading
+    with one would be dressing an optional question as the price of entry.
+
+    ------------------------------------------------- WHY THEY ARE ALL SKIPPABLE
+
+    Every field in steps 2 and 3 can be left empty and every one of those steps
+    has a Skip control, which is stated on the step rather than implied. A form
+    that collects optional data while looking mandatory collects worse data:
+    people guess rather than abandon, and a role field full of guesses is worse
+    than one that is half empty.
+
+    The privacy policy says the same thing in the same words — that these three
+    are optional and used in aggregate to decide which course gets built next —
+    so the promise here and the promise there cannot drift.
+
+    ------------------------------------------------------------------ THE OPTIONS
+
+    Eleven roles and eight sources, each ending in "Other" with a text field.
+    The roles are written as the work rather than the job title, because a title
+    is company-specific and a person who is "Head of Revenue Operations"
+    recognises "Revenue or sales operations" instantly. They map onto the five
+    courses without saying so: marketing/RevOps/sales to the GTM course, media
+    to the media course, engineering to infrastructure, HR/legal/compliance to
+    literacy, and founder/owner to the small business course.
+
+    "Student or between roles" is in the list because leaving it out makes those
+    people pick something false, and this program is free specifically so that
+    they can take it.
+  */
+  signUpSteps: [
+    {
+      id: "account",
+      label: "Your account",
+      title: "Create your free account",
+      intro: "One account unlocks modules 2 to 8 in every course, and it stays free.",
+      optional: false,
+      next: "Continue",
+    },
+    {
+      id: "work",
+      label: "Your work",
+      title: "What do you work on?",
+      /* No personalisation promise. It read "This decides which examples we
+         point you at first", and the privacy policy answers the same question
+         with the opposite fact: the optional answers "are used in aggregate and
+         they do not change what you are shown". One of the two had to go, and
+         it is not the policy — a signup screen inventing a benefit the legal
+         page denies is the exact drift the note above this block forbids. */
+      intro:
+        "This tells us which roles are actually turning up, which is how the next course gets chosen. Both questions are optional.",
+      optional: true,
+      next: "Continue",
+    },
+    {
+      id: "source",
+      label: "Finding us",
+      title: "How did you find us?",
+      intro:
+        "Last one, and it is optional too. It tells us which of the things we make are worth making.",
+      optional: true,
+      next: "Create account",
+    },
+  ],
+  work: {
+    companyLabel: "Company or organisation",
+    companyHint: "Leave it blank if you are between roles or here on your own.",
+    roleLabel: "Which best describes your work?",
+    otherLabel: "Tell us in your own words",
+    otherPlaceholder: "How you would describe it",
+    roles: [
+      "Marketing or growth",
+      "Revenue or sales operations",
+      "Sales",
+      "Video, media or post-production",
+      "Engineering or platform",
+      "Data or analytics",
+      "Operations",
+      "HR, legal or compliance",
+      "Founder or business owner",
+      "Student or between roles",
+    ],
+  },
+  source: {
+    label: "Where did you hear about this?",
+    otherLabel: "Somewhere else",
+    otherPlaceholder: "Where you saw it",
+    options: [
+      "A search engine",
+      "LinkedIn",
+      "YouTube",
+      "A podcast",
+      "A friend or colleague",
+      "My employer",
+      "A conference, event or hackathon",
+    ],
+  },
+  /* The last option of both lists, and the one that opens a text field. It is
+     one string rather than two so the two lists cannot drift apart. */
+  otherOption: "Other",
+  skip: "Skip this step",
+  back: "Back",
+  /* `${current} of ${total}`, assembled at the call site. Written here so the
+     one piece of visible chrome in the stepper is not a template literal buried
+     in a component. */
+  stepCounter: "Step",
   signIn: {
     title: "Sign in",
     intro: "Pick up in the course you were last working through.",
@@ -2601,5 +3431,12 @@ export const auth = {
     before they type a password into it, and a reader browsing does not need it
     shouted. Delete this the day an auth backend exists.
   */
-  shellNote: "Accounts open with the first cohort. This form is not live yet.",
+  /* No cohort. This program does not run them — the note at the top of this
+     file spells it out ("Module 1 opens with no account and no cohort, so there
+     is no future date to wait for"), and the enrol control on every other page
+     prints today's date. A reader who reached this screen from a button reading
+     "Start today" was told on arrival to wait for an intake that does not
+     exist. `legal.draftNote` states the same fact in the same words. */
+  shellNote:
+    "Accounts are not open yet and this form is not live. Module 1 of every course runs right now with no account.",
 } as const;

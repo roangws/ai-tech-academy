@@ -135,12 +135,36 @@ export function MoreCourses({ currentId }: { currentId: string }) {
 
   return (
     <Section id="courses" tint>
+      {/*
+        The copy was "The other courses / Four more, one method / Every course
+        runs the same five steps on a different kind of work. Pick by the job you
+        are responsible for." Rewritten 8 Aug on Roan's note that it should be
+        clearer and less buzzy.
+
+        "Four more, one method" is a slogan: it counts something and then names
+        an abstraction, and a reader who does not already know what "the method"
+        is learns nothing from it. The heading says what the band contains
+        instead.
+
+        The intro kept its one real fact — the five steps are the same across
+        all five courses, and what changes is the work — and dropped the
+        construction around it. "Pick by the job you are responsible for" is four
+        words longer than "Pick the one closest to your job" and asks the reader
+        to parse a relative clause to reach the same instruction.
+
+        The label now matches the section link in `CourseTabs`, which reads
+        "Other courses". They are the same destination and were spelled two ways.
+
+        The destination is the index. From a course page, `/#courses` was a link
+        off this site's deepest page back to a band on the homepage; `/courses`
+        is the sibling list this row is a sample of.
+      */}
       <SectionHeader
-        label="The other courses"
-        heading="Four more, one method"
-        intro="Every course runs the same five steps on a different kind of work. Pick by the job you are responsible for."
+        label="Other courses"
+        heading="The other four courses"
+        intro="Each one takes a different kind of work through the same five steps. Pick the one closest to your job."
         action={
-          <TextAction href="/#courses">
+          <TextAction href="/courses">
             {cta.compare}
             <ArrowRightIcon size={14} weight="bold" />
           </TextAction>

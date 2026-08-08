@@ -91,6 +91,38 @@
   --state-open: #0f6a4b;
   --state-open-surface: #e2f2e9;
 
+  /*
+    THE FIRST RED ON THIS SITE, added 8 Aug with the three-step sign-up form.
+
+    Nothing needed one before, because nothing on the site could be wrong: the
+    sign-up screen was four fields with no validation, and every other state the
+    page expresses is either neutral or `--state-open` green. A form that tells
+    somebody their email address is malformed is the first thing here that has
+    to say "this, specifically, is a problem", and neither of the two existing
+    semantic colours can: green means open, and the accent is what a reader
+    presses.
+
+    #b42318, and it is chosen the way `--accent` was rather than picked. It has
+    to hold at 13px, which is the size the field errors render at, on both
+    grounds a form appears on. Measured:
+
+      #b42318 on white ................. 6.57:1
+      #b42318 on --surface-subtle ...... 5.89:1
+
+    Against the 4.5 AA asks of small text, so both clear with room. The obvious
+    brighter alternative, #c0392b, comes in at 5.44 and 4.87 — still passing, but
+    the second number is close enough to the line that a future tint under it
+    would break it, and a red that is nearly failing is the wrong red for the one
+    thing on the page whose whole job is to be read.
+
+    NO SURFACE PAIR, unlike `--state-open`. The error treatment is a border, a
+    focus ring at 25% and a line of text, which is the same anatomy the accent
+    already uses on a focused field. A filled red panel behind a mistyped email
+    would be the loudest object on a screen where nothing has actually gone
+    wrong yet.
+  */
+  --danger: #b42318;
+
   --focus: #725cf5;
 
   --shadow-1: 0 1px 2px rgb(16 24 32 / 0.06);
@@ -140,6 +172,8 @@
 
   --color-state-open: var(--state-open);
   --color-state-open-surface: var(--state-open-surface);
+
+  --color-danger: var(--danger);
 
   --color-ink-band: var(--ink-band);
 

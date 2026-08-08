@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon, PauseIcon, PlayIcon } from "@phosphor-icons/react";
 
 /**
  * An infinite, self-advancing scroll-snap rail.
@@ -28,20 +28,28 @@ import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
  *      is written 150ms after the last scroll event, when momentum has stopped
  *      and there is no animation to interrupt.
  *
- * The second list is `aria-hidden`. The loop needs two copies of the cards; a
- * screen reader needs one, and it already has all six in the first list.
+ * The second list is `inert`. The loop needs two copies of the cards; a screen
+ * reader needs one, and it already has all six in the first list — and since
+ * every card is a stretched link, the clone also has to stay out of the tab
+ * ring. One attribute does both; the note at the element has the detail.
  *
  * ------------------------------------------------------------ why it stops
  *
- * Autoplay pauses on hover, on focus inside the rail, and when the tab is
- * hidden. The first is not politeness: the board cards have a hover state that
- * reveals what each seat checks, and a track that keeps moving under the cursor
- * makes that state unreadable. The marquee this replaced had exactly that bug.
+ * Four ways, and they cover different people.
  *
- * Under `prefers-reduced-motion` there is no autoplay at all and the arrows
- * jump rather than glide. A carousel that advances itself is the canonical
- * example of the motion that setting exists to stop, so it does not get a
- * gentler version, it gets none.
+ * Focus inside the rail pauses it, and a hidden tab pauses it. Under
+ * `prefers-reduced-motion` there is no autoplay at all and the arrows jump
+ * rather than glide: a carousel that advances itself is the canonical example
+ * of the motion that setting exists to stop, so it does not get a gentler
+ * version, it gets none.
+ *
+ * The fourth is the Pause button, and it is the one that makes this rail
+ * conform rather than nearly conform. Hover-pause was removed on 7 Aug at
+ * Roan's instruction — the right call, since a pointer crosses a rail on the
+ * way to somewhere else and a row that stops every time reads as broken — but
+ * removing it left a mouse user with no way at all to stop moving content, which
+ * is what WCAG 2.2.2 requires. A control answers it without bringing back a
+ * behaviour that fires by accident.
  *
  * ------------------------------------------------------------ the edges
  *
@@ -75,6 +83,31 @@ export function CarouselRail({
   const paused = useRef(false);
   const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [index, setIndex] = useState(0);
+
+  /**
+   * Stopped by the reader, as distinct from `paused`.
+   *
+   * `paused` is a ref because it is transient — focus enters, focus leaves — and
+   * nothing renders from it. This is state because a control renders from it,
+   * and it is separate because the two must not overwrite each other: tabbing
+   * out of a rail somebody deliberately stopped must not start it moving again.
+   */
+  const [stopped, setStopped] = useState(false);
+
+  /**
+   * Whether the position readout is allowed to announce.
+   *
+   * It carried `aria-live="polite"` unconditionally, and autoplay steps the
+   * index every three seconds forever, so a screen reader on this page read out
+   * "2 / 6", "3 / 6", "4 / 6" for as long as the page stayed open — a fresh
+   * interruption every three seconds, none of it asked for. The readout is
+   * genuinely useful, but only when the reader is the one who moved.
+   *
+   * So the live region is armed by `step()` from an arrow press and disarmed by
+   * autoplay. Same element, same text; it just stops narrating a change nobody
+   * made.
+   */
+  const [announce, setAnnounce] = useState(false);
 
   /** Card pitch and the width of one full copy of the list. Measured from the
       DOM rather than assumed, so the same component works at any card width. */
@@ -160,17 +193,20 @@ export function CarouselRail({
     };
   }, [count, metrics, normalize]);
 
-  /* Autoplay. */
+  /* Autoplay. `stopped` is in the dependency list rather than checked inside the
+     tick, so pressing Pause tears the interval down instead of leaving a timer
+     firing into a guard. */
   useEffect(() => {
-    if (reduced()) return;
+    if (reduced() || stopped) return;
 
     const id = setInterval(() => {
       if (paused.current || document.hidden) return;
+      setAnnounce(false);
       step(1);
     }, STEP_MS);
 
     return () => clearInterval(id);
-  }, [step]);
+  }, [step, stopped]);
 
   /* A resize changes the pitch while the browser keeps `scrollLeft` in pixels,
      so the reader ends up between two cards on a card they did not ask for.
@@ -227,8 +263,27 @@ export function CarouselRail({
         <ul ref={listRef} className="flex shrink-0 gap-4 pr-4">
           {children}
         </ul>
-        {/* The loop needs a second copy; a screen reader does not. */}
-        <ul aria-hidden="true" className="flex shrink-0 gap-4 pr-4">
+        {/*
+          The loop needs a second copy; a screen reader does not, and neither
+          does the tab ring.
+
+          `aria-hidden` alone was not enough and was actively worse than
+          nothing. Every card in here is a stretched link, so the clone put six
+          focusable anchors inside a hidden subtree: a keyboard reader tabbing
+          through the rail hit six stops that announce nothing, land on nothing
+          nameable, and navigate to pages they were never told about. That is
+          the specific pattern `aria-hidden` on interactive content is called
+          out for.
+
+          `inert` fixes both halves in one attribute — it removes the subtree
+          from the tab order and from the accessibility tree — so `aria-hidden`
+          comes off with it rather than being stacked on top. It also sets
+          `pointer-events: none` on the clone, which does not affect the rail:
+          scrolling is handled by the overflow container above, and a touch or
+          trackpad gesture over an inert child still scrolls its nearest
+          scrollable ancestor.
+        */}
+        <ul inert className="flex shrink-0 gap-4 pr-4">
           {children}
         </ul>
       </div>
@@ -253,22 +308,56 @@ export function CarouselRail({
           the one thing an assistive-technology user cannot get by other means,
           and `aria-live` on it costs a phrase per step rather than a re-read.
         */}
-        <p aria-live="polite" aria-atomic="true" className="t-meta tabular-nums text-ink-muted">
+        <p
+          aria-live={announce ? "polite" : "off"}
+          aria-atomic="true"
+          className="t-meta tabular-nums text-ink-muted"
+        >
           {index + 1} / {count}
         </p>
 
         {/*
-          `tabIndex={-1}` rather than `aria-hidden`. Keeping them out of the tab
-          ring is right, since every card is already reachable in the list
-          itself, but erasing their names breaks voice control, which drives by
-          accessible name and needs "click next" to match something.
+          `tabIndex={-1}` on the arrows rather than `aria-hidden`. Keeping them
+          out of the tab ring is right, since every card is already reachable in
+          the list itself, but erasing their names breaks voice control, which
+          drives by accessible name and needs "click next" to match something.
+
+          THE PAUSE CONTROL IS THE EXCEPTION and it is a real tab stop.
+
+          Focus-pause and `prefers-reduced-motion` between them covered the two
+          readers this rail was designed around, and missed the one WCAG 2.2.2
+          is actually written for: somebody who reads slowly, or is distracted by
+          movement, and is using a mouse. Nothing they can do with a pointer stops
+          the row — hover was deliberately taken out on 7 Aug — so the content
+          moved for as long as the page was open with no mechanism to stop it.
+          That is the failure condition verbatim, and it needs a control rather
+          than a smarter default.
+
+          It sits before the arrows because it governs them, and it is the only
+          one of the three that is reachable by Tab: the arrows duplicate the
+          rail's own scrolling, and this does something nothing else can.
         */}
         <div className="flex items-center gap-2">
           <button
             type="button"
+            aria-label={stopped ? "Play carousel" : "Pause carousel"}
+            onClick={() => setStopped((s) => !s)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {stopped ? (
+              <PlayIcon size={14} weight="fill" />
+            ) : (
+              <PauseIcon size={14} weight="fill" />
+            )}
+          </button>
+          <button
+            type="button"
             tabIndex={-1}
             aria-label="Previous"
-            onClick={() => step(-1)}
+            onClick={() => {
+              setAnnounce(true);
+              step(-1);
+            }}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-line-strong"
           >
             <CaretLeftIcon size={16} weight="bold" />
@@ -277,7 +366,10 @@ export function CarouselRail({
             type="button"
             tabIndex={-1}
             aria-label="Next"
-            onClick={() => step(1)}
+            onClick={() => {
+              setAnnounce(true);
+              step(1);
+            }}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-line-strong"
           >
             <CaretRightIcon size={16} weight="bold" />

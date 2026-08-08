@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CaretDownIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon, CaretDownIcon, LinkedinLogoIcon } from "@phosphor-icons/react";
 import { AccordionItem, useDisclosureSet } from "@/components/ui/accordion";
 import { Panel, Section } from "@/components/ui";
 import { faqs, instructors } from "@/lib/content";
@@ -39,9 +39,18 @@ import { faqs, instructors } from "@/lib/content";
  * ------------------------------------------------------------------ THE QUESTIONS
  *
  * Six of eleven, chosen rather than sliced. The full set covers the program; these
- * six are the ones a reader asks with a specific course open in front of them, and
- * the rest are one link away. `mode: "single"` and nothing open on first paint,
- * because six open answers on a dark ground is a wall.
+ * six are the ones a reader asks with a specific course open in front of them.
+ * `mode: "single"` and nothing open on first paint, because six open answers on a
+ * dark ground is a wall.
+ *
+ * THE OTHER FIVE NOW HAVE NO ROUTE FROM THIS PAGE, and that is a deliberate
+ * intermediate state rather than an oversight. The "All questions" link out to
+ * the homepage FAQ was removed on 8 Aug because these are becoming per-course
+ * questions, at which point a link to a shared set is a link to the wrong page.
+ * Until that content exists, the six here are still the program-wide copy in
+ * `faqs`, selected by index — so this is shared text on a course page, which is
+ * the thing the change is aimed at and has not been fixed yet. Replacing
+ * `COURSE_QUESTIONS` with a `questions` field on `Course` is the change.
  *
  * This is a second accordion on the same document as the curriculum, which is what
  * `idPrefix` on the primitive is for.
@@ -100,12 +109,13 @@ export function Questions() {
               })}
             </div>
 
-            <Link
-              href="/#faq"
-              className="t-button mt-4 inline-flex min-h-[44px] items-center text-white no-underline transition-colors hover:underline lg:min-h-0"
-            >
-              All questions
-            </Link>
+            {/*
+              "All questions", linking to the homepage FAQ, was here. Removed
+              8 Aug on Roan's instruction, and the reason is a direction rather
+              than a tidy-up: these are going to be each course's own questions,
+              so a link out to a shared set is a link to the wrong page. It also
+              took a reader off a course page they had chosen to be on.
+            */}
           </div>
 
           {/*
@@ -152,22 +162,55 @@ export function Questions() {
               <p className="t-body-sm mt-4 text-[#c3d2dc]">{lead.detail}</p>
             ) : null}
 
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+            {/*
+              Both links were bare words and both were unclear, in different
+              ways. Fixed 8 Aug on Roan's note.
+
+              "LinkedIn" named a destination and not what was at it, and it was
+              the only outbound link in the panel with nothing to mark it as
+              one. It now carries the platform mark and the person's name, which
+              is what a reader is actually deciding to click: they want Roan, not
+              a website.
+
+              "The full roster" was the worse of the two. "Roster" is a word this
+              site uses in its own comments and nowhere a reader can see it, so
+              the link asked somebody to guess that a roster meant instructors —
+              from a panel already headed "Instructor", where the obvious reading
+              is that it leads to more of the same person. It says what it opens
+              now.
+
+              An arrow rather than an external-link glyph on the second, because
+              it is an in-site anchor and the two links have to be
+              distinguishable at a glance.
+            */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2.5">
               {lead.linkedin ? (
                 <Link
                   href={lead.linkedin}
                   target="_blank"
-                  rel="noreferrer"
-                  className="t-button text-white no-underline hover:underline"
+                  /* `noopener` explicitly. `noreferrer` implies it in current
+                     engines, but the pair is what survives a future edit that
+                     drops one of them. */
+                  rel="noopener noreferrer"
+                  className="t-button inline-flex items-center gap-2 text-white no-underline hover:underline"
                 >
-                  LinkedIn
+                  <LinkedinLogoIcon size={18} weight="fill" aria-hidden="true" className="flex-none" />
+                  {lead.name} on LinkedIn
+                  {/* The one thing a screen reader gets that the eye does not:
+                      that this leaves the site. */}
+                  <span className="sr-only">(opens in a new tab)</span>
                 </Link>
               ) : null}
+              {/* The roster page, from 8 Aug. This link used to leave a course
+                  page, load the homepage and land on a band five sections in;
+                  "Meet all the instructors" now goes to the page that is all of
+                  them, which is also the one a reader can bookmark. */}
               <Link
-                href="/#instructors"
-                className="t-button text-white/70 no-underline hover:text-white hover:underline"
+                href="/instructors"
+                className="t-button inline-flex items-center gap-1.5 text-white/70 no-underline transition-colors hover:text-white hover:underline"
               >
-                The full roster
+                Meet all the instructors
+                <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
               </Link>
             </div>
           </div>

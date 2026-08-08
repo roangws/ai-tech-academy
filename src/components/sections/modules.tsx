@@ -39,25 +39,34 @@ import { method, moduleFormat } from "@/lib/content";
  * scrolling on a 14in MacBook. That machine is 1512x982 logical, so the budget
  * is about 780px once the browser chrome and the 72px sticky header are out.
  *
- * The merged band measured 1027. It is 737, and every one of those 290px came
- * from layout or from copy that was saying something twice — none from cutting
- * a step, a sentence, an artifact or a row of the includes strip:
+ * The merged band measured 1027. It is 737, and none of those 290px came from
+ * cutting a step, a sentence, an artifact or a row of the includes strip.
  *
- *   -60  The intro moved onto the heading's row (`asideIntro`, ui/index.tsx),
- *        which is free space next to a heading that wraps to two lines anyway.
- *   -66  The intro stopped walking the five steps. The card below states each
- *        one in a full sentence, so that clause was the card read aloud first.
- *   -130 The artifact left its own third line and joined the title line, where
- *        the row was empty from the step name to the right edge.
- *   -60  The columns went 1fr / 1.2fr. Giving the *taller* column the width is
- *        what turns width into height: at 681px three of the five sentences
- *        fit one line instead of two. The even split dates from when the video
- *        was the taller half and is exactly backwards now.
- *   -20  Row padding 14 to 10. The rows are two lines now, not three.
+ * Each figure below was measured on its own, by putting that one thing back in
+ * the finished band at 1512x838 and reading the height off the element. They do
+ * not sum to 290 and they are not meant to: with the artifact on a third line
+ * the rows are tall whatever the column is worth, so the savings overlap.
  *
- * The rest is distribution. The includes strip sits in the left column under
- * the video rather than full width under both, so the two columns end within
- * 16px of each other instead of one running 250px past the other.
+ *   +126  The artifact on its own third line, instead of on the title line
+ *         where the row was empty from the step name to the right edge.
+ *   +68   The includes strip full width under both columns, instead of in the
+ *         left column under the video.
+ *   +60   The intro stacked under the heading, instead of on its row
+ *         (`asideIntro`, ui/index.tsx).
+ *   +46   Even columns. Giving the *taller* column the width is what turns
+ *         width into height: at 646px three of the five sentences set on one
+ *         line, and at 592px none of them do. The even split dates from when
+ *         the video was the taller half and is exactly backwards now.
+ *   +26   Row padding at 14 rather than 10. The rows are two lines, not three.
+ *
+ * ONE THING THAT BOUGHT NOTHING, recorded because the first version of this
+ * note claimed it bought 66px: rewriting the intro so it stops walking the five
+ * steps. Measured, the old three-sentence version sets to four lines in the
+ * 646px column and the header does not grow, because the heading block beside
+ * it is 106px tall and the intro never reaches that. It was still the right
+ * edit — the card below states each step in a full sentence, so the old clause
+ * was the card read aloud first — but it is an editorial fix, not a structural
+ * one, and the height came from the five items above.
  *
  * If a sixth step or a longer sentence ever arrives, the budget is spent: take
  * it out of the video, which is the shorter column, rather than out of the card.
@@ -75,9 +84,24 @@ export function HowModulesWork() {
     <Section id="method" compressed>
       {/* `asideIntro`, and this is the only section that asks for it: the intro
           sits on the heading's row, in the space a two-line heading leaves
-          empty, rather than under it. 60px, and `SectionHeader` has the note. */}
+          empty, rather than under it. 60px, and `SectionHeader` has the note.
+
+          `tracks` repeats the grid below verbatim, which is the point of the
+          prop: the intro then begins on the steps card's left edge and the
+          heading ends on the video's right edge, so the band has two vertical
+          lines in it rather than four. Change one of these and change both.
+
+          It splits at xl, one step later than the grid below it, and the
+          heading is the reason. The left track is 538px at 1280 and up, where
+          the heading sets as two full lines, but 421px at 1024, where it breaks
+          into three and the first of them reads "Build, deploy, and" — a short
+          ragged line under a 44px eyebrow. Between 1024 and 1280 the header
+          stacks instead, which is both 24px shorter and better set, and it
+          costs no alignment: stacked, the intro starts on the same left edge as
+          the heading and the video. */}
       <SectionHeader
         asideIntro
+        tracks="xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]"
         label={method.eyebrow}
         heading={method.headline}
         intro={method.intro}
@@ -96,9 +120,11 @@ export function HowModulesWork() {
 
         The tracks are 1fr / 1.2fr rather than even, and the reason is the same
         one: the steps card is the taller column, so it is the one that converts
-        width into height. Three of its five sentences fit on one line at 681px
-        and on two at 600. The even split it replaces was correct when the video
-        was the taller half, which stopped being true at the merge.
+        width into height. Measured at 1512, the tracks are 538 and 646; three
+        of the five sentences set on one line at 646 and none of them do at the
+        592 an even split gives, which is 46px of the band. The even split it
+        replaces was correct when the video was the taller half, which stopped
+        being true at the merge.
 
         `col-start` / `row-start` rather than `order`, because DOM order is
         already the right order everywhere else: stacked on a phone a reader
@@ -232,7 +258,28 @@ export function HowModulesWork() {
                           <StatusChip open>{step.access}</StatusChip>
                         </span>
                       ) : null}
-                      <span className="t-meta flex w-full flex-wrap items-baseline gap-x-2 pl-8 text-ink-muted sm:ml-auto sm:w-auto sm:pl-0">
+                      {/*
+                        A FIXED 200px BLOCK, JUSTIFIED, and this is an alignment
+                        fix rather than a spacing preference.
+
+                        Sized to its content the pair could only align on one
+                        edge, and whichever one it was, the other five went
+                        ragged. Right-flush put five copies of the identical
+                        words "You produce" at five different x positions, 42px
+                        apart at the extremes, which is the most visible kind of
+                        rag there is because the eye already knows the strings
+                        match. Left-flush instead pulled the values off the
+                        card's own right margin by up to 48px.
+
+                        At a fixed width with `justify-between` both edges are
+                        hard: the labels start on one line, the values end on
+                        the card's text margin, and what varies is the gap
+                        between them, which reads as leading rather than as
+                        misalignment. 200px is the longest pair, "Completion
+                        record", plus the 14px of air it measures at 1512; the
+                        widest gap any row opens is 56, on "Live system".
+                      */}
+                      <span className="t-meta flex w-full flex-wrap items-baseline gap-x-2 pl-8 text-ink-muted sm:ml-auto sm:w-[200px] sm:flex-none sm:justify-between sm:pl-0">
                         <span className="t-field">{method.produces}</span>
                         <span className="font-semibold text-ink-secondary">{step.output}</span>
                       </span>

@@ -77,15 +77,21 @@ export function EnrollRail({ course }: { course: Course }) {
             <EnrollButton withDate href="/sign-up" className="w-full" />
           </div>
 
-          <p className="t-meta mt-3 text-ink-muted">
-            {/* The count follows the curriculum rather than being written down,
-                so a course with a different module count says the right number
-                here without anyone remembering to come and change it. */}
-            A free account keeps your work and opens modules 2 to{" "}
-            {course.curriculum[course.curriculum.length - 1]?.n.replace(/^0/, "")}.
-          </p>
+          {/*
+            "A free account keeps your work and opens modules 2 to 8" was here,
+            under the button, and it is gone on Roan's instruction.
 
-          <div className="mt-4 border-t border-line pt-4">
+            It was the third statement of the access model inside one card. The
+            price line says "Free", the line under it says "Module 1 opens with
+            no account", and this said the same fact a third time with a module
+            number in it. The button is the thing a reader is deciding about and
+            it had two lines of qualification stacked beneath it.
+
+            The module count it printed was derived from `curriculum`, so nothing
+            is now going stale by being deleted — there is no hand-kept number
+            left behind.
+          */}
+          <div className="mt-5 border-t border-line pt-4">
             <p className="t-field text-ink-muted">{moduleFormat.includesLabel}</p>
             <ul className="mt-2.5">
               {moduleFormat.includes.map((item, i) => {

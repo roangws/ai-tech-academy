@@ -75,8 +75,14 @@ export function Curriculum({
           <h2 id="curriculum-heading" className="t-h3 text-ink">
             Course content
           </h2>
+          {/* "one guided lab in each" was false on this very page for the AI
+              literacy course, whose module 05 is four lessons and no lab, and
+              the accordion under this line proves it to anyone who opens it.
+              No module in any of the five is one lesson and one lab either —
+              they run three to six items in a mix that moves with the subject.
+              "guided labs throughout" is the claim the data supports. */}
           <p className="t-meta mt-1.5 text-ink-muted">
-            {modules.length} modules · {total} lessons · one guided lab in each
+            {modules.length} modules · {total} lessons · guided labs throughout
           </p>
         </div>
 

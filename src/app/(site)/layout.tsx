@@ -42,7 +42,23 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         Skip to content
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1">
+      {/*
+        `tabIndex={-1}` is what makes the skip link above actually skip.
+
+        `<main>` is not focusable by default, and Safari in particular follows
+        the fragment without moving focus: the viewport scrolls, the next Tab
+        continues from the skip link, and the reader is put straight back into
+        the header they just asked to jump over. Making the target programmatically
+        focusable is the fix the WAI pattern specifies, and it costs nothing on the
+        browsers that already do the right thing.
+
+        `outline-none` unconditionally rather than `focus:outline-none`. The focus
+        here arrives programmatically, so `:focus` matches and the UA would draw a
+        ring around the entire page content. `focus-visible` styling elsewhere is
+        untouched — this element never gets it, because it is never focused by a
+        gesture that counts as visible-intent.
+      */}
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
       <SiteFooter />

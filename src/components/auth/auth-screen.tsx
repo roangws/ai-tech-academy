@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
+import { SignInForm } from "@/components/auth/sign-in-form";
+import { SignUpSteps } from "@/components/auth/sign-up-steps";
 import { auth } from "@/lib/content";
 
 /**
@@ -48,8 +48,6 @@ import { auth } from "@/lib/content";
  * back, and it is a link.
  */
 export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
-  const copy = variant === "signUp" ? auth.signUp : auth.signIn;
-
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       {/* The lockup is the only navigation on the screen, which is why it is
@@ -73,93 +71,38 @@ export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
         and the screen read as two unrelated objects that happened to share a
         page. `max-content`-ish fixed widths keep them one pair at every width.
       */}
-      <div className="mx-auto grid w-full max-w-[920px] flex-1 items-center justify-center gap-8 px-4 py-10 sm:px-6 md:px-8 lg:grid-cols-[minmax(0,440px)_minmax(0,380px)] lg:gap-14 lg:py-14">
+      {/*
+        `<main>`, not a `<div>`. These two routes sit outside the `(site)` group
+        and so miss the landmark that layout gives every other page, which left
+        sign-in and sign-up as the only two pages on the site with no main
+        landmark at all — the two pages a screen reader user is most likely to
+        arrive at cold. `id="main"` matches the id the site layout uses, so the
+        two groups name the same thing the same way.
+
+        No skip link above it, which the site layout does have and this
+        deliberately does not: the header here holds exactly one focusable
+        element, the lockup, so a "Skip to content" link would add a tab stop
+        whose whole purpose is to bypass a single tab stop.
+      */}
+      <main
+        id="main"
+        className="mx-auto grid w-full max-w-[920px] flex-1 items-center justify-center gap-8 px-4 py-10 sm:px-6 md:px-8 lg:grid-cols-[minmax(0,440px)_minmax(0,380px)] lg:gap-14 lg:py-14"
+      >
         {/* ------------------------------------------------------------ form */}
+        {/*
+          Sign-up is a three-step flow and sign-in is one screen, so only one of
+          them is a wizard. The shell is shared because the two screens have to
+          look like the same product; the form column is not, because they are
+          not the same form.
+
+          `SignUpSteps` is a client component and this shell is not. That split
+          is the reason the wizard lives in its own file rather than behind a
+          branch in here: putting `"use client"` at the top of this file would
+          have made the sign-in screen, the panel and the lockup client
+          components too, for a stepper that only one of the two routes renders.
+        */}
         <div className="min-w-0">
-          <div className="max-w-[440px]">
-            <h1 className="t-h2 text-ink">{copy.title}</h1>
-            <p className="t-body mt-2.5 text-ink-secondary">{copy.intro}</p>
-
-            <form className="mt-7" noValidate>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {copy.fields.map((f) => (
-                  <div key={f.name} className={f.half ? "" : "sm:col-span-2"}>
-                    <label htmlFor={f.name} className="t-field block text-ink-secondary">
-                      {f.label}
-                    </label>
-                    {/*
-                      `h-11`, matching the `md` control height, so the fields and
-                      the button below them are one system rather than two.
-
-                      The focus ring is the accent at 2px inset rather than the
-                      browser default: the default outline sits outside an 8px
-                      radius and reads as a square around a rounded box.
-                    */}
-                    <input
-                      id={f.name}
-                      name={f.name}
-                      type={f.type}
-                      autoComplete={f.autoComplete}
-                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {variant === "signIn" ? (
-                <div className="mt-2.5 flex justify-end">
-                  <Link
-                    href="/sign-in"
-                    className="t-meta text-accent no-underline transition-colors hover:text-accent-hover hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-              ) : null}
-
-              {/*
-                The one filled accent control on the screen, which is the lock.
-                `type="submit"` and no handler: there is no backend, and a button
-                that silently does nothing is worse than one that says so, which
-                is what the note under it is for.
-              */}
-              <LiquidButton
-                type="submit"
-                variant="accent"
-                size="lg"
-                className="t-button mt-6 w-full"
-              >
-                {copy.submit}
-              </LiquidButton>
-
-              {variant === "signUp" ? (
-                <p className="t-micro mt-3 text-ink-muted">
-                  {auth.terms.lead}{" "}
-                  {auth.terms.links.map((l, i) => (
-                    <span key={l.href}>
-                      {i > 0 ? " and " : ""}
-                      <Link href={l.href} className="text-ink-secondary underline underline-offset-2">
-                        {l.label}
-                      </Link>
-                    </span>
-                  ))}
-                  .
-                </p>
-              ) : null}
-
-              <p className="t-micro mt-3 text-ink-muted">{auth.shellNote}</p>
-            </form>
-
-            <p className="t-body-sm mt-7 border-t border-line pt-5 text-ink-secondary">
-              {copy.altPrompt}{" "}
-              <Link
-                href={copy.altHref}
-                className="t-button text-accent no-underline transition-colors hover:text-accent-hover hover:underline"
-              >
-                {copy.altLabel}
-              </Link>
-            </p>
-          </div>
+          {variant === "signUp" ? <SignUpSteps /> : <SignInForm />}
         </div>
 
         {/* ----------------------------------------------------------- panel */}
@@ -195,7 +138,7 @@ export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
             ))}
           </ul>
         </aside>
-      </div>
+      </main>
     </div>
   );
 }

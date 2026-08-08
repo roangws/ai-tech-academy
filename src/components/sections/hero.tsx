@@ -160,7 +160,12 @@ export function Hero() {
               {/* A sibling of the paragraph rather than a child of it. `TextAction`
                   carries `t-button` and a 44px tap target, and nesting it in the
                   `<p>` put both inside a 13px line box for no gain. */}
-              <TextAction href="#instructors" className="whitespace-nowrap">
+              {/* `/instructors` rather than the `#instructors` band, from 8 Aug.
+                  The band is four screens down and shows the same five people;
+                  the page shows them with room, and it is what "meet" promises.
+                  This is the one link in the hero that leaves the page, which is
+                  the trade: a reader who wanted the roster gets the roster. */}
+              <TextAction href="/instructors" className="whitespace-nowrap">
                 Meet the instructors
                 <ArrowRightIcon size={13} weight="bold" />
               </TextAction>

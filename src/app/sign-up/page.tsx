@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/sign-up" },
   /* An auth screen has nothing a search engine should index or follow. */
   robots: { index: false, follow: false },
+  /* Still declared: noindex governs crawlers, an unfurl is what a person sees
+     when the link is pasted. sign-in/page.tsx has the note. */
+  openGraph: {
+    title: auth.signUp.title,
+    description: auth.signUp.intro,
+    url: "/sign-up",
+  },
 };
 
 export default function SignUpPage() {

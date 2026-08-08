@@ -8,7 +8,7 @@ import type { Icon } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container, FactsLine } from "@/components/ui";
-import { hero, instructors, type Course } from "@/lib/content";
+import { instructors, type Course } from "@/lib/content";
 
 /**
  * The dark fold, text only.
@@ -52,13 +52,125 @@ import { hero, instructors, type Course } from "@/lib/content";
  *
  * The green chip is the one place this fold answers the question the reference's
  * "Bestseller" pill answers, and it answers it with the access model.
+ *
+ * ------------------------------------------------------------ THE BAND IS THE COVER
+ *
+ * Added 8 Aug, at Roan's request: the band carries the course's own cover
+ * photograph, full bleed, under a veil.
+ *
+ * The cover was already on this page once and it was in a right-hand column,
+ * where it competed with the title for the fold and then had to be removed to
+ * make room for the enrol rail. Behind the type it does the job the column
+ * version never could: it says which of the five courses this is before a word
+ * is read, and it does it in the 352px the rail is not using yet, because the
+ * rail does not arrive until 208px below this band's bottom edge.
+ *
+ * ------------------------------------------------------------------- THE VEIL
+ *
+ * The image is at full opacity and every bit of the darkening is done by the one
+ * gradient over it. That ordering is not cosmetic. Fading the photograph toward
+ * `--ink-band` flattens it toward one value and the frame stops being a
+ * photograph at about 40%; veiling a full-strength image keeps its contrast and
+ * only moves its level, so it still reads as a room with a person in it at the
+ * right of the fold while the left is near enough to flat ink for type.
+ *
+ * One gradient, so the remaining image is `1 - alpha` at every stop and can be
+ * read straight off the class. At lg it runs 0.95 at the left edge, holds 0.92
+ * to 52% of the viewport — which is past the longest line of type at every width
+ * from 1024 up — then falls to 0.30 at the right, where the rail has not arrived
+ * yet and nothing is written. Seventy per cent of the photograph survives at that
+ * edge, which is what makes a face put there by `cover.focus` actually legible
+ * rather than a shape in the dark. Below lg the type spans the full width, so
+ * there is no clear side to spend the photograph on and the gradient goes
+ * near-flat at 0.90/0.88 instead.
+ *
+ * THE NUMBERS ARE MEASURED. Photographing the band with the type hidden and
+ * sampling the lightest ground pixel under each element, at 1440/1280/1024/768
+ * and 430: the 13px lines at 60% and 70% white run 5.87 to 6.68, the tagline
+ * 8.25 to 9.73, the h1 13.11 to 15.23. AA wants 4.5 for the small text and 3.0
+ * for the h1, so the binding constraint is the breadcrumb at 5.87 and the left
+ * end of the gradient is what sets it.
+ *
+ * ------------------------------------------------------------- NO STACKING CONTEXT
+ *
+ * `relative` and nothing else. No `isolate`, no `z-index`, and the image is a
+ * positioned sibling of the content rather than a `-z-10` layer under it.
+ *
+ * The stat bar straddles this band's bottom edge, and it does so purely by
+ * document order: it renders from the container *after* this section and paints
+ * over it because it comes later. A `-z-10` layer in here would have needed
+ * `isolate` to resolve against, and the same argument runs through this file
+ * twice already — the glass controls' backdrop filters break if anything above
+ * them opens a stacking context, and the stat bar's own note records an overlap
+ * that was rebuilt for exactly this reason. The content gets `relative` to sit
+ * above the two veils and nothing here goes negative.
+ *
+ * `priority` on the image. This is the fold, so it is the LCP candidate; without
+ * it the band renders flat ink for the length of a lazy fetch and then changes
+ * under the reader. `sizes="100vw"` because it is full bleed at every width.
  */
 export function CourseHero({ course }: { course: Course }) {
   const lead = instructors.people[0];
 
   return (
-    <section className="bg-ink-band pt-8 pb-14 md:pt-12 md:pb-16 lg:pt-14 lg:pb-[88px]">
-      <Container>
+    <section className="relative overflow-hidden bg-ink-band pt-8 pb-14 md:pt-12 md:pb-16 lg:pt-14 lg:pb-[88px]">
+      {course.cover ? (
+        <>
+          {/*
+            `alt=""` and `aria-hidden`, like every decorative frame on the site.
+
+            content.ts says it directly for these covers: the photograph shows
+            the kind of job the course is for, and it introduces nobody. Under a
+            title, a tagline and a byline it is decoration, and a screen reader
+            reading "a marketing operations lead working from a laptop" before
+            the h1 would be announcing the wallpaper.
+
+            The crop is per course, from `cover.focus`. At the default centre
+            the GTM frame resolved to a strip of desk and ceiling with the
+            woman's face well above the band, which is what Roan was looking
+            at.
+          */}
+          <Image
+            src={course.cover.src}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="100vw"
+            /*
+              `objectPosition` from the course's own frame, defaulting to
+              centre. This is the "move it up" control and the note on
+              `Img.focus` in content.ts has the whole of why the vertical value
+              is the one that does the work on a band this wide.
+
+              An inline style rather than a Tailwind class: the values are data,
+              five different strings from content.ts, and arbitrary-value
+              utilities have to be statically present in the source for the
+              generator to emit them.
+            */
+            style={{ objectPosition: course.cover.focus ?? "50% 50%" }}
+            className="pointer-events-none absolute inset-0 object-cover"
+          />
+          {/*
+            ONE LAYER, and the first version had two: a flat floor with a
+            gradient over it. Two veils multiply, which is both hard to reason
+            about and why that version was wrong — 0.72 under 0.96 leaves 1.1%
+            of the photograph at the left edge, so the band rendered as flat ink
+            with a rumour in the corner. A single gradient states the remaining
+            image directly as `1 - alpha` at every stop.
+
+            The alpha at the right is the floor: it can never fall below 0.52 at
+            lg, so no course's cover contributes more than 48% however bright
+            its frame is.
+          */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(13,26,34,0.9)_0%,rgba(13,26,34,0.88)_100%)] lg:bg-[linear-gradient(90deg,rgba(13,26,34,0.95)_0%,rgba(13,26,34,0.92)_52%,rgba(13,26,34,0.55)_74%,rgba(13,26,34,0.3)_100%)]"
+          />
+        </>
+      ) : null}
+
+      <Container className="relative">
         {/*
           The right column is held open at lg and left empty. The rail is placed
           into it from the container below, because a sticky element cannot live
@@ -87,12 +199,19 @@ export function CourseHero({ course }: { course: Course }) {
               the page already open.
 
               `<ol>`, because a trail is ordered and the order carries the meaning.
+
+              AND THE FIRST ITEM IS A ROUTE, from 8 Aug. It pointed at
+              `/#courses` — a scroll position on the homepage — which made the
+              parent of five pages a band on a sixth. `/courses` is the page that
+              was built to be that parent, and this link is the reason it was
+              built; it shipped without this line being changed, so for one pass
+              the trail still threw the reader onto the homepage.
             */}
             <nav aria-label="Breadcrumb" className="t-meta">
               <ol className="flex flex-wrap items-center gap-x-2">
                 <li>
                   <Link
-                    href="/#courses"
+                    href="/courses"
                     className="text-white/60 no-underline transition-colors hover:text-white hover:underline"
                   >
                     Courses
@@ -240,64 +359,31 @@ export function StatBar({ course }: { course: Course }) {
       The reference draws a plain light border on its straddling card and it reads
       correctly against the black. So does this.
 
-      `isolate`, so the photograph below can sit at `-z-10` and paint above this
-      element's own white background but under every cell. Without it that negative
-      index resolves against the page root and the image disappears behind the
-      section entirely.
+      ------------------------------------------------- THE GROUND IS PLAIN WHITE
+
+      It carried the homepage's banner photograph across the whole bar at 6%,
+      ghosted behind the three cells. Removed 8 Aug on Roan's instruction, and
+      the reason it goes cleanly is that the treatment was always working against
+      its own labels: the note that used to live here recorded 6% as a hard
+      ceiling because the 13px `--ink-muted` labels drop under AA at 7. A texture
+      whose maximum strength is set by the type it sits behind is a texture with
+      no room in it, and at 6% what it bought was 14 levels of grey that read as
+      a smudge rather than as a surface.
+
+      The tile at the left is what makes this card read as an object laid over
+      the band, which is the job the photograph was hired to help with. It does
+      it alone.
+
+      `isolate` went with the image. It existed so a `-z-10` layer could resolve
+      inside this element, and there is no negative index here now.
+
+      `relative` STAYS, and it is load-bearing rather than left over. The hero
+      band above is itself `relative` since it took the cover photograph, so it
+      paints as a positioned element; this card overlaps it and must be
+      positioned too, or the band paints over the top of it. Nothing in the
+      output says so if it regresses — the card simply disappears into the ink.
     */
-    <div className="relative isolate overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e2 md:flex md:min-h-[92px]">
-      {/*
-        The homepage's banner photograph, across the whole bar, at 6%.
-
-        Roan asked for the fold's own image carried behind this card so it is not
-        flat white. `hero.lesson.poster` rather than a path written again here: it
-        is the frame the homepage opens on, so both pages read one source and a
-        change there follows here.
-
-        6% IS A CEILING, NOT A TASTE CALL, and it is the labels that set it. They
-        are `--ink-muted` at 13px, which is 5.26:1 on white, and every point of
-        opacity spends some of that. Measured on the rendered bar with the type
-        hidden, sampling the white plane only:
-
-          5%   ground 242-254   labels 4.70:1
-          6%   ground 240-254   labels 4.62:1
-          7%   ground 237-254   labels 4.49:1   <- under AA
-          10%  ground 229-254   labels 4.19:1
-
-        So 6 is the last step that clears 4.5 with any margin, and it still moves
-        the ground 14 levels across the card, which is enough to read as a surface
-        rather than as paper. The values are 16.9:1 and never in question.
-
-        Three other routes were measured and rejected. `contrast()` flattens toward
-        mid-grey, not toward white, so it darkened the ground at every setting
-        (0.30 contrast at 30% opacity: ground 205-228, labels 3.31). `brightness()`
-        cannot lift the frame's near-black studio wall, because anything times a
-        multiplier is still black. And the other three photographs on the site
-        behave within 0.04 of this one at the same opacity, so the image is not the
-        variable.
-
-        A white wash used to sit over this at 55%, which cancelled most of what the
-        6% was for and left the card looking flat anyway.
-
-        Under the tile the photograph is invisible, since `bg-accent` is opaque.
-        That is right rather than a compromise: the tile is the one part of this
-        card that already has a ground.
-
-        `hidden md:block`, because below md this card is not a banner. It is a
-        stacked list four rows and 296px tall, and `object-cover` on a 16:9 frame
-        in a box that shape crops to the middle of the subject's face, so a phone
-        got a portrait ghosted behind four lines of type. Nobody chose that crop
-        and there is no version of it worth keeping: the treatment exists to give a
-        wide strip a surface, and down there the element is not a wide strip.
-      */}
-      <Image
-        src={hero.lesson.poster.src}
-        alt=""
-        aria-hidden="true"
-        fill
-        sizes="(max-width: 1280px) 100vw, 824px"
-        className="pointer-events-none absolute inset-0 -z-10 hidden object-cover object-left opacity-[0.06] md:block"
-      />
+    <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e2 md:flex md:min-h-[92px]">
       {/*
         The solid tile at the left edge, which is the element that makes the whole
         bar read as laid over the band rather than butted against it.

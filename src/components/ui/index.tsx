@@ -154,8 +154,20 @@ export function Panel({
  * they can act on. Side by side they spend 106, because the heading wraps to
  * two lines either way and the intro is shorter than the hole beside it.
  *
- * `items-end` on the row is what makes it read as one object rather than two
- * columns: the intro's last line sits on the heading's last line.
+ * `items-end` is what makes it read as one object rather than two columns: the
+ * intro's last line sits on the heading's last line.
+ *
+ * IT IS A GRID, on the same tracks as #method's own content, and that is the
+ * whole point rather than an implementation detail. The first version was a
+ * `justify-between` flex row, which put the intro hard against the container's
+ * right edge and let its left edge fall wherever the text happened to wrap —
+ * measured, x=844 above a card starting at x=718. Two blocks in the right half
+ * of one band, 126px out of line, with nothing between them to explain why.
+ * Sharing the tracks means the intro starts exactly where the card below it
+ * starts, and the heading ends where the video does.
+ *
+ * The caller owns the track sizes, via `tracks`, because the header can only
+ * line up with a grid it is told about.
  *
  * This replaced `wide`, which raised one section's intro cap from 640 to 760 to
  * buy the same band 24px. That was the cheap version of the same fix and it
@@ -170,32 +182,68 @@ export function SectionHeader({
   id,
   action,
   asideIntro = false,
+  tracks = "lg:grid-cols-2",
+  as: Heading = "h2",
 }: {
   label?: string;
   heading: string;
   intro?: string;
   id?: string;
+  /**
+   * The right-hand affordance, usually a `TextAction` to the page a band
+   * teases.
+   *
+   * NOT COMPATIBLE WITH `asideIntro`, and the failure is silent rather than
+   * loud, which is why it is written down here. In the split form the header is
+   * a two-column grid holding the heading and the intro; an action is a third
+   * child, so it does not sit at the end of the row — it drops to a second row
+   * under the heading and reads as a stray link. If a section ever needs both,
+   * the action belongs inside the intro's cell rather than beside it.
+   */
   action?: ReactNode;
   asideIntro?: boolean;
+  /** Tailwind column classes for `asideIntro`, matched to the section's grid. */
+  tracks?: string;
+  /**
+   * The heading level, and it exists for exactly one call site.
+   *
+   * Every band on the homepage is a section of a page whose h1 is the hero, so
+   * `h2` is right and is the default. `/courses` is different: it is a page
+   * whose whole subject is the thing this header names, and it had no h1 at all
+   * until this prop existed — the document outline started at h2 and a screen
+   * reader jumping by heading found no title for the page.
+   *
+   * A prop rather than a second component, because the visible treatment is
+   * identical and should stay identical; `t-h2` is the type scale's section
+   * heading and the level is a semantic fact about the document, not a size.
+   */
+  as?: "h1" | "h2";
 }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 md:mb-6">
-      <div className={asideIntro ? "max-w-[620px]" : "max-w-[680px]"}>
+    <div
+      className={
+        asideIntro
+          ? `mb-5 grid grid-cols-1 items-end gap-x-8 gap-y-3 md:mb-6 ${tracks}`
+          : "mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 md:mb-6"
+      }
+    >
+      <div className={asideIntro ? "min-w-0" : "max-w-[680px]"}>
         {label ? <p className="t-label mb-2 text-ink-muted">{label}</p> : null}
-        <h2 id={id} className="t-h2 text-ink">
+        <Heading id={id} className="t-h2 text-ink">
           {heading}
-        </h2>
+        </Heading>
         {intro && !asideIntro ? (
           <p className="t-body mt-2.5 max-w-[640px] text-ink-secondary md:mt-3">{intro}</p>
         ) : null}
       </div>
-      {/* `w-full` until lg, so on anything narrower than the two-column grid
-          below this behaves exactly like the stacked form and wraps under the
-          heading on the row's own 12px gap. */}
+      {/* One column until `tracks` splits it, so at every narrower width this is
+          the ordinary stacked header: the intro sits under the heading on the
+          row's own 12px gap, capped at the page's 640px measure like every
+          other intro on the site. The cap stays in force in the split form too,
+          where #method's column measures 646px at 1512 and the last 6px of it
+          are rag anyway. */}
       {intro && asideIntro ? (
-        <p className="t-body w-full text-ink-secondary lg:w-auto lg:max-w-[520px] lg:flex-1">
-          {intro}
-        </p>
+        <p className="t-body min-w-0 max-w-[640px] text-ink-secondary">{intro}</p>
       ) : null}
       {action}
     </div>
@@ -574,23 +622,51 @@ export function PosterTitleCard({ title }: { title: string }) {
  *
  * Every course used to share one flat placeholder tile, so roughly 40% of the
  * catalog carried zero information and five cards looked interchangeable. The
- * cover now states the path letter, the audience and the deliverable on its own
- * ground, one hue per course. The oversized letter is a watermark cut from the
- * ground itself rather than an added colour.
+ * cover now states the deliverable over the course's own photograph, tinted with
+ * one hue per course. The oversized letter is a watermark cut from that ground
+ * rather than an added colour.
+ */
+/**
+ * ------------------------------------------- WHAT THE COVER NO LONGER CARRIES
+ *
+ * The `[COURSE B]` chip and the audience line under it ("Editors, producers,
+ * post supervisors") were removed on 8 Aug, on Roan's note to make the cover
+ * cleaner. Three things followed from it and all three are improvements the
+ * cover could not have had while they were there:
+ *
+ *   - The top gradient plate went with them. It was 112px of ink from 0.78,
+ *     and it existed for one reason: to hold 13px white type up to AA over an
+ *     unpredictable frame. The note it replaced records that the whole brief
+ *     for this set of photographs was that the people in them read as human and
+ *     warm, and that the plate was as much treatment as the frames could take
+ *     and still be photographs. With no type in the top half there is nothing to
+ *     make legible, so the plate is pure loss, and every one of these faces is
+ *     now uncovered.
+ *
+ *   - The two-line reservations went too. `min-h-[36px]` on the audience line
+ *     existed so four covers in a row finished level when four of five wrapped
+ *     to two lines and one did not. One block of type cannot disagree with
+ *     itself, so the problem is gone rather than solved.
+ *
+ *   - Every cover is now bounded by its ratio at every width. The type layer
+ *     resolves to about 99px against 108 at 16:6 on the narrowest card and 125
+ *     at 16:9 four-across, so the spacer always wins. That is the case the grid
+ *     arrangement below was built to survive; it stays as the safety net, but
+ *     nothing currently relies on it.
+ *
+ * `letter` stays and is still derived from the badge. It is a watermark at 13%
+ * over a photograph — texture, not a label — and it is the only thing left that
+ * distinguishes two covers whose photographs are similar.
  */
 export function CourseCover({
   ground,
-  badge,
   letter,
-  audience,
   build,
   image,
   fill = false,
 }: {
   ground: string;
-  badge: string;
   letter: string;
-  audience: string;
   build: string;
   /**
    * The photograph under the cover's graphic treatment. Absent leaves the flat
@@ -617,35 +693,35 @@ export function CourseCover({
 
       16:6 below sm, 16:9 above it. Five covers at 16:9 on a 390px screen is
       1,005px of photograph in one section, and the cover only needs the height
-      its two type blocks occupy: a 22px badge row and a two-line artifact line
-      is 82px inside 32px of padding, so 134 has room to spare and 201 was
-      spending 67px per card on empty ground.
+      its one type block occupies: "You build" and a two-line artifact is 67px
+      inside 32px of padding, so 134 has room to spare and 201 was spending 67px
+      per card on empty ground.
 
       ---------------------------- THE RATIO IS A FLOOR NOW, CHANGED 7 AUG
 
       It was `aspect-video` straight on this element, which is a height, not a
       minimum: when the type inside needed more than the ratio granted, the
       overflow was silently clipped by the `overflow-hidden` two lines down. The
-      breakpoint that broke was lg on the course page, where "Four more, one
-      method" runs four cards across at 222px. 16:9 gives that 125px; a chip, a
-      two-line audience line, "You build" and a two-line artifact need 150. The
-      bottom 25 were cut, which put the shear straight through the artifact line
-      and is the clipped card in Roan's capture. `aspect-ratio` does not
-      participate in automatic minimum sizing, so nothing anywhere reported it.
+      breakpoint that broke was lg on the course page, where the cross-sell runs
+      four cards across at 222px. 16:9 gives that 125px; the block then was a
+      chip, a two-line audience line, "You build" and a two-line artifact, which
+      need 150. The bottom 25 were cut, which put the shear straight through the
+      artifact line and is the clipped card in Roan's capture. `aspect-ratio`
+      does not participate in automatic minimum sizing, so nothing anywhere
+      reported it.
 
       A grid with one cell and two things in it fixes that with no measuring. The
       spacer carries the ratio and the content sits on top of it in the same cell,
       so the row resolves to whichever is taller: the ratio when the type fits,
       the type when it does not.
 
-      Where the type wins, it wins by the same amount on every cover in a row,
-      because the audience line and the artifact line each reserve two lines. The
-      notes on those two say why. Without the reservation this fix trades a clipped
-      cover for a ragged row, which it did for an hour.
-
-      The type wins below sm, where 16:6 on a 288px card is 108px and the block
-      needs about 157. That is one card per row down there, so there is nothing for
-      it to be level with.
+      NOTHING CURRENTLY MAKES THE TYPE WIN, and that changed on 8 Aug when the
+      chip and the audience line came off the cover. The block is about 99px now
+      against 108 at the narrowest 16:6 and 125 at four-across 16:9, so the
+      spacer sets the height at every width. This arrangement stays as the safety
+      net rather than as live machinery: it is what makes the failure a taller
+      cover instead of a silent crop, and the artifact line keeps its two-line
+      reservation so a row stays level if the type ever does win again.
 
       Not `min-h-[125px]` and friends. The ratio has to follow the card's width
       and the card's width follows five breakpoints and three different grids.
@@ -670,16 +746,15 @@ export function CourseCover({
       {/*
         The photograph, and three layers of treatment over it.
 
-        The covers were flat hue with a watermark letter, and the graphic design
-        is unchanged: the same badge, the same audience line, the same "You
-        build" block, the same letter, in the same places. What changed is what
-        sits behind them.
+        The covers were flat hue with a watermark letter. The path's own hue
+        stays as a wash across the whole frame, which is what keeps five covers
+        telling themselves apart at a glance, and ink comes up from the bottom
+        because the "You build" block sits there and a photograph cannot be
+        trusted to be dark where type needs it.
 
-        The path's own hue stays as a wash across the whole frame, which is what
-        keeps five covers telling themselves apart at a glance. Then ink from the
-        bottom and a lighter pass from the top, because each end of the cover
-        carries text and a photograph cannot be trusted to be dark in the two
-        places type needs it to be.
+        There were three layers and there are two. The third was a plate across
+        the top, for the chip and the audience line, and it went when they did:
+        with no type up there it was ink over a face for nothing.
 
         The numbers matter more than the structure here. The first pass ran the
         wash at 52% with the bottom gradient reaching 45% up the frame, and it
@@ -691,11 +766,29 @@ export function CourseCover({
       */}
       {image ? (
         <>
+          {/*
+            `objectPosition` from `image.focus`, added 8 Aug in the same pass as
+            the course hero's.
+
+            It was missed there and the note on `Img.focus` in content.ts said
+            outright that the horizontal value "does take effect on the catalog
+            covers", which was false for as long as this line did not exist —
+            the covers were still cropping from the centre. A comment asserting
+            behaviour the code does not have is the exact failure the notes in
+            this repo are supposed to prevent, so it is worth saying plainly
+            that this is the fix for one.
+
+            It matters more here than on the hero, because both axes work. These
+            boxes are 16:9 and 16:6 against frames that are 16:9 and one 4:5, so
+            a cover has horizontal overflow at some widths and vertical at
+            others, and the same string steers whichever one exists.
+          */}
           <Image
             src={image.src}
             alt=""
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 420px"
+            style={{ objectPosition: image.focus ?? "50% 50%" }}
             className="absolute inset-0 -z-10 h-full w-full object-cover"
           />
           <span
@@ -706,41 +799,6 @@ export function CourseCover({
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-[rgb(13_26_34/0.92)] via-[rgb(13_26_34/0.22)] via-38% to-transparent"
-          />
-          {/*
-            `h-28` and a three-stop ramp, both changed on 7 Aug, and this is the
-            other half of the change that stacked the chip and the audience line.
-
-            Stacking moved the audience line from roughly y20-38 to y47-65. The old
-            plate was 80px of a single 0.62-to-0 ramp, which is down to 0.26 by y47
-            and 0.12 by y65, so the type walked out from under the cover it was
-            measured for. Sampled on the rendered frames with the text hidden, the
-            GTM cover came out at 2.09:1 median for 13px white against the 4.5 that
-            AA wants, and all five failed in their darkest fifth.
-
-            112px carries the ramp past the line's new position, and the 0.42 stop
-            at 60% holds it up across y47-65 instead of letting a two-stop gradient
-            sag through the middle of the band. Re-measured the same way, per cover:
-
-              Course B  15.41 median  7.91 worst-5%
-              Course C   8.66         4.81
-              Course D  10.76         4.94
-              Course E   7.27         4.36
-
-            against 3.36-3.76 worst-5% for the position this replaced, so every
-            cover is better than what shipped before the stack. The last few
-            hundredths of a per cent of pixels sit at 3.7-4.5 in the corners of the
-            band, which is where no glyph stroke lands.
-
-            The alpha is not pushed further on purpose. The whole brief for this set
-            of photographs was that the people in them read as human and warm, and
-            the note above records the pass where a heavier treatment put every one
-            of them behind a grey-teal fog. This is as much plate as the frames can
-            take and still be photographs.
-          */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-28 bg-linear-to-b from-[rgb(13_26_34/0.78)] via-[rgb(13_26_34/0.42)] via-60% to-transparent"
           />
         </>
       ) : null}
@@ -776,88 +834,19 @@ export function CourseCover({
         without it a long unbroken word in a title would push the cover wider than
         its card at the narrow end of the catalog.
       */}
-      <div className="col-start-1 row-start-1 flex min-w-0 flex-col justify-between p-4">
-      {/*
-        THE CHIP AND THE AUDIENCE LINE ARE STACKED, and they were a row until
-        7 Aug.
-
-        The row was `[COURSE B] Editors, producers, post supervisors` inside one
-        `gap-2` flex, and three of the five covers have an audience line too long
-        for what the chip leaves them. It wrapped, and the second line returned to
-        the container's left edge while the first started 96px in, so the sentence
-        stepped backwards under the chip: the chip read as a block sitting in the
-        middle of the line, cutting it. Roan photographed Course B, which is the
-        worst of them at 36 characters.
-
-        Stacked, the audience line gets the cover's full width. At 260px of
-        content that is one line for four of the five covers and a clean two for
-        Course C, with no step and no collision, and the chip is back to being a
-        label on the frame rather than an obstacle in a sentence.
-
-        The block costs 4px of height against the row it replaced, and it is spent
-        in the gap between two things rather than inside either.
-
-        The chip still may not wrap or shrink. At 1024 in the old row, "PATH" and
-        its letter broke across two lines inside a 22px pill and dropped the letter
-        onto the photograph below it.
-      */}
-      <span className="relative block">
-        {/* The chip fill goes up over a photograph. At white/15 on flat hue it
-            is a plate; at white/15 on a frame that might be bright behind it,
-            it is nothing. */}
-        <span
-          className={`t-label inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-[6px] px-2 text-white ${
-            image ? "bg-white/25" : "bg-white/15"
-          }`}
-        >
-          {badge}
-        </span>
-        {/*
-          `clamp-2` and a reserved two lines, which are doing two different jobs.
-
-          The clamp is a ceiling: two lines is the most this block can take before
-          it meets the "You build" line on the 134px cover a phone gets, and no
-          audience line in content.ts runs to three at any width this renders at.
-
-          `min-h-[36px]` is the floor, and it is what lets a row of covers finish
-          level. Four of the five audience lines wrap to two lines in a four-across
-          card and one ("Owners and operators") does not, so without a reservation
-          Course E's cover came out 18px shorter than the three beside it and its
-          card title started on a different line from theirs. This is the same move
-          the catalog card already makes on its own title and summary, for the same
-          reason, and the note there says so.
-
-          36 is two lines of `t-meta` at 13/18. When the cover is ratio-bound the
-          reservation costs nothing: `justify-between` was going to spend that space
-          on the gap anyway.
-
-          `mt-1`, not `mt-1.5`. At 6px the gap inside the badge group was half the
-          12px gap to the block below it, so chip, audience, "You build" and the
-          artifact read as one four-line paragraph. 4 against 12 groups correctly.
-        */}
-        <span
-          className={`t-meta clamp-2 mt-1 block min-h-[36px] ${image ? "text-white" : "text-white/85"}`}
-        >
-          {audience}
-        </span>
-      </span>
-
-      {/* `pt-3`, so a tall audience line and a tall artifact line never close to
-          nothing. `justify-between` only guarantees a gap while there is slack to
-          distribute, and at the four-across width there is none.
-
-          12 and not 16, which is what this was for an hour. 16 put the type
-          layer 4px past 16:9 on three of the four covers in the cross-sell row,
-          so those three grew off the ratio and the fourth did not, and a row of
-          cards started their titles on two different lines. The gap is the one
-          number in this block that was free to give. */}
+      <div className="col-start-1 row-start-1 flex min-w-0 flex-col justify-end p-4">
+      {/* `pt-3` is what is left of a gap that used to separate this block from
+          the chip and audience line above it. It is harmless under `justify-end`
+          and kept because the block is not guaranteed to be the only child
+          forever. */}
       <span className="relative pt-3">
         <span className="t-field block text-white/75">You build</span>
-        {/* Two lines reserved here too, and for the same reason as the audience
-            line above: "Model serving on GPU cloud" fits one line in a four-across
-            card where the other four take two, so without it that cover finished
-            25px short of the row. `fill` needs no floor, since there the height is
-            set by a sibling card. */}
+        {/* Two lines reserved: "Model serving on GPU cloud" fits one line in a
+            four-across card where the other four take two, so without it that
+            cover finished 25px short of the row. It costs nothing while the
+            covers are ratio-bound and is the one thing keeping a row level if
+            they stop being. `fill` needs no floor, since there the height is set
+            by a sibling card. */}
         <span
           className={`mt-1 block font-semibold tracking-[-0.3px] text-white ${
             fill

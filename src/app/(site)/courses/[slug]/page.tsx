@@ -12,7 +12,8 @@ import { CourseHero, StatBar } from "@/components/course/hero";
 import { Questions } from "@/components/course/questions";
 import { CourseTabs } from "@/components/course/tabs";
 import { Container } from "@/components/ui";
-import { courses, totalLessons } from "@/lib/content";
+import { brand, courses, totalLessons } from "@/lib/content";
+import { courseJsonLd } from "@/lib/seo";
 
 /**
  * One course, in full.
@@ -58,51 +59,134 @@ export const revalidate = 3600;
 /**
  * All five, prerendered, and nothing else.
  *
- * `dynamicParams = false` makes any other id a 404 at the routing layer rather than
- * letting it reach the component and call `notFound()` at request time. The set of
- * courses is a five-item array in content.ts, so there is no case where a valid id
- * is unknown at build.
+ * `dynamicParams = false` makes any other slug a 404 at the routing layer rather
+ * than letting it reach the component and call `notFound()` at request time. The
+ * set of courses is a five-item array in content.ts, so there is no case where a
+ * valid slug is unknown at build.
+ *
+ * That is also what makes the redirects in next.config.ts load-bearing rather
+ * than a courtesy: with dynamic params off, `/courses/gtm` cannot fall through
+ * to a lookup that knows about ids. It is a hard 404 unless the config rewrites
+ * it first.
  */
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return courses.map((c) => ({ id: c.id }));
+  return courses.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const course = courses.find((c) => c.id === id);
+  const { slug } = await params;
+  const course = courses.find((c) => c.slug === slug);
   if (!course) return {};
 
+  const path = `/courses/${course.slug}`;
+
   return {
-    /* A plain string, because the root layout's template appends the brand. */
-    title: course.title,
-    description: course.tagline,
-    alternates: { canonical: `/courses/${course.id}` },
+    /*
+      `seoTitle`, not `title`, and the two differ on every course.
+
+      The h1 is "Applied AI for GTM teams", which is right on the page — the
+      reader is already inside the catalog and the surrounding chrome supplies
+      everything else. In a result listing there is no chrome: the same six
+      words compete against titles that state the format, the price and the
+      outcome. The layout template appends " | AI Tech Education Academy" to
+      whatever this returns, so the string here is written to survive that and
+      still land under the ~60 character mark search results truncate at.
+    */
+    title: course.seoTitle,
+    /*
+      `seoDescription`, not `tagline`, for the same reason and one more: the
+      taglines run 150 to 190 characters and a description is cut around 155.
+      Two of the five were losing their last clause, which is the clause that
+      says what the reader ends up with.
+    */
+    description: course.seoDescription,
+    keywords: [...course.keywords],
+    alternates: { canonical: path },
     openGraph: {
-      title: course.title,
-      description: course.tagline,
-      url: `/courses/${course.id}`,
+      type: "website",
+      siteName: brand.name,
+      title: course.seoTitle,
+      description: course.seoDescription,
+      url: path,
       /* The course's own cover, so a shared link shows the course rather than the
-         site. `alt` is the frame's description from content.ts. */
+         site. `alt` is the frame's description from content.ts, and so are the
+         dimensions — these were hardcoded `1600x900`, which none of the five
+         covers is. Four are 1400x781 and the GTM cover is a 1127x1400 portrait,
+         so the one course whose card is shared most was declaring the opposite
+         orientation to the file behind it. */
       images: course.cover
-        ? [{ url: course.cover.src, width: 1600, height: 900, alt: course.cover.alt }]
+        ? [
+            {
+              url: course.cover.src,
+              width: course.cover.width,
+              height: course.cover.height,
+              alt: course.cover.alt,
+            },
+          ]
         : undefined,
+    },
+    /*
+      Declared per course rather than inherited. The root layout's Twitter card
+      names the site's own poster frame, so without this every one of the five
+      shared as the same image with a course-specific title under it.
+    */
+    twitter: {
+      card: "summary_large_image",
+      title: course.seoTitle,
+      description: course.seoDescription,
+      images: course.cover ? [course.cover.src] : undefined,
     },
   };
 }
 
-export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const course = courses.find((c) => c.id === id);
+export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const course = courses.find((c) => c.slug === slug);
   if (!course) notFound();
 
   return (
     <>
+      {/*
+        schema.org `Course`, and it is the reason this page can win a listing it
+        would otherwise only appear in.
+
+        A course page without structured data is a document with a title. With
+        it, the page is eligible for the course result treatment, and the fields
+        that treatment reads are exactly the ones this program can back:
+        provider, instructor, mode of delivery, module count, and a price of
+        zero, which is a real offer rather than a claim.
+
+        WHAT IS NOT IN HERE, and the omissions are the same list the visible page
+        keeps: no `aggregateRating`, no `review`, no `ratingCount`, no enrolment
+        figure, no `timeRequired` beyond the stated course length. Those are the
+        fields that lift a listing hardest, which is precisely why inventing them
+        is the thing a program establishing credibility cannot do — and Google
+        drops structured data it can find no on-page evidence for, so a fake
+        rating buys a manual action rather than a star.
+
+        `hasCourseInstance` with `courseWorkload` is required for the course
+        treatment to render at all. Self-paced, so `courseSchedule` is absent and
+        the mode is online.
+
+        Injected with `<script type="application/ld+json">` rather than through a
+        metadata field, because Next's Metadata API has no slot for JSON-LD. This
+        is a server component, so the string is serialized at build.
+      */}
+      <script
+        type="application/ld+json"
+        /* The content is five literals from content.ts run through
+           JSON.stringify, so there is no user input anywhere in it. The `<`
+           escape is the standard guard against a `</script>` sequence inside a
+           string field closing the tag early. */
+        dangerouslySetInnerHTML={{ __html: courseJsonLd(course).replace(/</g, "\\u003c") }}
+      />
+
       <CourseHero course={course} />
 
       {/*

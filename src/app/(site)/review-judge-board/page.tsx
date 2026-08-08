@@ -2,16 +2,45 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { board, courses } from "@/lib/content";
+import { board, brand, courses } from "@/lib/content";
 
+/**
+ * `openGraph` REPLACES the root block, it does not merge into it.
+ *
+ * This declared three keys — title, description, url — and inherited nothing,
+ * so the one page on the site whose subject is other people's credibility
+ * shared with no image, no `og:site_name` and no `og:type`. Every other route
+ * that overrides `openGraph` restates all six for exactly this reason; this one
+ * was written as if it were a patch.
+ *
+ * The image is the site-wide poster rather than a judge's portrait: the six
+ * cards on this page are placeholder frames standing in for seat holders, and
+ * putting one in a social card would present a stand-in as a named person.
+ */
 export const metadata: Metadata = {
   title: "Review Judge Board",
-  description: board.intro,
+  description: board.seoDescription,
   alternates: { canonical: "/review-judge-board" },
   openGraph: {
+    type: "website",
+    siteName: brand.name,
     title: "Practitioner Review Judge Board",
-    description: board.intro,
+    description: board.seoDescription,
     url: "/review-judge-board",
+    images: [
+      {
+        url: "/images/scenes/lesson-recording.jpg",
+        width: 1600,
+        height: 886,
+        alt: "Roan Weigert recording a lesson at the studio microphone",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Practitioner Review Judge Board",
+    description: board.seoDescription,
+    images: ["/images/scenes/lesson-recording.jpg"],
   },
 };
 
@@ -90,12 +119,33 @@ export default function ReviewJudgeBoardPage() {
         </Container>
       </section>
 
-      <Section ariaLabel="The judges">
+      {/*
+        An `<h2>` for screen readers only, added 8 Aug. The cards print `<h3>` on
+        each discipline, which is right in the homepage band where a
+        `SectionHeader` `<h2>` sits above them and wrong here, where there is no
+        such heading: the document ran h1 to h3 with the level between missing, so
+        anyone navigating by headings got six disciplines and nothing naming the
+        list they belong to.
+
+        Not printed, for the reason recorded above: the two group headings this
+        page used to carry were cut for being two more than a list of six needs,
+        and the h1 already says what these are.
+      */}
+      <Section ariaLabelledBy="judges-heading">
+        <h2 id="judges-heading" className="sr-only">
+          The judges
+        </h2>
+
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {board.members.map((m) => (
             <li key={m.id}>
+              {/* `id` is passed here and nowhere else: this page is the one the
+                  homepage teaser deep-links into, so this is the only render
+                  where the seats are anchor targets. board-card.tsx has the
+                  note on why it stopped deriving the id from the seat. */}
               <BoardCard
                 member={m}
+                id={m.id}
                 courseTitle={byBadge.get(m.reviews)?.title ?? m.reviews}
                 checksAlwaysVisible
               />

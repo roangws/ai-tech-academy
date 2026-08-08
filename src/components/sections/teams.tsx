@@ -142,7 +142,10 @@ export function Teams() {
               </figcaption>
             </figure>
 
-            <ButtonLink href="/#courses" tone="onDark" size="md" className="mt-6 md:mt-7">
+            {/* `/courses`, not the band two sections up: "Compare all five" is
+                an instruction to look at them side by side, and scrolling a
+                reader back to the cards they have already passed is not that. */}
+            <ButtonLink href="/courses" tone="onDark" size="md" className="mt-6 md:mt-7">
               {cta.compare}
               <ArrowRightIcon size={14} weight="bold" />
             </ButtonLink>
