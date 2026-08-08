@@ -1,21 +1,18 @@
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { Board } from "@/components/sections/board";
 import { Closing } from "@/components/sections/closing";
-import { Course } from "@/components/sections/course";
+import { HowModulesWork } from "@/components/sections/modules";
 import { Faq } from "@/components/sections/faq";
 import { Hero } from "@/components/sections/hero";
 import { Instructors } from "@/components/sections/instructors";
-import { Method } from "@/components/sections/method";
 import { Outcomes } from "@/components/sections/outcomes";
-import { Paths } from "@/components/sections/paths";
+import { Courses } from "@/components/sections/courses";
 import { Teams } from "@/components/sections/teams";
 
 /*
-  Ten sections, from fourteen.
+  Nine sections, from fourteen.
 
-  ORDER. The catalog is now the first thing under the fold, and the method is
-  the last thing before the FAQ.
+  ORDER. The catalog is the first thing under the fold, and the method is the
+  section directly under it.
 
   That inverts what this page used to do. It opened with a credibility band and
   then a five-step diagram, so a visitor met a serial number and an abstraction
@@ -24,12 +21,15 @@ import { Teams } from "@/components/sections/teams";
   came for, so it goes first, and the sections after it are people: who teaches,
   who learns together, who reviews.
 
-  The method keeps its place in the argument by moving to the end. By then a
-  reader has seen five paths that all say "Profile, baseline, deploy, measure",
-  and the five-step section stops being a diagram they have to take on trust and
-  becomes the answer to a question the catalog has already raised. It sits
-  directly above the FAQ, which is where the rest of the how-does-this-work
-  questions live.
+  THE METHOD MOVED BACK UP, 7 Aug, because it stopped being a section of its
+  own. It ran at the foot of the page, above the FAQ, on the argument that a
+  reader who has already seen five paths saying "Profile, baseline, deploy,
+  measure" meets the five steps as an answer rather than as a diagram. That was
+  right about the order and wrong about the count: the module section up here
+  was already showing those same five steps beside the course video, with the
+  access state against each one, so the page stated the method twice and neither
+  copy was complete. They are one section now, third on the page, and
+  sections/modules.tsx has the note on what each half brought.
 
   WHAT WENT, and what it was repeating.
 
@@ -91,12 +91,14 @@ import { Teams } from "@/components/sections/teams";
   salary and open-role counts.
 
   Ground rhythm, in order: white, tint, white, tint, white, white, tint, white,
-  white, white. The lock is that no two tinted bands sit next to each other, and
-  that holds. Teams and Closing are white grounds carrying a dark panel. Three
-  sections take `hairlineTop`, each because it follows a section that draws no
-  bottom border of its own: Teams after Instructors, and Faq and Closing in the
-  white run that closes the page. A tinted band already draws its own, so asking
-  for a hairline under one stacks two rules into a 2px line.
+  white. The lock is that no two tinted bands sit next to each other, and that
+  holds — but only after the FAQ went white in the same pass that merged the
+  method, since removing a white band from between the board and the FAQ left
+  two tints touching. faq.tsx has that note. Teams and Closing are white grounds
+  carrying a dark panel. Two sections take `hairlineTop`, each because it
+  follows a section that draws no bottom border of its own: Teams after
+  Instructors, and Closing after the now-white FAQ. A tinted band already draws
+  its own, so asking for a hairline under one stacks two rules into a 2px line.
 */
 /**
  * One hour, and the enrol button is the only reason for it.
@@ -118,26 +120,15 @@ export const revalidate = 3600;
 export default function HomePage() {
   return (
     <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-control)] focus:bg-accent focus:px-4 focus:py-2 focus:text-white"
-      >
-        Skip to content
-      </a>
-      <SiteHeader />
-      <main id="main" className="flex-1">
-        <Hero />
-        <Paths />
-        <Course />
-        <Outcomes />
-        <Instructors />
-        <Teams />
-        <Board />
-        <Method />
-        <Faq />
-        <Closing />
-      </main>
-      <SiteFooter />
+      <Hero />
+      <Courses />
+      <HowModulesWork />
+      <Outcomes />
+      <Instructors />
+      <Teams />
+      <Board />
+      <Faq />
+      <Closing />
     </>
   );
 }

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="136" height="136" viewBox="-8 0 136 136" fill="none" role="img" aria-label="AI Tech Education Academy">
+  <!--
+    The brand mark, padded to a square frame.
+
+    The package draws on a 120 x 136 grid, so the mark is taller than it is
+    wide. A favicon is rendered into a square box, and a non-square viewBox is
+    letterboxed by the browser: the crest came out shrunk with air down both
+    sides. The viewBox is widened to 136 and shifted -8 so the shield's own
+    centre (x 60, y 68) is the centre of the square.
+
+    This is the 16px cut, not the full monogram: the package requires the solid
+    A alone below 24px, and a favicon renders at 16 to 32. The concentric white
+    rule at that size closes into a grey halo and the half-opacity I disappears,
+    which is what the cut exists to avoid.
+  -->
+  <path d="M34 6H86A26 26 0 0 1 112 32V78A52 52 0 0 1 8 78V32A26 26 0 0 1 34 6Z" fill="#02B1E0"/>
+  <path d="M60 36 84 94H36Z" fill="#FFFFFF"/>
+</svg>

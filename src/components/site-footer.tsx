@@ -11,10 +11,28 @@ import { brand, footer } from "@/lib/content";
  * site that does not exist yet. It now says what it is: the paths, then the
  * sections on this page, then the legal row. Columns come back as the pages get
  * built.
+ *
+ * ------------------------------------------------- TINTED, CHANGED 7 AUG
+ *
+ * It was `bg-surface` with a hairline on top, and both pages end the same way: a
+ * white section holding a dark panel, then this. So the last 200px of every page
+ * were white, a 1px #d8e1e8 rule with 40px of air above it and 48 below, then
+ * more white. With no ground change on either side the rule had nothing to
+ * divide and read as a stray line drawn across the page, which is what Roan
+ * photographed at the bottom of the course page.
+ *
+ * `--surface-subtle` makes the boundary a change of ground, which is how every
+ * other band boundary on this site is drawn, and the hairline goes back to doing
+ * what hairlines here do: sharpening an edge that already exists. Safe on both
+ * pages under the no-two-adjacent-tints rule, because the section above the
+ * footer is white on each.
+ *
+ * The inner rule above the legal row stays. That one separates two blocks on one
+ * ground, which is the case a bare hairline is for.
  */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-surface">
+    <footer className="border-t border-line bg-surface-subtle">
       {/*
         Two columns of links on a phone, not one.
 

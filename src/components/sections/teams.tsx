@@ -122,7 +122,7 @@ export function Teams() {
                   >
                     <span className="t-card-title order-1 min-w-0 text-white">{s.who}</span>
                     <span className="t-field order-2 ml-auto flex-none rounded-full bg-white/10 px-2 py-1 text-white/70 sm:order-4">
-                      {s.path}
+                      {s.course}
                     </span>
                     <span className="order-3 flex w-full items-center gap-2.5 sm:w-auto sm:flex-1">
                       <ArrowRightIcon
@@ -142,7 +142,7 @@ export function Teams() {
               </figcaption>
             </figure>
 
-            <ButtonLink href="#paths" tone="onDark" size="md" className="mt-6 md:mt-7">
+            <ButtonLink href="/#courses" tone="onDark" size="md" className="mt-6 md:mt-7">
               {cta.compare}
               <ArrowRightIcon size={14} weight="bold" />
             </ButtonLink>

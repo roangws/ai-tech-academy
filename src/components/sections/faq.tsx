@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { AccordionItem, useDisclosureSet } from "@/components/ui/accordion";
 import { Section, SectionHeader } from "@/components/ui";
 import { faqs } from "@/lib/content";
 
@@ -61,38 +61,60 @@ import { faqs } from "@/lib/content";
  * name at all, and the ARIA APG warns against region on accordion panels past
  * about six. The `id` stays for `aria-controls`.
  */
-export function Faq() {
-  const [open, setOpen] = useState<number | null>(0);
+/*
+  REFACTORED ONTO ui/accordion.tsx, and nothing visual moved.
 
+  This was the site's only accordion, so its disclosure wiring was also the site's
+  only copy of that wiring. The course page needed a second one, and the parts
+  worth sharing are exactly the parts that go wrong when they are retyped: the
+  `aria-expanded` / `aria-controls` / id triple, the heading around the button, the
+  `hidden` panel, and the policy that opening one closes the others.
+
+  Those are now `useDisclosureSet` and `AccordionItem`. Everything below that
+  belongs to this pattern in particular stayed here: the dimmed 55% closed state,
+  the tabular index hung into the gutter, the absence of a chevron, the 900px
+  measure. The curriculum accordion shares none of it.
+
+  `mode: "single"` preserves the behaviour this section shipped with, and `initial`
+  keeps question one open on first paint.
+*/
+export function Faq() {
+  const ids = faqs.map((_, i) => String(i));
+  const { isOpen, toggle } = useDisclosureSet({ ids, mode: "single", initial: ["0"] });
+
+  /*
+    WHITE, from tinted, 7 Aug, and this is fallout from the method merge rather
+    than a preference.
+
+    The method band used to sit between the review board and this one, white
+    between two tints. It merged into the module section further up the page,
+    which put a tinted board directly above a tinted FAQ and broke the one
+    ground rule this page has: no two tinted bands adjacent. The FAQ is the one
+    that gives, because the board's tint is what breaks the white run of
+    instructors and teams above it, and dropping that would trade one
+    three-band run for another.
+
+    No `hairlineTop`: the tinted band above draws its own bottom rule, and
+    asking for one here stacks two into a 2px line. Closing, which now follows a
+    white band, takes the hairline instead.
+  */
   return (
-    <Section id="faq" tint>
+    <Section id="faq">
       <SectionHeader label="Questions" heading="Common questions" />
 
       <div className="max-w-[900px]">
         {faqs.map((f, i) => {
-          const expanded = open === i;
+          const expanded = isOpen(String(i));
           return (
-            <div key={f.q} className="relative border-b border-line">
-              <h3>
-                <button
-                  type="button"
-                  aria-expanded={expanded}
-                  aria-controls={`faq-panel-${i}`}
-                  id={`faq-button-${i}`}
-                  onClick={() => setOpen(expanded ? null : i)}
-                  /*
-                    `overflow-hidden` is load-bearing, not tidiness. It is what
-                    the compression below clips against; without it the negative
-                    margin only pulls the hairline up and the type spills over
-                    the row beneath.
-                  */
-                  className="group flex w-full cursor-pointer overflow-hidden text-left"
-                >
-                  {/* No compression margin any more. It clipped the leading
-                      under the baseline to pack the rows, which is only safe
-                      on uppercase; in sentence case it cut the tails off every
-                      descender in the list. globals.css has the note. */}
-                  <span className="flex w-full items-start py-3 md:py-4">
+            <AccordionItem
+              key={f.q}
+              id={String(i)}
+              idPrefix="faq"
+              open={expanded}
+              onToggle={() => toggle(String(i))}
+              className="relative border-b border-line"
+              header={() => (
+                <span className="group flex w-full items-start py-3 md:py-4">
                     {/* The index. Tabular so eleven of them share an edge, and
                         hung into the container gutter from lg so the question
                         can start where the section heading starts. */}
@@ -122,17 +144,14 @@ export function Faq() {
                     >
                       {f.q}
                     </span>
-                  </span>
-                </button>
-              </h3>
-
-              <div id={`faq-panel-${i}`} hidden={!expanded}>
-                {/* Indented to the question's own left edge, not the row's, so
-                    the answer hangs off the question rather than off the
-                    number. */}
-                <p className="t-body max-w-[640px] pb-6 pl-7 text-ink-secondary lg:pl-0">{f.a}</p>
-              </div>
-            </div>
+                </span>
+              )}
+            >
+              {/* Indented to the question's own left edge, not the row's, so
+                  the answer hangs off the question rather than off the
+                  number. */}
+              <p className="t-body max-w-[640px] pb-6 pl-7 text-ink-secondary lg:pl-0">{f.a}</p>
+            </AccordionItem>
           );
         })}
       </div>

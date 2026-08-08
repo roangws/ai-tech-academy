@@ -99,8 +99,11 @@ export function Hero() {
 
           <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-1 md:mt-8">
             <EnrollButton withDate />
-            <TextAction href="#course">
-              {cta.course}
+            {/* `#method` since the merge: the module band and the method band
+                are one section now, and this link always meant the one that
+                answers "how does this work". */}
+            <TextAction href="#method">
+              {cta.howItWorks}
               <ArrowRightIcon size={14} weight="bold" />
             </TextAction>
           </div>

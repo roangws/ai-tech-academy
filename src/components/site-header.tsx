@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   motion,
@@ -74,6 +75,23 @@ export function SiteHeader() {
   const [active, setActive] = useState<string>("");
   const [hovered, setHovered] = useState<string | null>(null);
 
+  const pathname = usePathname();
+
+  /*
+    Off the homepage there is no section being read, so `active` is ignored
+    rather than cleared.
+
+    Clearing it meant a `setActive("")` on the first line of the effect, which is
+    a set-state directly inside an effect: one guaranteed extra render on every
+    client navigation, and the lint rule that names it was failing the build.
+    Deriving it here reaches the same place with no render and no write, and the
+    stale value simply never surfaces: `onHome` gates both readers of it, so a
+    section left underlined on the way out of the homepage cannot carry
+    `aria-current` onto a course page.
+  */
+  const onHome = pathname === "/";
+
+
   /**
    * Bumped on resize, purely to re-run the pill's placement effect.
    *
@@ -117,9 +135,25 @@ export function SiteHeader() {
   const scaleX = useTransform(velocity, (v) => 1 + Math.min(Math.abs(v) / 2600, 0.2));
   const scaleY = useTransform(velocity, (v) => 1 - Math.min(Math.abs(v) / 9000, 0.14));
 
-  /** Whichever item the pill should currently be sitting under. Hover wins over
-      the section being read, because hover is the more recent intent. */
-  const lit = hovered ?? (active ? `#${active}` : null);
+  /**
+   * Whichever item the pill should currently be sitting under. Hover wins over
+   * the section being read, because hover is the more recent intent.
+   *
+   * Both of the resting cases resolve to a real `href` from `nav`, because that
+   * is what `data-nav` carries and what the placement effect queries on. This
+   * read `#${active}` and the hrefs became root-absolute (`/#outcomes`), so the
+   * two stopped matching and the pill only ever appeared under the cursor: on
+   * scroll the querySelector found nothing and the pill was held at opacity 0.
+   * `aria-current` never broke with it, which is why the regression was silent.
+   *
+   * The route case is the new one. `/review-judge-board` has no fragment for the
+   * scroll tracker to find, so it is lit from the path instead.
+   */
+  const activeHref = onHome && active
+    ? (nav.find((n) => n.href.split("#")[1] === active)?.href ?? null)
+    : null;
+  const routeHref = onHome ? null : (nav.find((n) => n.href === pathname)?.href ?? null);
+  const lit = hovered ?? activeHref ?? routeHref;
 
   useEffect(() => {
     const host = navRef.current;
@@ -268,10 +302,37 @@ export function SiteHeader() {
     Above the first section the rule clears, which is correct, since the hero
     belongs to no nav item.
   */
+  /*
+    `split("#")[1]`, not `replace("#", "")`.
+
+    The nav hrefs became root-absolute when the site got a second real route, so
+    they read `/#outcomes` rather than `#outcomes`. Stripping the hash off that
+    yields "/outcomes", which matches no element, so every id was filtered out
+    here and the tracker silently stopped running on the one page it works on.
+    Taking the fragment is correct for both spellings.
+
+    THE PATHNAME GATE IS WHAT MAKES THIS SAFE OFF THE HOMEPAGE, and the
+    `length === 0` bail was not.
+
+    That bail assumed a course page carries none of these six ids. It carries
+    two: `MoreCourses` renders `<Section id="courses">` and `Questions` renders
+    `<Section id="faq">`, both named after homepage sections because that is what
+    they are the course-page equivalent of. So `ids` came back with two entries,
+    the listener installed, and scrolling /courses/gtm to the cross-sell put
+    `aria-current="true"` on a nav link whose href is `/#courses` — the header
+    announcing a current location on a different page, which is worse than no
+    tracking at all.
+
+    Every id in `nav` names a homepage section, so the homepage is the only route
+    where any of this means anything. Gating on the route says that directly
+    instead of inferring it from a collision that already happened once.
+  */
   useEffect(() => {
+    if (!onHome) return;
+
     const ids = nav
-      .map((n) => n.href.replace("#", ""))
-      .filter((id) => document.getElementById(id));
+      .map((n) => n.href.split("#")[1])
+      .filter((id): id is string => Boolean(id) && Boolean(document.getElementById(id)));
     if (ids.length === 0) return;
 
     let frame = 0;
@@ -281,8 +342,16 @@ export function SiteHeader() {
       let current = "";
       // Sections are read in document order, so the last one whose top has
       // passed the line is the one being read.
+      /*
+        Null-checked rather than asserted. `ids` is filtered for existence once,
+        at effect time, but this runs on every scroll frame: a section that
+        unmounts between the two is a null here, and the non-null assertion this
+        replaces turned that into an uncaught TypeError on every frame.
+      */
       ids
-        .map((id) => ({ id, top: document.getElementById(id)!.offsetTop }))
+        .map((id) => ({ id, el: document.getElementById(id) }))
+        .filter((s): s is { id: string; el: HTMLElement } => s.el !== null)
+        .map(({ id, el }) => ({ id, top: el.offsetTop }))
         .sort((a, b) => a.top - b.top)
         .forEach(({ id, top }) => {
           if (top <= line) current = id;
@@ -306,7 +375,11 @@ export function SiteHeader() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+    /* `onHome` rather than `pathname`: it is what the effect actually branches
+       on, and it only changes when the route crosses in or out of the homepage,
+       so navigating between two course pages no longer tears the listener down
+       and builds it again for the same answer. */
+  }, [onHome]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/80">
@@ -365,7 +438,13 @@ export function SiteHeader() {
           />
 
           {nav.map((item) => {
-            const current = active === item.href.replace("#", "");
+            /* A section item is current when its section is on screen and we
+               are on the homepage; a route item is current when it is the page
+               you are on. Both spellings live in `nav` now. */
+            const fragment = item.href.split("#")[1];
+            const current = fragment
+              ? onHome && active === fragment
+              : pathname === item.href;
             const isLit = lit === item.href;
             return (
               <Link
@@ -376,12 +455,16 @@ export function SiteHeader() {
                 onMouseEnter={() => setHovered(item.href)}
                 onFocus={() => setHovered(item.href)}
                 onBlur={() => setHovered(null)}
-                /* `px-2` below xl, down from `px-3`. Six labels at lg need 24px
-                   back from somewhere and this is the cheapest of the four places
-                   it came from; content.ts has the whole measurement. The pill
-                   still clears the type, because it takes its width from the item
-                   rather than from a number. */
-                className={`t-nav relative rounded-full px-2 py-2 no-underline transition-colors duration-200 xl:px-3.5 ${
+                /* `px-2` below xl, down from `px-3`, which is where content.ts
+                   says the 24px came from and why.
+
+                   `whitespace-nowrap` is new and it is the cheap insurance. When
+                   the row briefly carried seven items, the widest label wrapped
+                   to two lines inside a 36px pill, which is not a narrower nav
+                   item: it is a 56px one in a 72px bar, and it reads as a broken
+                   header rather than as a full one. A nav item should overflow
+                   visibly and be fixed, never wrap quietly. */
+                className={`t-nav relative whitespace-nowrap rounded-full px-2 py-2 no-underline transition-colors duration-200 xl:px-3.5 ${
                   isLit ? "text-accent" : "text-ink-secondary"
                 }`}
               >

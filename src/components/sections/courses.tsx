@@ -2,14 +2,15 @@ import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
   EnrollButton,
-  PathCover,
+  CourseCover,
   Section,
   SectionHeader,
+  FactsLine,
   SkillChip,
   StatusChip,
   TextAction,
 } from "@/components/ui";
-import { cta, paths, type Path } from "@/lib/content";
+import { courses, cta, moduleCount, type Course } from "@/lib/content";
 
 /**
  * One catalog, one reading order.
@@ -56,30 +57,24 @@ import { cta, paths, type Path } from "@/lib/content";
  * set by an ordinary card next to it and the cover has a number to fill rather
  * than one to invent.
  */
-export function Paths() {
-  const [featured, ...rest] = paths;
+export function Courses() {
+  const [featured, ...rest] = courses;
 
   return (
-    <Section id="paths" tint>
+    <Section id="courses" tint>
       <SectionHeader
-        label="Learning paths"
-        heading="Find a path for your role"
+        label="Courses"
+        heading="Find a course for your role"
         intro="The five steps stay the same. The tools, the examples and the workflow you deploy change by role."
-        action={
-          <TextAction href="/paths">
-            {cta.compare}
-            <ArrowRightIcon size={14} weight="bold" />
-          </TextAction>
-        }
       />
 
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         <li className="flex sm:col-span-2">
-          <FeaturedCard path={featured} />
+          <FeaturedCard course={featured} />
         </li>
         {rest.map((p) => (
           <li key={p.id} className="flex">
-            <PathCard path={p} />
+            <CourseCard course={p} />
           </li>
         ))}
       </ul>
@@ -87,7 +82,25 @@ export function Paths() {
   );
 }
 
-function FeaturedCard({ path }: { path: Path }) {
+/**
+ * The single character the cover watermarks itself with.
+ *
+ * It was `badge.replace("Path ", "")` at all three call sites, written when the
+ * badges read "Path A" through "Path E". They were renamed to "Course A" in this
+ * pass and the replace stopped matching, so it returned the string untouched and
+ * every cover watermarked the words "Course B" at 190px instead of the letter B:
+ * a 700px-wide grey slab lying across the photograph and clipped by both card
+ * edges. It is the largest thing on those covers and nothing caught it, because
+ * `replace` on a string that does not contain the needle is not an error.
+ *
+ * The last token rather than a second literal prefix, so the next rename is not a
+ * third instance of this.
+ */
+function coverLetter(badge: string) {
+  return badge.trim().split(/\s+/).pop() ?? badge;
+}
+
+function FeaturedCard({ course }: { course: Course }) {
   return (
     <article className="flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 md:flex-row">
       {/*
@@ -99,23 +112,23 @@ function FeaturedCard({ path }: { path: Path }) {
       */}
       <div className="md:w-[44%] md:flex-none">
         <span className="block md:hidden">
-          <PathCover
-            ground={path.ground}
-            badge={path.badge}
-            letter={path.badge.replace("Path ", "")}
-            audience={path.coverAudience}
-            build={path.coverBuild}
-            image={path.cover}
+          <CourseCover
+            ground={course.ground}
+            badge={course.badge}
+            letter={coverLetter(course.badge)}
+            audience={course.coverAudience}
+            build={course.coverBuild}
+            image={course.cover}
           />
         </span>
         <span className="hidden h-full md:block">
-          <PathCover
-            ground={path.ground}
-            badge={path.badge}
-            letter={path.badge.replace("Path ", "")}
-            audience={path.coverAudience}
-            build={path.coverBuild}
-            image={path.cover}
+          <CourseCover
+            ground={course.ground}
+            badge={course.badge}
+            letter={coverLetter(course.badge)}
+            audience={course.coverAudience}
+            build={course.coverBuild}
+            image={course.cover}
             fill
           />
         </span>
@@ -153,11 +166,21 @@ function FeaturedCard({ path }: { path: Path }) {
         chosen will want the detail.
       */}
       <div className="flex min-w-0 flex-1 flex-col p-5 md:p-6">
-        <h3 className="t-h3 text-ink">{path.title}</h3>
-        <p className="t-body-sm mt-2 text-ink-secondary">{path.summary}</p>
+        {/* A link, like every other card title in this grid.
+            It was plain text, which made the lead card the one card whose
+            title did not reach its course. */}
+        <h3 className="t-h3 text-ink">
+          <Link
+            href={`/courses/${course.id}`}
+            className="text-ink no-underline hover:underline"
+          >
+            {course.title}
+          </Link>
+        </h3>
+        <p className="t-body-sm mt-2 text-ink-secondary">{course.summary}</p>
 
         <ul className="mt-3 flex flex-wrap gap-1.5">
-          {[path.modules, path.duration, path.level].map((fact) => (
+          {[moduleCount(course), course.duration, course.level].map((fact) => (
             <li key={fact}>
               <SkillChip>{fact}</SkillChip>
             </li>
@@ -166,7 +189,7 @@ function FeaturedCard({ path }: { path: Path }) {
 
         <p className="t-meta mt-3 text-ink-muted">
           <span className="text-ink-muted">For </span>
-          <span className="text-ink">{path.audience}</span>
+          <span className="text-ink">{course.audience}</span>
         </p>
 
         <div className="mt-4 border-t border-line pt-3.5">
@@ -193,12 +216,12 @@ function FeaturedCard({ path }: { path: Path }) {
               rest of it and the way that produced the 78px inter-row gaps this
               card shipped with two passes ago.
             */}
-            {path.curriculum.map((m) => (
-              <li key={m.n} className="relative flex items-center gap-3 py-2">
+            {course.curriculum.map((m) => (
+              <li key={m.n} className="relative flex items-center gap-3 py-1">
                 <span
                   aria-hidden="true"
                   className={`relative z-10 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full border text-[11px] font-semibold leading-none ${
-                    m.open
+                    m.access === "open"
                       ? "border-accent bg-accent text-white"
                       : "border-line bg-surface text-ink-muted"
                   }`}
@@ -207,12 +230,12 @@ function FeaturedCard({ path }: { path: Path }) {
                 </span>
                 <span
                   className={`t-body-sm min-w-0 flex-1 truncate ${
-                    m.open ? "font-medium text-ink" : "text-ink-secondary"
+                    m.access === "open" ? "font-medium text-ink" : "text-ink-secondary"
                   }`}
                 >
                   {m.name}
                 </span>
-                {m.open ? <StatusChip open>Open</StatusChip> : null}
+                {m.access === "open" ? <StatusChip open>Open</StatusChip> : null}
               </li>
             ))}
           </ol>
@@ -241,8 +264,8 @@ function FeaturedCard({ path }: { path: Path }) {
         */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
           <EnrollButton withDate size="md" />
-          <TextAction href={`/paths/${path.id}`}>
-            {cta.path}
+          <TextAction href={`/courses/${course.id}`}>
+            {cta.view}
             <ArrowRightIcon size={14} weight="bold" />
           </TextAction>
         </div>
@@ -289,18 +312,16 @@ function FeaturedCard({ path }: { path: Path }) {
  * and reads better than it did: "5 modules", then the first one, then its Open
  * chip.
  */
-function PathCard({ path }: { path: Path }) {
-  const first = path.curriculum[0];
-
+export function CourseCard({ course }: { course: Course }) {
   return (
     <article className="group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-e2">
-      <PathCover
-        ground={path.ground}
-        badge={path.badge}
-        letter={path.badge.replace("Path ", "")}
-        audience={path.coverAudience}
-        build={path.coverBuild}
-        image={path.cover}
+      <CourseCover
+        ground={course.ground}
+        badge={course.badge}
+        letter={coverLetter(course.badge)}
+        audience={course.coverAudience}
+        build={course.coverBuild}
+        image={course.cover}
       />
 
       <div className="flex flex-1 flex-col p-5">
@@ -314,39 +335,65 @@ function PathCard({ path }: { path: Path }) {
         */}
         <h3 className="t-card-title clamp-2 min-h-[44px] text-ink md:min-h-[50px]">
           <Link
-            href={`/paths/${path.id}`}
+            href={`/courses/${course.id}`}
             className="text-ink no-underline hover:underline"
           >
-            {path.title}
+            {course.title}
           </Link>
         </h3>
 
-        <p className="t-body-sm clamp-2 mt-1 min-h-[40px] text-ink-secondary">{path.summary}</p>
+        <p className="t-body-sm clamp-2 mt-1 min-h-[40px] text-ink-secondary">{course.summary}</p>
 
-        <dl className="mt-3 grid grid-cols-3 gap-x-3 border-t border-line pt-3">
-          {path.facts.map((f) => (
-            <div key={f.label} className="min-w-0">
-              <dt className="t-field text-ink-muted">{f.label}</dt>
-              <dd className="t-meta mt-1 truncate text-ink">{f.value}</dd>
-            </div>
-          ))}
-        </dl>
+        {/*
+          ONE META ROW, and it replaced two blocks on 7 Aug.
 
-        {/* Module 01, the free one, and nothing else from the curriculum.
-            Two lines are allowed now that it is not sharing the block with two
-            more rows, so the title states itself instead of truncating. */}
-        {/* The count labels the block, the way "The five modules" labels the
-            lead card's rail. See the note at the head of this component for
-            where it came from. */}
+          The card carried a three-cell definition list (Artifact / Runs on /
+          Level) and, under a second hairline, a module count with module 01 and
+          its chip. Five stacked blocks separated by four rules, in 292px. It read
+          as a specification sheet, and two of those blocks were saying things the
+          card had already said:
+
+            - `Artifact` is printed on the cover, 200px above, as the largest line
+              on it: "You build / An ingest and rough-cut pipeline". The `dl` then
+              repeated it as "Artifact / Rough cut".
+            - `Runs on` and `Level` are the two facts a reader compares across
+              cards, and at 74px per cell they truncated to "Your foot..." and
+              "Intermedi...", which is worse than absent.
+            - Module 01's title is the one line on the card nobody chooses by. The
+              green chip beside it is the offer, and the chip does not need the
+              title to say what it says.
+
+          TWO FACTS AND NO CHIP, cut back again on 7 Aug at Roan's instruction.
+
+          What sat here was a three-fact line and a green "MODULE 1 OPEN" pill,
+          between two hairlines, in a card 292px wide and often narrower. Three
+          things went wrong at once and Roan photographed the result:
+
+            - The facts wrapped. "8 modules . 6 weeks . Intermediate" is 168px in a
+              191px column at the four-across width, and the separators put the
+              break wherever they landed, so the row read "8 modules . 6" / "weeks .
+              Intermediate".
+            - The chip then took a third line of its own, and it sat between the
+              rule above the facts and the rule above the buttons. Two hairlines
+              12px apart with a coloured pill trapped between them is the "lines are
+              cutting" in the note.
+            - "MODULE 1 OPEN" does not say anything to somebody who has not already
+              been told what an open module is. On a catalog card it is a green
+              label asserting a state, with nothing on the card to define it, and it
+              is on every card, so it does not even distinguish them.
+
+          Level went with it. It is the one fact of the three that a reader cannot
+          act on before choosing, it is the longest, and it is stated in full on the
+          course page's stat bar where there is room for it. Modules and weeks are
+          what Roan asked to keep, they never wrap, and they are what differs
+          between the cards in a row.
+
+          The result is one hairline, one line of type, one hairline, the controls.
+
+          `facts` and `level` stay in content.ts: the course page reads both.
+        */}
         <div className="mt-3 border-t border-line pt-3">
-          <p className="t-field text-ink-muted">{path.modules}</p>
-          <div className="mt-1.5 flex items-start gap-2.5">
-            <span className="t-meta w-5 flex-none pt-px text-ink-muted">{first.n}</span>
-            <span className="t-body-sm clamp-2 min-w-0 flex-1 text-ink-secondary">
-              {first.name}
-            </span>
-            {first.open ? <StatusChip open>Open</StatusChip> : null}
-          </div>
+          <FactsLine items={[moduleCount(course), course.duration]} />
         </div>
 
         {/* The same two controls the lead card closes with, in the same order.
@@ -354,8 +401,8 @@ function PathCard({ path }: { path: Path }) {
             two can wrap onto separate lines and the lead's never do. */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2.5 border-t border-line pt-3.5">
           <EnrollButton withDate tone="secondary" size="md" />
-          <TextAction href={`/paths/${path.id}`}>
-            {cta.path}
+          <TextAction href={`/courses/${course.id}`}>
+            {cta.view}
             <ArrowRightIcon
               size={13}
               weight="bold"

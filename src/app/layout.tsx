@@ -40,14 +40,14 @@ export const metadata: Metadata = {
     "free applied AI course" front-loaded and the access model at the end.
   */
   description:
-    "A free, project-based applied AI course. Five role-based paths. Build an AI workflow on your own data, deploy it, and measure the result. Module 1 is open.",
+    "A free, project-based applied AI course. Five role-based courses. Build an AI workflow on your own data, deploy it, and measure the result. Module 1 is open.",
   openGraph: {
     type: "website",
     url: siteUrl,
     siteName: "AI Tech Education Academy",
     title: "Deploy one AI workflow and measure what it changed",
     description:
-      "Five role-based paths for operators and technical teams. Module 1 is open to everyone, and every path completes with a live deployment.",
+      "Five role-based courses for operators and technical teams. Module 1 is open to everyone, and every course completes with a live deployment.",
     images: [
       {
         url: "/images/scenes/lesson-recording.jpg",

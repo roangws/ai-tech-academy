@@ -1,3 +1,4 @@
+import { CheckIcon } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
@@ -141,18 +142,26 @@ export function Panel({
 /**
  * Eyebrow, section heading and intro as one 640px-capped block.
  *
- * `wide` raises the intro's cap to 760px, and exactly one section uses it.
+ * `asideIntro` is the one variation, and only #method asks for it: the intro
+ * moves out of the stack and onto the heading's own row, in the space a
+ * two-line heading leaves empty to its right.
  *
- * It exists because #course has a hard height budget: the band has to fit one
- * desktop screen, and its rewritten intro is 1,392px of type on one line, which
- * is three lines at 640 and 72px of a 777px section. At 760 it is two, and the
- * 24px that buys is the difference between the band fitting and not. The
- * alternatives were all worse: another 24px off a band whose padding is already
- * two thirds of its neighbours', or 4px off each of five outline rows that are
- * already at 56.
+ * That band has the page's one hard height budget. It has to fit a 14in MacBook
+ * without scrolling — about 780px once the browser chrome and the 72px sticky
+ * header are out — and it is also the band carrying the most content, since the
+ * method and the module format merged into it. Stacked, its eyebrow, two-line
+ * heading and intro spend 166px of that budget before a reader sees anything
+ * they can act on. Side by side they spend 106, because the heading wraps to
+ * two lines either way and the intro is shorter than the hole beside it.
  *
- * The cost is a 95-character measure against the 75 the rest of the page holds,
- * which is why this is a flag on one section rather than a change to the default.
+ * `items-end` on the row is what makes it read as one object rather than two
+ * columns: the intro's last line sits on the heading's last line.
+ *
+ * This replaced `wide`, which raised one section's intro cap from 640 to 760 to
+ * buy the same band 24px. That was the cheap version of the same fix and it
+ * bought a fifth of what this does, at the cost of a 95-character measure
+ * against the 75 the rest of the page holds. Nothing uses it now, so it is
+ * gone.
  */
 export function SectionHeader({
   label,
@@ -160,32 +169,34 @@ export function SectionHeader({
   intro,
   id,
   action,
-  wide = false,
+  asideIntro = false,
 }: {
   label?: string;
   heading: string;
   intro?: string;
   id?: string;
   action?: ReactNode;
-  wide?: boolean;
+  asideIntro?: boolean;
 }) {
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 md:mb-6">
-      <div className={wide ? "max-w-[780px]" : "max-w-[680px]"}>
+      <div className={asideIntro ? "max-w-[620px]" : "max-w-[680px]"}>
         {label ? <p className="t-label mb-2 text-ink-muted">{label}</p> : null}
         <h2 id={id} className="t-h2 text-ink">
           {heading}
         </h2>
-        {intro ? (
-          <p
-            className={`t-body mt-2.5 text-ink-secondary md:mt-3 ${
-              wide ? "max-w-[760px]" : "max-w-[640px]"
-            }`}
-          >
-            {intro}
-          </p>
+        {intro && !asideIntro ? (
+          <p className="t-body mt-2.5 max-w-[640px] text-ink-secondary md:mt-3">{intro}</p>
         ) : null}
       </div>
+      {/* `w-full` until lg, so on anything narrower than the two-column grid
+          below this behaves exactly like the stacked form and wraps under the
+          heading on the row's own 12px gap. */}
+      {intro && asideIntro ? (
+        <p className="t-body w-full text-ink-secondary lg:w-auto lg:max-w-[520px] lg:flex-1">
+          {intro}
+        </p>
+      ) : null}
       {action}
     </div>
   );
@@ -258,7 +269,27 @@ export function ButtonLink({
  * type that has slipped.
  */
 export function EnrollButton({
-  href = "#paths",
+  /*
+    `/sign-up`, and this went through two wrong answers first.
+
+    It was `#paths`, a bare fragment resolved against the current URL, so from
+    /courses/gtm it pointed at /courses/gtm#paths and did nothing. Making it
+    `/#courses` fixed the resolution and left a worse bug: the catalog is not an
+    enrolment. On a course card it was a self-link, so pressing "Enroll for free"
+    on the infrastructure card scrolled the reader back to the grid the card was
+    already in. From the sticky header on a course page it threw the reader off
+    that course entirely and back to the homepage.
+
+    One label has to mean one thing. "Enroll for free" appears in the header, the
+    hero, five catalog cards, the module section, the closing band and the course
+    rail, and a reader who has pressed it once should be able to predict it. It
+    starts the account, everywhere.
+
+    Choosing a course is a different job and it already has its own controls:
+    "View course" on each card, and "Compare all five courses" where the reader is
+    somewhere else on the site.
+  */
+  href = "/sign-up",
   withDate = false,
   tone = "primary",
   size = "lg",
@@ -310,6 +341,15 @@ export function EnrollButton({
   );
 }
 
+/**
+ * The one class string both secondary affordances wear.
+ *
+ * 44px minimum tap target below lg and released above it, because a 44px row in a
+ * dense desktop card is a hole rather than a target.
+ */
+const textActionClass =
+  "t-button inline-flex min-h-[44px] items-center gap-1.5 py-2.5 text-accent no-underline transition-colors hover:text-accent-hover hover:underline lg:min-h-0 lg:py-0";
+
 /** Text action. The default for every secondary affordance on the page. */
 export function TextAction({
   className = "",
@@ -317,12 +357,34 @@ export function TextAction({
   ...props
 }: ComponentProps<typeof Link>) {
   return (
-    <Link
-      className={`t-button inline-flex min-h-[44px] items-center gap-1.5 py-2.5 text-accent no-underline transition-colors hover:text-accent-hover hover:underline lg:min-h-0 lg:py-0 ${className}`}
-      {...props}
-    >
+    <Link className={`${textActionClass} ${className}`} {...props}>
       {children}
     </Link>
+  );
+}
+
+/**
+ * The same affordance where the thing it does is not navigation.
+ *
+ * The curriculum accordion's "Expand all" needed this and there was nowhere for
+ * it to go: `TextAction` is a `<Link>`, and the two ways of forcing a link to do
+ * this job are both wrong. `<a href="#">` with an onClick puts a fragment in the
+ * address bar and jumps the page for anybody whose JavaScript has not arrived; an
+ * anchor with no href is not focusable and is announced as text.
+ *
+ * A button that expands something is a button. It shares the class string above
+ * so the two are indistinguishable on screen, which they should be, since to a
+ * reader they are the same blue affordance.
+ */
+export function TextButton({
+  className = "",
+  children,
+  ...props
+}: ComponentProps<"button">) {
+  return (
+    <button type="button" className={`${textActionClass} ${className}`} {...props}>
+      {children}
+    </button>
   );
 }
 
@@ -357,23 +419,82 @@ export function SkillChip({ children }: { children: ReactNode }) {
   );
 }
 
-/** Middot-joined facts line. Coursera's single highest-value hero element. */
+/**
+ * Middot-joined facts line. Coursera's single highest-value hero element.
+ *
+ * `tone` is a real prop rather than a className, and the reason is a trap worth
+ * naming once. This component builds its class string by concatenation, so a
+ * `text-white/70` arriving through `className` does not override the
+ * `text-ink-muted` written here: both land in the attribute and the winner is
+ * decided by CSS source order, which is whichever Tailwind emitted first. Only
+ * the button wrapper runs through tailwind-merge. So anything on a dark ground
+ * has to be selected here, where the losing class can be left out entirely.
+ */
 export function FactsLine({
   items,
+  tone = "light",
   className = "",
 }: {
   items: readonly string[];
+  tone?: "light" | "dark";
   className?: string;
 }) {
+  const dark = tone === "dark";
+
   return (
-    <p className={`t-meta text-ink-muted ${className}`}>
+    <p className={`t-meta ${dark ? "text-white/70" : "text-ink-muted"} ${className}`}>
       {items.map((item, i) => (
         <span key={item}>
-          {i > 0 ? <span className="px-1.5 text-line-strong">&middot;</span> : null}
+          {i > 0 ? (
+            <span className={`px-1.5 ${dark ? "text-white/35" : "text-line-strong"}`}>
+              &middot;
+            </span>
+          ) : null}
           {item}
         </span>
       ))}
     </p>
+  );
+}
+
+/**
+ * The check row, which was inline in the module-format section and is now in two
+ * places.
+ *
+ * 16px glyph at `weight="bold"`, `mt-0.5` so it sits on the first line's cap
+ * height rather than centred on a two-line item, and `flex-none` so a long item
+ * wraps under itself rather than around the glyph.
+ */
+export function CheckList({
+  items,
+  className = "",
+  columns = 1,
+}: {
+  items: readonly string[];
+  className?: string;
+  columns?: 1 | 2;
+}) {
+  return (
+    <ul
+      className={`grid gap-x-8 gap-y-2.5 ${
+        columns === 2 ? "sm:grid-cols-2" : ""
+      } ${className}`}
+    >
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-2.5">
+          {/* `aria-hidden`. The check is a bullet: the item beside it reads the
+              same without it, and unmarked it put six nameless images into the
+              AX tree of "What you will learn". */}
+          <CheckIcon
+            size={16}
+            weight="bold"
+            aria-hidden="true"
+            className="mt-0.5 flex-none text-ink"
+          />
+          <span className="t-body-sm text-ink-secondary">{item}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -449,15 +570,15 @@ export function PosterTitleCard({ title }: { title: string }) {
 }
 
 /**
- * Path cover, drawn in the DOM.
+ * Course cover, drawn in the DOM.
  *
- * Every path used to share one flat placeholder tile, so roughly 40% of the
+ * Every course used to share one flat placeholder tile, so roughly 40% of the
  * catalog carried zero information and five cards looked interchangeable. The
  * cover now states the path letter, the audience and the deliverable on its own
- * ground, one hue per path. The oversized letter is a watermark cut from the
+ * ground, one hue per course. The oversized letter is a watermark cut from the
  * ground itself rather than an added colour.
  */
-export function PathCover({
+export function CourseCover({
   ground,
   badge,
   letter,
@@ -499,10 +620,50 @@ export function PathCover({
       its two type blocks occupy: a 22px badge row and a two-line artifact line
       is 82px inside 32px of padding, so 134 has room to spare and 201 was
       spending 67px per card on empty ground.
+
+      ---------------------------- THE RATIO IS A FLOOR NOW, CHANGED 7 AUG
+
+      It was `aspect-video` straight on this element, which is a height, not a
+      minimum: when the type inside needed more than the ratio granted, the
+      overflow was silently clipped by the `overflow-hidden` two lines down. The
+      breakpoint that broke was lg on the course page, where "Four more, one
+      method" runs four cards across at 222px. 16:9 gives that 125px; a chip, a
+      two-line audience line, "You build" and a two-line artifact need 150. The
+      bottom 25 were cut, which put the shear straight through the artifact line
+      and is the clipped card in Roan's capture. `aspect-ratio` does not
+      participate in automatic minimum sizing, so nothing anywhere reported it.
+
+      A grid with one cell and two things in it fixes that with no measuring. The
+      spacer carries the ratio and the content sits on top of it in the same cell,
+      so the row resolves to whichever is taller: the ratio when the type fits,
+      the type when it does not.
+
+      Where the type wins, it wins by the same amount on every cover in a row,
+      because the audience line and the artifact line each reserve two lines. The
+      notes on those two say why. Without the reservation this fix trades a clipped
+      cover for a ragged row, which it did for an hour.
+
+      The type wins below sm, where 16:6 on a 288px card is 108px and the block
+      needs about 157. That is one card per row down there, so there is nothing for
+      it to be level with.
+
+      Not `min-h-[125px]` and friends. The ratio has to follow the card's width
+      and the card's width follows five breakpoints and three different grids.
+
+      `grid-cols-1` is belt and braces, and the note here used to claim it was
+      load-bearing on the grounds that an `auto` track's max-content maximum is not
+      clamped by the container. Tested rather than asserted: forcing
+      `grid-template-columns: auto` on every cover at 1024, 1152 and 1280 returns
+      byte-identical geometry on both pages. An auto track in a definite-width
+      container does not grow past the free space. The explicit `minmax(0, 1fr)`
+      stays because it states the intent, not because anything depends on it.
+
+      `fill` keeps its old behaviour and needs no spacer: there the height is
+      already set by a sibling card in the same grid row.
     */
     <div
-      className={`relative isolate flex flex-col justify-between overflow-hidden p-4 ${
-        fill ? "h-full min-h-[260px]" : "aspect-[16/6] sm:aspect-video"
+      className={`relative isolate grid grid-cols-1 overflow-hidden ${
+        fill ? "h-full min-h-[260px]" : ""
       }`}
       style={{ background: ground }}
     >
@@ -522,7 +683,7 @@ export function PathCover({
 
         The numbers matter more than the structure here. The first pass ran the
         wash at 52% with the bottom gradient reaching 45% up the frame, and it
-        put every one of these people behind a grey-teal fog: on Path E the shop
+        put every one of these people behind a grey-teal fog: on Course E the shop
         owner was barely findable, and the brief for this whole set of images was
         that they be human and warm. The wash is down to 26%, enough to tint and
         not enough to bury, and the ink now falls away by 38% so it does its work
@@ -546,15 +707,40 @@ export function PathCover({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-[rgb(13_26_34/0.92)] via-[rgb(13_26_34/0.22)] via-38% to-transparent"
           />
-          {/* 0.62, up from 0.48. The badge chip and the audience line sit in this
-              band, and measured against the frames actually behind them the
-              audience line came out 3.68:1 on Path E and 2.7:1 over the bright
-              window in Path D, both under AA for 13px type. The band is 80px on a
-              cover of at least 134, so this buys the type its contrast without
-              reaching the face below it. */}
+          {/*
+            `h-28` and a three-stop ramp, both changed on 7 Aug, and this is the
+            other half of the change that stacked the chip and the audience line.
+
+            Stacking moved the audience line from roughly y20-38 to y47-65. The old
+            plate was 80px of a single 0.62-to-0 ramp, which is down to 0.26 by y47
+            and 0.12 by y65, so the type walked out from under the cover it was
+            measured for. Sampled on the rendered frames with the text hidden, the
+            GTM cover came out at 2.09:1 median for 13px white against the 4.5 that
+            AA wants, and all five failed in their darkest fifth.
+
+            112px carries the ramp past the line's new position, and the 0.42 stop
+            at 60% holds it up across y47-65 instead of letting a two-stop gradient
+            sag through the middle of the band. Re-measured the same way, per cover:
+
+              Course B  15.41 median  7.91 worst-5%
+              Course C   8.66         4.81
+              Course D  10.76         4.94
+              Course E   7.27         4.36
+
+            against 3.36-3.76 worst-5% for the position this replaced, so every
+            cover is better than what shipped before the stack. The last few
+            hundredths of a per cent of pixels sit at 3.7-4.5 in the corners of the
+            band, which is where no glyph stroke lands.
+
+            The alpha is not pushed further on purpose. The whole brief for this set
+            of photographs was that the people in them read as human and warm, and
+            the note above records the pass where a heavier treatment put every one
+            of them behind a grey-teal fog. This is as much plate as the frames can
+            take and still be photographs.
+          */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-20 bg-linear-to-b from-[rgb(13_26_34/0.62)] to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-28 bg-linear-to-b from-[rgb(13_26_34/0.78)] via-[rgb(13_26_34/0.42)] via-60% to-transparent"
           />
         </>
       ) : null}
@@ -572,11 +758,50 @@ export function PathCover({
         {letter}
       </span>
 
-      {/* `items-start`, and the chip may not wrap or shrink. At 1024 the badge
-          was competing with a two-line audience line inside one `gap-2` row,
-          and "PATH" and its letter broke across two lines inside a 22px pill,
-          dropping the letter onto the photograph below it. */}
-      <span className="relative flex items-start gap-2">
+      {/* The ratio, as a cell-mate rather than as this element's height. It draws
+          nothing and holds no content; the grid row takes the larger of it and the
+          type layer beside it. Omitted under `fill`, where the row height comes
+          from a sibling card. */}
+      {fill ? null : (
+        <span
+          aria-hidden="true"
+          className="col-start-1 row-start-1 aspect-[16/6] w-full sm:aspect-video"
+        />
+      )}
+
+      {/*
+        The type, in the same grid cell as the spacer and stretched to it.
+
+        `min-w-0` because a grid item's automatic minimum size is its content, and
+        without it a long unbroken word in a title would push the cover wider than
+        its card at the narrow end of the catalog.
+      */}
+      <div className="col-start-1 row-start-1 flex min-w-0 flex-col justify-between p-4">
+      {/*
+        THE CHIP AND THE AUDIENCE LINE ARE STACKED, and they were a row until
+        7 Aug.
+
+        The row was `[COURSE B] Editors, producers, post supervisors` inside one
+        `gap-2` flex, and three of the five covers have an audience line too long
+        for what the chip leaves them. It wrapped, and the second line returned to
+        the container's left edge while the first started 96px in, so the sentence
+        stepped backwards under the chip: the chip read as a block sitting in the
+        middle of the line, cutting it. Roan photographed Course B, which is the
+        worst of them at 36 characters.
+
+        Stacked, the audience line gets the cover's full width. At 260px of
+        content that is one line for four of the five covers and a clean two for
+        Course C, with no step and no collision, and the chip is back to being a
+        label on the frame rather than an obstacle in a sentence.
+
+        The block costs 4px of height against the row it replaced, and it is spent
+        in the gap between two things rather than inside either.
+
+        The chip still may not wrap or shrink. At 1024 in the old row, "PATH" and
+        its letter broke across two lines inside a 22px pill and dropped the letter
+        onto the photograph below it.
+      */}
+      <span className="relative block">
         {/* The chip fill goes up over a photograph. At white/15 on flat hue it
             is a plate; at white/15 on a frame that might be bright behind it,
             it is nothing. */}
@@ -587,21 +812,63 @@ export function PathCover({
         >
           {badge}
         </span>
-        <span className={`t-meta pt-1 ${image ? "text-white" : "text-white/85"}`}>{audience}</span>
+        {/*
+          `clamp-2` and a reserved two lines, which are doing two different jobs.
+
+          The clamp is a ceiling: two lines is the most this block can take before
+          it meets the "You build" line on the 134px cover a phone gets, and no
+          audience line in content.ts runs to three at any width this renders at.
+
+          `min-h-[36px]` is the floor, and it is what lets a row of covers finish
+          level. Four of the five audience lines wrap to two lines in a four-across
+          card and one ("Owners and operators") does not, so without a reservation
+          Course E's cover came out 18px shorter than the three beside it and its
+          card title started on a different line from theirs. This is the same move
+          the catalog card already makes on its own title and summary, for the same
+          reason, and the note there says so.
+
+          36 is two lines of `t-meta` at 13/18. When the cover is ratio-bound the
+          reservation costs nothing: `justify-between` was going to spend that space
+          on the gap anyway.
+
+          `mt-1`, not `mt-1.5`. At 6px the gap inside the badge group was half the
+          12px gap to the block below it, so chip, audience, "You build" and the
+          artifact read as one four-line paragraph. 4 against 12 groups correctly.
+        */}
+        <span
+          className={`t-meta clamp-2 mt-1 block min-h-[36px] ${image ? "text-white" : "text-white/85"}`}
+        >
+          {audience}
+        </span>
       </span>
 
-      <span className="relative">
+      {/* `pt-3`, so a tall audience line and a tall artifact line never close to
+          nothing. `justify-between` only guarantees a gap while there is slack to
+          distribute, and at the four-across width there is none.
+
+          12 and not 16, which is what this was for an hour. 16 put the type
+          layer 4px past 16:9 on three of the four covers in the cross-sell row,
+          so those three grew off the ratio and the fourth did not, and a row of
+          cards started their titles on two different lines. The gap is the one
+          number in this block that was free to give. */}
+      <span className="relative pt-3">
         <span className="t-field block text-white/75">You build</span>
+        {/* Two lines reserved here too, and for the same reason as the audience
+            line above: "Model serving on GPU cloud" fits one line in a four-across
+            card where the other four take two, so without it that cover finished
+            25px short of the row. `fill` needs no floor, since there the height is
+            set by a sibling card. */}
         <span
           className={`mt-1 block font-semibold tracking-[-0.3px] text-white ${
             fill
               ? "text-[22px] leading-[28px]"
-              : "text-[17px] leading-[23px] sm:text-[19px] sm:leading-[25px]"
+              : "min-h-[46px] text-[17px] leading-[23px] sm:min-h-[50px] sm:text-[19px] sm:leading-[25px]"
           }`}
         >
           {build}
         </span>
       </span>
+      </div>
     </div>
   );
 }

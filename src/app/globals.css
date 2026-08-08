@@ -16,6 +16,29 @@
   card border, or heading colour. Green is semantic only: a module that is
   open with no signup.
 
+  ONE EXCEPTION, granted by Roan on 7 Aug 2026: the highlight tile at the left
+  edge of the course page's stat bar, and the three 16px glyphs in the cells
+  beside it. Roan sent Udemy's course page, whose saturated plan badge sits in
+  exactly that slot, and asked for the same contrast. In --ink-band the tile was
+  the same value as the band it overlaps, so across the overlapping half there
+  was no tile, only a bite out of the card.
+
+  Recorded as a decision rather than as a derivation, because the two arguments
+  that would make it one do not hold:
+
+    - It is not the only value that works there. --path-a (#0a5c7a) measures
+      2.38:1 against the band to --accent's 2.36 and carries white at 7.43:1,
+      and Amendment 2 already released the five path grounds as card grounds.
+    - "A filled block is never clickable here" is false. The six review-board
+      cards are full-bleed path-ground blocks and each is a stretched link, and
+      the video poster 60px right of this tile is a 350x196 zero-radius button.
+
+  The cost is real and measured: the tile renders #0a3fe0 flat while the enrol
+  button 60px away renders rgb(35,83,228) through its glass stack, so the most
+  saturated blue in the fold is the one thing that cannot be pressed. Roan owns
+  that trade. Nothing else may take the exception, and --path-a is the swap if
+  it is ever reversed: one line in course/hero.tsx.
+
   Radius lock: control 8, card 12, feature 16. Pills only for status chips and
   the path tab row.
 */
@@ -72,6 +95,15 @@
 
   --shadow-1: 0 1px 2px rgb(16 24 32 / 0.06);
   --shadow-2: 0 4px 14px rgb(16 24 32 / 0.08);
+  /*
+    There is no --shadow-3, and one was added here on 7 Aug and taken back out
+    the same day. It was for the two cards that overhang the course fold's band
+    edge, on the argument that e2 at 8% cannot be seen against #0d1a22. True, and
+    not a reason: DESIGN-SPEC.md §2 says "Never --shadow-3 on a card" in those
+    words, and the change also dropped those cards' --line border for a 6% ring,
+    which cost the edge 40% of its contrast on the white half to fix the dark one.
+    Two elevations, and cards keep their border.
+  */
 
   /*
     Cover grounds, one per path. Five hues held at the same lightness and
