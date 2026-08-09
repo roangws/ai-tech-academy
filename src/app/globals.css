@@ -488,9 +488,26 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    /*
+      NO `scroll-behavior: smooth` HERE, removed 9 Aug.
+
+      It broke every client-side route change on the site. Next's App Router
+      scrolls the window itself after a navigation, and a global smooth behaviour
+      turns that into an animation the router does not wait for. Measured:
+      navigating to /courses landed at scrollY 1277 on a 2349px document, in the
+      middle of the prose, by every link that goes there. The identical
+      navigation under `prefers-reduced-motion: reduce` — where the media query
+      below already flipped this to `auto` — landed at 0. The only readers
+      getting correct behaviour were the ones who had asked for less motion.
+
+      Smooth anchor scrolling still happens; it lives in
+      components/smooth-anchors.tsx, where it applies to in-page fragment links
+      and stays out of the router's way.
+    */
+
     /* 72px of chrome plus 12 of air. It was 92, which landed every in-page
-       anchor 20px below the heading it was aiming at. */
+       anchor 20px below the heading it was aiming at. `scrollIntoView` honours
+       this, so it is still what keeps a heading clear of the sticky header. */
     scroll-padding-top: 84px;
   }
 

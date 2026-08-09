@@ -1,3 +1,4 @@
+import { SmoothAnchors } from "@/components/smooth-anchors";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getViewer } from "@/lib/auth";
@@ -84,6 +85,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
+      <SmoothAnchors />
       <SiteFooter />
     </>
   );
