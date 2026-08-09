@@ -110,7 +110,7 @@ export function Funnel({
           const pct = Math.round((step.value / first) * 100);
           return (
             <li key={step.label} className="flex items-center gap-3">
-              <span className="t-meta w-16 flex-none truncate text-ink-muted">{step.label}</span>
+              <span className="t-meta w-[52px] flex-none text-ink-muted">{step.label}</span>
               <span className="relative h-6 flex-1 overflow-hidden rounded-[4px] bg-surface-sunken">
                 <span
                   aria-hidden="true"

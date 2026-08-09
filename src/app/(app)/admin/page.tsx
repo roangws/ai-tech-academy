@@ -31,6 +31,11 @@ export default async function AdminOverview() {
 
   const newThisWeek = weeks.at(-1)?.signups ?? 0;
 
+  /* The course with the most people in it is the one whose drop-off is worth
+     drawing. With nothing enrolled anywhere it falls back to the first, so the
+     chart renders empty rather than throwing. */
+  const busiest = [...insights].sort((a, b) => b.enrolled - a.enrolled)[0] ?? insights[0];
+
   const awaitingReview = learners.reduce((n, l) => n + l.artifacts.submitted, 0);
   const unboundSeats = seats.filter((s) => !s.user_id).length;
   const instructors = people.filter((p) => p.roles.includes("instructor")).length;
@@ -137,10 +142,13 @@ export default async function AdminOverview() {
           bars={weeks.map((w) => ({ label: w.label, value: w.signups, sub: w.active }))}
           unit=" signups"
         />
+        {/* The busiest course, named. A funnel with no course on it is a funnel
+            the reader has to ask about, and with five courses the answer is not
+            guessable. */}
         <Funnel
-          caption="Where people stop"
-          steps={(insights.find((i) => i.enrolled > 0) ?? insights[0]).reachedModule.map((n, k) => ({
-            label: `Module ${String(k + 1).padStart(2, "0")}`,
+          caption={`Where people stop · ${busiest.course.title}`}
+          steps={busiest.reachedModule.map((n, k) => ({
+            label: String(k + 1).padStart(2, "0"),
             value: n,
           }))}
         />
