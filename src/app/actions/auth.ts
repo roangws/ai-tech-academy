@@ -128,7 +128,7 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
     if (/rate limit|too many requests/i.test(error.message)) {
       return {
         error:
-          "We could not send the confirmation email just now — our mail sender is temporarily over its limit. Nothing is wrong with your details. Try again in a few minutes, or start module 1 now with no account.",
+          "The confirmation email failed to send just now. Our mail sender is temporarily over its limit. Nothing is wrong with your details. Try again in a few minutes, or start module 1 now with no account.",
       };
     }
 

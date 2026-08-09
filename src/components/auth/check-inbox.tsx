@@ -35,12 +35,12 @@ export function CheckInbox({ email }: { email: string }) {
       <h1 className="t-h2 mt-5 text-ink">Confirm your email</h1>
       <p className="t-body mt-2.5 text-ink-secondary">
         We sent a link to <span className="text-ink">{email}</span>. Open it and your account is
-        ready — it takes one click and you will not need to fill anything in again.
+        ready. It takes one click, and nothing needs filling in again.
       </p>
 
       <ul className="mt-7 grid gap-3 border-t border-line pt-6">
         <li className="t-body-sm text-ink-secondary">
-          Nothing after a few minutes? Check the spam folder — the first message from a new
+          Nothing after a few minutes? Check the spam folder. The first message from a new
           sender often lands there.
         </li>
         <li className="t-body-sm text-ink-secondary">

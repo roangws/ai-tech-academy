@@ -56,7 +56,7 @@ export async function updateProfile(_prev: ProfileState, form: FormData): Promis
       return { error: "That image is over 2MB. Try a smaller one." };
     }
     if (!TYPES.has(file.type)) {
-      return { error: "Images only — PNG, JPEG, WebP or GIF." };
+      return { error: "Images only: PNG, JPEG, WebP or GIF." };
     }
 
     const ext = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "png";
@@ -89,9 +89,22 @@ export async function updateProfile(_prev: ProfileState, form: FormData): Promis
   const { error } = await supabase.from("profiles").update(patch).eq("id", viewer.id);
   if (error) return { error: error.message };
 
-  /* The header renders the avatar on every signed-in page, so the whole tree
-     has to re-render — otherwise a reader uploads a photo and the header keeps
-     showing their initials until a hard reload. */
-  revalidatePath("/", "layout");
+  /*
+    ONE PATH, not the whole tree.
+
+    This was `revalidatePath("/", "layout")`, and it is why saving a photo failed.
+    That invalidates every route in the application from the root down —
+    including the five marketing pages and every course page — as part of a
+    Server Action running in a serverless function. The upload and the profile
+    write both completed every time; the RESPONSE never made it back, the POST
+    came back as ERR_ABORTED, and the reader got the error boundary telling them
+    the page broke while their photo sat safely in the bucket.
+
+    It was also unnecessary. Every route under `(app)` and `(learn)` is
+    `force-dynamic` — they re-render on every request by definition, so there is
+    no cache holding a stale avatar for them to invalidate. Only this page needs
+    the fresh row for the redirect-free `useActionState` render it is about to do.
+  */
+  revalidatePath("/account");
   return { ok: hasFile ? "Photo updated." : "Saved." };
 }

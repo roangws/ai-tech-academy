@@ -157,7 +157,7 @@ export default async function AdminOverview() {
       <p className="t-meta mt-2 max-w-[70ch] text-ink-muted">
         The solid bar is accounts created; the pale one behind it is people who completed at least
         one lesson that week. There is no session table and no page views, so those two are the
-        only honest activity signals the schema has — and `lessons.minutes` is an editorial
+        only honest activity signals the schema has. `lessons.minutes` is an editorial
         estimate, so any &ldquo;time spent&rdquo; figure would be a number with nothing behind it.
       </p>
 

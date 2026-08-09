@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CourseGlyph } from "@/components/course/icons";
 import { CourseCard } from "@/components/sections/courses";
 import { EnrollButton, Panel, Section, SectionHeader } from "@/components/ui";
-import { brand, catalog, courseHref, courses } from "@/lib/content";
+import { brand, catalog, courses } from "@/lib/content";
 import { catalogJsonLd } from "@/lib/seo";
 
 /**
@@ -168,36 +167,18 @@ export default function CoursesPage() {
       </Section>
 
       {/*
-        The jump list. Tinted, so it separates the grid above from the prose
-        below without either needing a heading it does not want.
+        THE JUMP LIST IS GONE, removed 9 Aug.
 
-        `aria-label` rather than a visible heading: it is a list of five links to
-        the five things directly above it, and a heading would announce a new
-        section where there is only a shortcut.
+        It was a tinted band of five pills between the grid and the prose, each
+        repeating a course title and its duration — the same five titles sitting
+        directly above it in the cards, with a number the cards also carry. Roan
+        asked for it out, and he is right: a shortcut to five things a reader can
+        already see is a second navigation for a page that has one screen of
+        content, and it made the page read as two lists rather than one grid.
+
+        The argument for it was the 3,000px phone column, and that is real. It is
+        answered by the grid itself being the list, not by a duplicate of it.
       */}
-      <Section tint compressed ariaLabel="Jump to a course">
-        <ul className="flex flex-wrap gap-2">
-          {courses.map((course) => (
-            <li key={course.id}>
-              <Link
-                href={courseHref(course.id)}
-                className="t-button inline-flex min-h-[44px] items-center gap-2.5 rounded-full border border-line bg-surface px-4 text-ink-secondary no-underline transition-colors hover:border-accent hover:text-accent"
-              >
-                <CourseGlyph id={course.id} size={18} className="flex-none text-accent" />
-                {course.title}
-                {/* The duration, not the module count. The comment here used to
-                    justify `moduleCount` as "the one fact that differs between
-                    these five", and every course has eight modules — so the row
-                    printed "8 modules" five times and the justification was the
-                    exact opposite of true. Duration is 6/6/4/6/2 weeks, which
-                    does differ, and is the fact somebody scanning a jump list is
-                    choosing on. */}
-                <span className="t-meta text-ink-muted">{course.duration}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Section>
 
       {/*
         The prose, in a 720px measure and a two-column grid at lg.

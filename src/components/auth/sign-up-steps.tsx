@@ -239,7 +239,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
                     <span className="t-micro inline-flex items-center gap-1 text-ink-secondary">
                       <CheckIcon size={11} weight="bold" aria-hidden="true" />
                       {s.label}
-                      <span className="sr-only">, completed — go back to this step</span>
+                      <span className="sr-only">, completed. Go back to this step</span>
                     </span>
                   </button>
                 ) : (

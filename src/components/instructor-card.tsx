@@ -195,7 +195,7 @@ export function InstructorLeadCard({ person }: { person: Person }) {
                       survives.
                     */}
                     View profile
-                    <span className="sr-only">{` — ${person.name} on LinkedIn`}</span>
+                    <span className="sr-only">{`, ${person.name} on LinkedIn`}</span>
                   </a>
                 ) : null}
 
@@ -418,7 +418,7 @@ export function InstructorCard({ person }: { person: Person }) {
           >
             <LinkedinLogoIcon size={14} weight="fill" aria-hidden="true" className="flex-none" />
             View profile
-            <span className="sr-only">{` — ${person.name} on LinkedIn`}</span>
+            <span className="sr-only">{`, ${person.name} on LinkedIn`}</span>
           </a>
         ) : null}
       </div>

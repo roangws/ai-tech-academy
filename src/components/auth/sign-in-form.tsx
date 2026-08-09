@@ -89,7 +89,7 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
           role="alert"
           className="t-body-sm mt-5 rounded-[var(--radius-card)] border border-line bg-surface-subtle p-4 text-ink-secondary"
         >
-          That confirmation link did not work — it may have expired, been used already, or been
+          That confirmation link has expired, been used already, or been
           opened in a different browser from the one you signed up in. Sign in below and we will
           send a fresh one.
         </p>

@@ -216,13 +216,28 @@ export default async function ModulePage({
           {/* --------------------------------------------------------- artifact */}
           {module.artifact ? (
             <section aria-labelledby="artifact-heading" className="mt-12">
+              {/*
+                The heading names the TASK, not the noun.
+
+                It rendered `{module.artifact}` on its own — "Baseline and
+                use-case map" — and then labelled the textarea "Your baseline and
+                use-case map" twelve lines below it. The same four words twice,
+                with a paragraph in between that opened "Do this", where "this"
+                referred to nothing a reader had been told. Somebody arriving
+                here knew the name of a thing and had no idea what to write.
+              */}
               <h2 id="artifact-heading" className="t-h3 text-ink">
-                {module.artifact}
+                What to hand in for module {module.n}
               </h2>
+              <p className="t-body mt-2 max-w-[60ch] text-ink">
+                A <strong className="font-medium">{module.artifact.toLowerCase()}</strong>
+                {module.summary ? `, for the process this module had you work on.` : "."}
+              </p>
               <p className="t-body-sm mt-2 max-w-[60ch] text-ink-secondary">
-                Do this in whatever tool you already use, then paste it here. It saves to your
-                account, only you and your instructor can read it, and it is what your outcome
-                sheet at the end of the course is built from.
+                Build it wherever you normally work, then paste it in below. It saves to your
+                account and stays private until you send it. Every module leaves one of these
+                behind, and at the end of the course they are what your outcome sheet is
+                assembled from.
               </p>
 
               {signedIn ? (
@@ -231,7 +246,11 @@ export default async function ModulePage({
                   <input type="hidden" name="slug" value={slug} />
                   <input type="hidden" name="n" value={n} />
 
-                  <label htmlFor="artifact-body" className="t-field block text-ink-secondary">
+                  {/* Visually hidden: the h2 and the paragraph above have already
+                      said what this is, and printing the name a third time
+                      directly over the box was the redundancy Roan flagged. The
+                      field still needs a programmatic label. */}
+                  <label htmlFor="artifact-body" className="sr-only">
                     Your {module.artifact.toLowerCase()}
                   </label>
                   <textarea
@@ -240,7 +259,7 @@ export default async function ModulePage({
                     rows={10}
                     defaultValue={artifact?.body ?? ""}
                     className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
-                    placeholder="Write it here. Nobody sees this until you submit it."
+                    placeholder="Paste it here. Nobody can read this until you send it."
                   />
 
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3">

@@ -187,7 +187,7 @@ export async function setModuleAccess(formData: FormData) {
       .eq("access", "open");
     if ((open ?? []).length <= 1 && (open ?? []).some((m) => m.id === moduleId)) {
       throw new Error(
-        "Every course keeps at least one open module — it is the free-first-module promise the site makes on six surfaces. Open another module first.",
+        "Every course keeps at least one open module. It is the free-first-module promise the site makes on six surfaces, so open another module before closing this one.",
       );
     }
   }

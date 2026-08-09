@@ -3132,7 +3132,7 @@ export const catalog = {
     },
     {
       heading: "What free covers",
-      text: "Module 1 of every course opens with no account at all. A free account keeps your work and opens the rest, and there is nothing to pay at any point — no certificate fee, no upgrade, and no paid tier holding the useful half. If you want to run a course with a team, that is a conversation rather than a price list.",
+      text: "Module 1 of every course opens with no account at all. A free account keeps your work and opens the rest, and there is nothing to pay at any point: no certificate fee, no upgrade, and no paid tier holding the useful half. If you want to run a course with a team, that is a conversation rather than a price list.",
     },
   ],
 } as const;
@@ -3262,14 +3262,14 @@ export const legal = {
       {
         heading: "What we collect",
         body: [
-          "If you create an account we collect the name and email address you give us, and the work you save while going through a course — your baseline, your notes, and the artifacts each module asks you to produce. If you tell us your company, your role, or how you heard about us, we collect that too. Those three are optional, and the form says so.",
+          "If you create an account we collect the name and email address you give us, and the work you save while going through a course: your baseline, your notes, and the artifacts each module asks you to produce. If you tell us your company, your role, or how you heard about us, we collect that too. Those three are optional, and the form says so.",
           "Our hosting provider keeps ordinary server logs, which include IP addresses, for a short period and for the purpose of running and securing the service. We do not use them to build a picture of individual visitors.",
         ],
       },
       {
         heading: "Why we collect it",
         body: [
-          "Your name and email exist so you can sign in and so we can tell you about something that affects your account. Your saved work exists so it is there when you come back. The optional questions exist so we know which roles are actually turning up, which is how the next course gets chosen — they are used in aggregate and they do not change what you are shown.",
+          "Your name and email exist so you can sign in and so we can tell you about something that affects your account. Your saved work exists so it is there when you come back. The optional questions exist so we know which roles are actually turning up, which is how the next course gets chosen. They are used in aggregate and they do not change what you are shown.",
         ],
       },
       {

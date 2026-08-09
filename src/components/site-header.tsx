@@ -13,6 +13,7 @@ import {
 } from "motion/react";
 import { CaretDownIcon, ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
+import { CoursesMenu } from "@/components/lms/courses-menu";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { nav } from "@/lib/content";
@@ -467,6 +468,20 @@ export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) 
               ? onHome && active === fragment
               : pathname === item.href;
             const isLit = lit === item.href;
+
+            /* The one item with the five courses under it. Rebuilt after the
+               first version turned out to be unclickable on a pointer device —
+               the note in courses-menu.tsx has the whole of why. */
+            if (item.href === "/courses") {
+              return (
+                <CoursesMenu
+                  key={item.href + item.label}
+                  href={item.href}
+                  label={item.label}
+                  current={current || isLit}
+                />
+              );
+            }
 
             return (
               <Link
