@@ -106,16 +106,29 @@ export default async function AdminCourse({ params }: { params: Promise<{ course
         <h1 className="t-h2 min-w-0 flex-1 text-ink">{course.title}</h1>
         {published ? <StatusChip open>Published</StatusChip> : <StatusChip>Draft</StatusChip>}
 
-        {/* Published courses get a link to the page a visitor sees. A draft has
-            no such page — that is what draft means — so it offers the player
-            instead, which an admin can always reach. */}
-        <Link
-          href={published ? `/courses/${course.slug}` : `/learn/${course.slug}`}
-          className="t-meta inline-flex min-h-[36px] items-center gap-1.5 rounded-[var(--radius-control)] border border-line-control px-2.5 text-ink-secondary no-underline transition-colors hover:border-accent hover:text-accent"
-        >
-          {published ? "View public page" : "Open in the player"}
-          <ArrowSquareOutIcon size={13} aria-hidden="true" />
-        </Link>
+        {/*
+          Only a published course gets a link, and that is the honest answer
+          rather than a missing feature.
+
+          A draft is absent from the catalogue every public surface reads, which
+          is exactly what makes it safe to build one on the live site — and it
+          means `/courses/<slug>` and `/learn/<slug>` both 404 for it. Offering
+          either would be a button that takes an author to "there is nothing at
+          this address" for a course they are looking at. Previewing a draft in
+          the player needs the reader to be resolved before the catalogue is,
+          which is its own change.
+        */}
+        {published ? (
+          <Link
+            href={`/courses/${course.slug}`}
+            className="t-meta inline-flex min-h-[36px] items-center gap-1.5 rounded-[var(--radius-control)] border border-line-control px-2.5 text-ink-secondary no-underline transition-colors hover:border-accent hover:text-accent"
+          >
+            View public page
+            <ArrowSquareOutIcon size={13} aria-hidden="true" />
+          </Link>
+        ) : (
+          <span className="t-meta text-ink-muted">Not on the site yet</span>
+        )}
 
         <ActionForm action={setCourseStatus}>
           <input type="hidden" name="courseId" value={course.id} />

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { FormState } from "@/components/lms/admin-form";
+import type { FormState } from "@/lib/form-state";
 
 /**
  * Authoring the catalogue: courses, modules and lessons.

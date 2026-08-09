@@ -3,6 +3,9 @@
 import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { WarningCircleIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
+import type { FormState } from "@/lib/form-state";
+
+export type { FormState };
 
 /**
  * The console's form furniture.
@@ -32,8 +35,6 @@ import { WarningCircleIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
  * else — a policy refusal, a dropped connection — because those belong in the
  * error boundary. Two channels, two meanings.
  */
-
-export type FormState = { error?: string; ok?: string } | null;
 
 export const inputClass =
   "t-body-sm mt-1 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25";

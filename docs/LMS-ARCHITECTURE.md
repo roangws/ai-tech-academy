@@ -30,18 +30,37 @@ unwinding — the wiring is purely additive.
 
 ### The one architectural decision that shapes everything else
 
-**`content.ts` stays the source of truth for catalog copy. Postgres holds a
-structural mirror of it, plus everything that is per-person.**
+> **REVERSED, 11 Aug 2026.** What follows is the original decision and the
+> reasoning that overturned it. Both are kept because the original argument was
+> not wrong, it was answering a different question.
 
-The alternative — moving 3,442 lines of curated marketing prose into the
-database — would turn five statically-rendered, JSON-LD-annotated, SEO-load-bearing
-pages into runtime queries, and would put copy edits behind a migration. It buys
-nothing: nobody but the author edits that prose.
+**Original:** `content.ts` is the source of truth for catalog copy; Postgres
+holds a structural mirror of it, plus everything that is per-person. Moving
+3,442 lines of curated prose into the database would turn five statically
+rendered, JSON-LD-annotated, SEO-load-bearing pages into runtime queries and put
+a copy edit behind a migration. It buys nothing: nobody but the author edits that
+prose.
 
-So the database stores `courses(id)`, `modules(course_id, n)` and
-`lessons(module_id, idx)` as thin structural rows, seeded from `content.ts` by
-`scripts/seed-catalog.mjs`. Their only job is to be a stable foreign-key target
-for progress, artifacts and judgements. Marketing pages never read them.
+**What that missed.** "Nobody but the author edits that prose" is a description
+of who *could*, not of who *should*. Creating a course meant editing a
+TypeScript literal and deploying, so the admin console — the screen whose entire
+purpose is running the school — could change exactly one thing about a course:
+whether a module required an account. Handing the product to an instructor was
+impossible by construction.
+
+**Now:** Postgres owns the catalogue. `src/lib/catalog.ts` reads it; the
+`Course`, `CourseModule` and `Lesson` types stay in `content.ts` and are what it
+maps rows into, so every component is unchanged and there is still one
+definition of what a course is. `content.ts` keeps the homepage copy, the
+method, the FAQs, the instructor roster and the legal pages — editorial content
+with no console behind it.
+
+The SEO concern in the original was real and is addressed rather than accepted:
+the marketing pages are still `revalidate = 3600` static renders, and every
+admin write calls `revalidateCatalog()`, so an edit is live on the next
+navigation instead of within the hour. `/courses/[slug]` took `dynamicParams`,
+because a course created in the console has a slug that did not exist when the
+deployment was built.
 
 This preserves the `id` / `slug` split that `content.ts:704` argues for at
 length: **`id` is the private key everything internal uses, `slug` is a public
@@ -98,7 +117,7 @@ are granted only by an admin, or by SQL.
 
 Fifteen tables in three groups.
 
-### Catalog — seeded from `content.ts`, read-only to everyone
+### Catalog — authored in the console, read by everything
 
 ```
 courses(id text PK, slug, badge, title, level, duration,
