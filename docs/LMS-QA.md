@@ -19,12 +19,61 @@ else needs a human with a browser.
       present.
 - [ ] `npx tsc --noEmit` — **[verified]** clean.
 - [ ] `npm run lint` — **[verified]** clean.
-- [ ] **[BLOCKER — decide before launch]** Email confirmation is currently **ON**
-      (`mailer_autoconfirm: false`) and Supabase's built-in SMTP is rate-limited
-      to a handful of messages an hour. Either wire real SMTP or turn
-      confirmations off deliberately. The code handles both, but with the
-      built-in sender most sign-ups will silently never receive a link.
-      See [FILL: email delivery].
+- [x] **Email confirmation is OFF** (`mailer_autoconfirm: true`, set 8 Aug 2026).
+      Sign-up returns a live session and lands on `/dashboard`; no mail is sent,
+      so the built-in SMTP rate limit no longer applies. The trade-off accepted:
+      nobody proves they own the address they type. Turning it back on needs real
+      SMTP first — the code handles both paths and `/auth/confirm` is built.
+
+---
+
+## 0b. Verified end to end in a real browser, on production
+
+Run against `academy.roanweigert.com` on 8 Aug 2026, driving the actual UI and
+checking the resulting rows in Postgres rather than trusting the screen.
+
+**Student** — sign-up across all three steps → landed signed in on `/dashboard`
+("Welcome back, Qa.") → a previously locked module (04) opened → ticked a lesson
+(`aria-pressed` false→true, persisted) → wrote and submitted an artifact
+("Submitted. Your instructor can read it.") → dashboard showed the course at
+"1 of 39 lessons" **without ever pressing Enrol**, confirming the auto-enrolment
+fix → filled and submitted an outcome sheet → sheet correctly froze
+("no longer editable") → signed out → `/dashboard` redirected to `/sign-in`.
+
+Database confirmed: profile with the optional step-2 role and step-3 source
+captured, `roles = {student}` from the trigger, 1 enrolment, 1 lesson, 1
+submitted artifact, 1 submitted sheet with its measure row.
+
+**Instructor** — signed in, header showed the Instructor link, console listed the
+assigned course and the learner's submitted artifact, feedback sent, artifact
+moved to `reviewed` with the text stored.
+
+**Judge** — seat rendered as "Revenue operations" with its `checks` sentence,
+"1 sheet to score", **no learner name or id anywhere on either judge screen**,
+curriculum review filed (`2026-H2` / `concerns`, stored against the right seat
+and course), and the rubric scored with a **different value on each of the four
+criteria**. Database confirmed all four landed on the correct criteria —
+Deployment verified 2, Measurement quality 3, Workflow durability 4,
+Documentation 5. That is the regression test for the shared-radio-name bug, and
+it passes.
+
+Two bugs were found by the teardown itself and are fixed:
+
+- `artifacts_feedback_ck` paired `feedback_at` with `feedback_by`, which is
+  `ON DELETE SET NULL` — so **deleting an instructor who had ever left feedback
+  failed outright**. Re-paired to `instructor_feedback`/`feedback_at`; who wrote
+  it is allowed to become unknown.
+- `outcome_rows_guard` blocked its own cascade, because during a cascade the
+  parent sheet is already gone and a NULL status read as "not draft" — so **any
+  learner who had submitted an outcome sheet could not delete their account**.
+  A missing parent is now treated as the sheet being removed, not as tampering.
+
+Both contradicted the privacy policy's promise that closing an account deletes
+the account and the work stored against it. Account deletion now works.
+
+All QA identities and their data were removed afterwards; the catalog (5 courses,
+40 modules, 173 lessons, 6 seats, 20 criteria) is intact and `auth.users` is
+empty.
 
 ---
 
