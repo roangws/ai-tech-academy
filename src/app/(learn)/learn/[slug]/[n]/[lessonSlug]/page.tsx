@@ -262,15 +262,39 @@ export default async function LessonPage({
         {/* The next step, promoted once there is one to take. A text link at the
             foot of the page is the right weight for "go back"; it is the wrong
             weight for the thing a learner does after finishing every lesson. */}
-        {done && next ? (
+        {/*
+          What to do next, once this lesson is done.
+
+          The last lesson of a module used to hand the reader straight to the
+          next module, which skips the one thing the module exists to produce.
+          Every module ends in an artifact, and a learner who never writes one
+          reaches the end of the course with nothing for the outcome sheet to be
+          built from. So on the last lesson the forward control is the hand-in.
+        */}
+        {done ? (
           <div className="mt-6">
-            <Link
-              href={`/learn/${slug}/${n}/${next.slug}`}
-              className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
-            >
-              Next lesson: {next.name}
-              <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-            </Link>
+            {next ? (
+              <Link
+                href={`/learn/${slug}/${n}/${next.slug}`}
+                className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+              >
+                Next lesson: {next.name}
+                <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+              </Link>
+            ) : (
+              <div>
+                <p className="t-body-sm text-ink-secondary">
+                  That is every lesson in this module.
+                </p>
+                <Link
+                  href={`/learn/${slug}/${n}#artifact-heading`}
+                  className="t-button mt-2 inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+                >
+                  {module.artifact ? `Write your ${module.artifact.toLowerCase()}` : "Finish the module"}
+                  <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+                </Link>
+              </div>
+            )}
           </div>
         ) : null}
 

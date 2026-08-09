@@ -5,7 +5,8 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArticleIcon,
-  CheckIcon,
+  CheckCircleIcon,
+  CircleIcon,
   FlaskIcon,
   FileTextIcon,
   HeadphonesIcon,
@@ -16,7 +17,7 @@ import { LockedPanel, Meter } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
 import { getModuleView, bySlug, type LessonWithKinds } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
-import { toggleLesson, saveArtifact } from "@/app/actions/lms";
+import { saveArtifact } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
 
@@ -172,42 +173,26 @@ export default async function ModulePage({
                     Baseline interview complete" rather than eleven identical
                     buttons called "Mark complete".
                   */}
-                  {signedIn ? (
-                    <form action={toggleLesson} className="flex-none">
-                      <input type="hidden" name="lessonId" value={lesson.id} />
-                      <input type="hidden" name="slug" value={slug} />
-                      <input type="hidden" name="n" value={n} />
-                      <input type="hidden" name="done" value={String(isDone)} />
-                      {/*
-                        `aria-pressed` is what makes this a toggle rather than a
-                        button whose meaning has to be inferred from the tail of
-                        its own label. Before it, the only state channel was the
-                        fill colour and a name that changed from "Mark X
-                        complete" to "Mark X not complete" — so a screen-reader
-                        user ticked a lesson, the action round-tripped, focus
-                        stayed on the re-rendered button, and nothing was
-                        announced. `aria-pressed` is read on focus and re-read
-                        when it changes, which is exactly the confirmation that
-                        was missing.
+                  {/*
+                    THE TICK BUTTONS ARE GONE, removed 9 Aug.
 
-                        The green also went. `--state-open` means "open with no
-                        account" on this site and nothing else; a completed
-                        lesson is the accent.
-                      */}
-                      <button
-                        type="submit"
-                        aria-pressed={isDone}
-                        className={`grid size-8 place-items-center rounded-full border transition-colors ${
-                          isDone
-                            ? "border-accent bg-accent-tint text-accent"
-                            : "border-line-control text-ink-muted hover:border-accent hover:text-accent"
-                        }`}
-                      >
-                        <CheckIcon size={15} weight="bold" aria-hidden="true" />
-                        <span className="sr-only">Complete {lesson.name}</span>
-                      </button>
-                    </form>
-                  ) : null}
+                    This list offered a one-click completion beside every lesson
+                    title, so a learner could mark four lessons done without
+                    opening one — and every number in the product is derived from
+                    that table. Progress was a thing you could award yourself from
+                    a screen you never read.
+
+                    Completion is marked in the lesson now, on the page where the
+                    work actually happened. The circle here reports state and does
+                    not set it.
+                  */}
+                  <span className="flex-none" aria-hidden="true">
+                    {isDone ? (
+                      <CheckCircleIcon size={20} weight="fill" className="text-accent" />
+                    ) : (
+                      <CircleIcon size={20} className="text-ink-muted" />
+                    )}
+                  </span>
                 </li>
               );
             })}
