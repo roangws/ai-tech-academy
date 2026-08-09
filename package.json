@@ -11,7 +11,8 @@
     "db:types": "supabase gen types typescript --project-id gusexlvelgmgnecvytxf > src/lib/supabase/generated.ts",
     "db:history": "node scripts/pull-migration-history.mjs",
     "db:push": "supabase db push",
-    "seed": "node scripts/seed-catalog.mjs"
+    "seed": "node scripts/seed-catalog.mjs",
+    "media:push": "node --env-file=.env.local scripts/push-media.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
