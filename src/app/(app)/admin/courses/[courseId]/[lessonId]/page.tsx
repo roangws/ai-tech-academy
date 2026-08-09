@@ -187,7 +187,8 @@ export default async function AdminLesson({
         </h2>
         <p className="t-body-sm mt-1 max-w-[64ch] text-ink-secondary">
           Saving an existing key edits that block in place, so learner answers and playback
-          positions attached to it survive. Media takes a path, not a URL — push the file with{" "}
+          positions attached to it survive. Media takes a path rather than a URL: push the file
+          with{" "}
           <code className="t-meta">npm run media:push</code> and paste what it prints.
         </p>
 
@@ -218,21 +219,21 @@ export default async function AdminLesson({
 
           <label>
             <span className="t-field block text-ink-secondary">
-              YouTube id — <span className="text-ink-muted">video only</span>
+              YouTube id <span className="text-ink-muted">video only</span>
             </span>
             <input name="youtube_id" placeholder="dQw4w9WgXcQ" className={field} />
           </label>
 
           <label>
             <span className="t-field block text-ink-secondary">
-              Storage path — <span className="text-ink-muted">audio and doc</span>
+              Storage path <span className="text-ink-muted">audio and doc</span>
             </span>
             <input name="path" placeholder="audio/gtm/01-episode.mp3" className={field} />
           </label>
 
           <label className="sm:col-span-2">
             <span className="t-field block text-ink-secondary">
-              Payload JSON — <span className="text-ink-muted">every other kind</span>
+              Payload JSON <span className="text-ink-muted">every other kind</span>
             </span>
             <textarea
               name="payload"

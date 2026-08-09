@@ -71,7 +71,7 @@ export default async function AdminSeats() {
                   <option value="">Nobody</option>
                   {people.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {[p.first_name, p.last_name].filter(Boolean).join(" ") || p.email} — {p.email}
+                      {[p.first_name, p.last_name].filter(Boolean).join(" ") || p.email} · {p.email}
                     </option>
                   ))}
                 </select>

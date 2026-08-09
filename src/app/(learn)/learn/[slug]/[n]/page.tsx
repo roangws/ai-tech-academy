@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { slug, n } = await params;
   const course = bySlug.get(slug);
   return {
-    title: course ? `Module ${n} — ${course.title}` : "Module",
+    title: course ? `Module ${n} · ${course.title}` : "Module",
     robots: { index: false, follow: false },
   };
 }
@@ -221,7 +221,7 @@ export default async function ModulePage({
               </h2>
               <p className="t-body-sm mt-2 max-w-[60ch] text-ink-secondary">
                 Every module leaves one thing behind. This is the one for module {module.n}, and it
-                is yours — it stays in your account and it is what your outcome sheet is built from.
+                is yours. It stays in your account, and it is what your outcome sheet is built from.
               </p>
 
               {signedIn ? (
@@ -279,7 +279,7 @@ export default async function ModulePage({
                 </form>
               ) : (
                 <p className="t-body-sm mt-4 rounded-[var(--radius-card)] border border-line bg-surface-subtle p-4 text-ink-secondary">
-                  Module 1 is open with no account, and saving what you produce is not — there is
+                  Module 1 is open with no account. Saving what you produce needs one, because there is
                   nowhere to keep it.{" "}
                   <Link href={unlockHref(path)} className="text-accent no-underline hover:underline">
                     A free account

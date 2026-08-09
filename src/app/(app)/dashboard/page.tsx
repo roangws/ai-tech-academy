@@ -89,7 +89,7 @@ function nextActions(rows: DashboardCourse[]): Action[] {
         key: `sh-${row.sheet.id}`,
         href: `/dashboard/outcome/${row.course.id}`,
         label: "Finish your outcome sheet",
-        detail: `${row.course.title} — still a draft`,
+        detail: `${row.course.title} · still a draft`,
         Icon: TableIcon,
       });
     }

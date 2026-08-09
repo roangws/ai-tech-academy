@@ -99,7 +99,7 @@ export default async function InstructorPage() {
       {awaiting.length === 0 ? (
         <div className="mt-5">
           <Empty title="Nothing waiting">
-            Submitted artifacts appear here. A learner&rsquo;s draft never does — work becomes
+            Submitted artifacts appear here. A learner&rsquo;s draft stays private until they send it, so work becomes
             visible to you at the moment they choose to submit it, and not before.
           </Empty>
         </div>
@@ -109,7 +109,7 @@ export default async function InstructorPage() {
             <li key={item.id} className="rounded-[var(--radius-feature)] border border-line bg-surface p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <p className="t-card-title text-ink">
-                  {byId.get(item.courseId)?.badge ?? item.courseId} · Module {item.moduleNumber} —{" "}
+                  {byId.get(item.courseId)?.badge ?? item.courseId} · Module {item.moduleNumber} ·{" "}
                   {item.moduleName}
                 </p>
                 <p className="t-meta text-ink-muted">
@@ -158,7 +158,7 @@ export default async function InstructorPage() {
             {reviewed.map((item) => (
               <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
                 <span className="t-body-sm text-ink">
-                  Module {item.moduleNumber} — {item.moduleName}
+                  Module {item.moduleNumber} · {item.moduleName}
                 </span>
                 <StatusChip>Reviewed</StatusChip>
               </li>

@@ -97,7 +97,7 @@ export default async function JudgePage() {
       <FactsLine
         className="mt-4"
         items={[
-          course ? `Reads ${course.badge} — ${course.title}` : seat.reviews_label ?? "All courses",
+          course ? `Reads ${course.badge} · ${course.title}` : seat.reviews_label ?? "All courses",
           `${reviews.length} review${reviews.length === 1 ? "" : "s"} filed`,
           `${unscored.length} sheet${unscored.length === 1 ? "" : "s"} to score`,
         ]}
@@ -109,8 +109,8 @@ export default async function JudgePage() {
           Curriculum review
         </h2>
         <p className="t-body-sm mt-2 max-w-[62ch] text-ink-secondary">
-          Read the course this term — the lessons, the labs and the artifact each module
-          asks for — against the sentence above. One review per term; filing again revises
+          Read the course this term, the lessons, the labs and the artifact each module
+          asks for, against the sentence above. One review per term; filing again revises
           the one already there.
         </p>
 
@@ -144,7 +144,7 @@ export default async function JudgePage() {
                 </option>
                 {courses.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.badge} — {c.title}
+                    {c.badge} · {c.title}
                   </option>
                 ))}
               </select>
@@ -265,7 +265,7 @@ export default async function JudgePage() {
           <div className="mt-6">
             <Empty title="No sheets submitted yet">
               A learner submits an outcome sheet once their workflow is running live and they
-              have measured it twice — a baseline in module 1, and the same measure again
+              have measured it twice: a baseline in module 1, and the same measure again
               afterwards.
             </Empty>
           </div>

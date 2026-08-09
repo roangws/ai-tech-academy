@@ -36,7 +36,7 @@ export function Avatar({
   /* First letter of the name, then of the email local part, then a dash — never
      an empty circle, which reads as a broken image. */
   const initial =
-    name?.trim()?.[0]?.toUpperCase() ?? email?.trim()?.[0]?.toUpperCase() ?? "—";
+    name?.trim()?.[0]?.toUpperCase() ?? email?.trim()?.[0]?.toUpperCase() ?? "?";
 
   return (
     <span

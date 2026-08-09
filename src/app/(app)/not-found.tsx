@@ -20,8 +20,8 @@ export default function AppNotFound() {
         <p className="t-label text-ink-muted">Not found</p>
         <h1 className="t-h2 mt-2 text-ink">There is nothing at this address.</h1>
         <p className="t-body mt-3 text-ink-secondary">
-          The course, module or sheet you asked for does not exist — or it is not one you have
-          access to. Both look the same from here on purpose.
+          The course, module or sheet you asked for has either moved or belongs to somebody
+          else. Both look the same from here on purpose.
         </p>
 
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">

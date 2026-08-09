@@ -101,7 +101,7 @@ export default async function OutcomeSheetPage({
         ) : null}
       </div>
       <p className="t-body mt-3 max-w-[62ch] text-ink-secondary">
-        {course.badge} — {course.title}. Record the baseline you took in module 1, then the
+        {course.badge} · {course.title}. Record the baseline you took in module 1, then the
         same measurement after your workflow has been running. Measure the same thing the
         same way, or the sheet says nothing.
       </p>
@@ -240,7 +240,7 @@ export default async function OutcomeSheetPage({
         </div>
 
         <p className="t-micro mt-2 text-ink-muted">
-          Write the figures as you would say them — &ldquo;6 h 00&rdquo;, &ldquo;40 min&rdquo;,
+          Write the figures as you would say them: &ldquo;6 h 00&rdquo;, &ldquo;40 min&rdquo;,
           &ldquo;23&rdquo;. Leave a row blank to drop it.
         </p>
 

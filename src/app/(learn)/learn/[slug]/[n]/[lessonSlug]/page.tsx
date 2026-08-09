@@ -40,7 +40,7 @@ export async function generateMetadata({
     ?.lessons.find((l) => l.slug === lessonSlug);
 
   return {
-    title: lesson ? `${lesson.name} — ${course?.title}` : (course?.title ?? "Lesson"),
+    title: lesson ? `${lesson.name} · ${course?.title}` : (course?.title ?? "Lesson"),
     robots: { index: false, follow: false },
   };
 }
@@ -283,7 +283,7 @@ export default async function LessonPage({
               href={`/learn/${slug}/${nextModule.n}`}
               className="t-button inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
             >
-              Module {nextModule.n} — {nextModule.name}
+              Module {nextModule.n} · {nextModule.name}
               <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
             </Link>
           ) : (

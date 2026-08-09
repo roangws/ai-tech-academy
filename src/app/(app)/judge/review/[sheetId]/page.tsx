@@ -89,7 +89,7 @@ export default async function ReviewSheetPage({
         <StatusChip>{sheet.status}</StatusChip>
       </div>
       <p className="t-meta mt-2 text-ink-muted">
-        {sheet.reference} · {course ? `${course.badge} — ${course.title}` : sheet.course_id}
+        {sheet.reference} · {course ? `${course.badge} · ${course.title}` : sheet.course_id}
         {sheet.measured_after_days ? ` · measured after ${sheet.measured_after_days} days` : ""}
       </p>
 
@@ -131,9 +131,11 @@ export default async function ReviewSheetPage({
                       {row.measure}
                     </th>
                     <td className="t-figure py-3 text-right text-ink-muted">
-                      {row.before_value ?? "—"}
+                      {row.before_value ?? <span className="t-meta">Not recorded</span>}
                     </td>
-                    <td className="t-figure py-3 text-right text-ink">{row.after_value ?? "—"}</td>
+                    <td className="t-figure py-3 text-right text-ink">
+                      {row.after_value ?? <span className="t-meta text-ink-muted">Not recorded</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

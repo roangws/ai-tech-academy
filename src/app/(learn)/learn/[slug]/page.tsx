@@ -20,7 +20,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const course = bySlug.get(slug);
   return {
-    title: course ? `${course.title} — contents` : "Course",
+    title: course ? `${course.title} · contents` : "Course",
     robots: { index: false, follow: false },
   };
 }

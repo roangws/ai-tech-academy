@@ -32,11 +32,11 @@ export default function AppError({
     <Container className="py-20 md:py-28">
       <div className="max-w-[52ch]">
         <p className="t-label text-ink-muted">Something went wrong</p>
-        <h1 className="t-h2 mt-2 text-ink">That did not load.</h1>
+        <h1 className="t-h2 mt-2 text-ink">This page broke.</h1>
         <p className="t-body mt-3 text-ink-secondary">
-          The page could not be built this time. Nothing you have saved is affected — your
-          progress, your artifacts and your outcome sheets are stored server-side and are
-          untouched by this.
+          It failed to build this time. Everything you have saved is intact: your progress,
+          your artifacts and your outcome sheets live on the server, and this screen leaves
+          them exactly as they were.
         </p>
 
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">

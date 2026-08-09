@@ -57,7 +57,7 @@ export function EmbedBlock({
         />
         <figcaption className="t-meta mt-2 flex items-center gap-1.5 text-ink-muted">
           <ArrowSquareOutIcon size={12} aria-hidden="true" />
-          {title} — loaded from {host}
+          {title} · loaded from {host}
         </figcaption>
       </figure>
     );
