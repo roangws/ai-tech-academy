@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SignInPage() {
-  return <AuthScreen variant="signIn" />;
+/** Server-read query params, so the form is in the HTML. See sign-up/page.tsx. */
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; confirm?: string }>;
+}) {
+  const { next, confirm } = await searchParams;
+  return <AuthScreen variant="signIn" next={next} confirmFailed={confirm === "failed"} />;
 }

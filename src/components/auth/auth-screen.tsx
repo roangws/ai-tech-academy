@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpSteps } from "@/components/auth/sign-up-steps";
@@ -48,7 +47,16 @@ import { auth } from "@/lib/content";
  * footer, per the note in that layout. The lockup at the top left is the way
  * back, and it is a link.
  */
-export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
+export function AuthScreen({
+  variant,
+  next,
+  confirmFailed = false,
+}: {
+  variant: "signIn" | "signUp";
+  /** Where to go after authenticating. Read on the server; see sign-up/page.tsx. */
+  next?: string;
+  confirmFailed?: boolean;
+}) {
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       {/* The lockup is the only navigation on the screen, which is why it is
@@ -103,23 +111,23 @@ export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
           components too, for a stepper that only one of the two routes renders.
         */}
         {/*
-          The Suspense boundary is not optional, and it is not for slow data.
+          No Suspense boundary any more, and losing it is the point.
 
-          Both forms read `next` from the query string with `useSearchParams`, to
-          finish the journey a reader was on when the proxy sent them here. That
-          hook opts its subtree out of prerendering, and without a boundary
-          around it the opt-out reaches the whole route: the build fails outright,
-          or the entire screen — lockup, panel and all — waits on the client.
+          `next` used to be read inside the forms with `useSearchParams`, which
+          opts a subtree out of prerendering — so the form had to be wrapped, and
+          the prerendered HTML for both routes contained no form at all. The
+          reader got the panel and an empty column until the client bundle
+          arrived and hydrated.
 
-          With it, only the form column is deferred; the panel that gives a
-          reader the reason to be on this page still renders on the server. The
-          fallback is a reserved box the same height as the form rather than a
-          spinner, so the two-column layout does not shift when it arrives.
+          `next` is now read on the server in the route and handed down, so both
+          forms render into the HTML like everything else on the site.
         */}
         <div className="min-w-0">
-          <Suspense fallback={<div className="min-h-[420px] max-w-[440px]" aria-hidden="true" />}>
-            {variant === "signUp" ? <SignUpSteps /> : <SignInForm />}
-          </Suspense>
+          {variant === "signUp" ? (
+            <SignUpSteps next={next} />
+          ) : (
+            <SignInForm next={next} confirmFailed={confirmFailed} />
+          )}
         </div>
 
         {/* ----------------------------------------------------------- panel */}

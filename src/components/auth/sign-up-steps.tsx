@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useActionState, useId, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { ArrowLeftIcon, CheckIcon } from "@phosphor-icons/react";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { CheckInbox } from "@/components/auth/check-inbox";
@@ -81,13 +80,15 @@ import { auth } from "@/lib/content";
  * that owns it and the wizard jumps there, or an error about an email address
  * renders under a question about podcasts.
  */
-export function SignUpSteps() {
+export function SignUpSteps({ next = "" }: { next?: string }) {
   const steps = auth.signUpSteps;
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signUp, null);
 
-  const next = useSearchParams().get("next") ?? "";
+  /* `next` is a prop now, read from the query string on the server by the route.
+     Reading it here with `useSearchParams` kept this entire form out of the
+     server-rendered HTML — see the note in auth-screen.tsx. */
 
   /* Which step owns which field, so a server error can send the reader back to
      it. Only step 1 can fail server-side — steps 2 and 3 are optional in full —

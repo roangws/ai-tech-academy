@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { useSearchParams } from "next/navigation";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { CheckInbox } from "@/components/auth/check-inbox";
 import { signIn, type AuthState } from "@/app/actions/auth";
@@ -58,31 +57,27 @@ import { auth } from "@/lib/content";
  * something HAS gone wrong, which is the opposite of the case the old note was
  * written for.
  */
-export function SignInForm() {
+export function SignInForm({ next = "", confirmFailed = false }: { next?: string; confirmFailed?: boolean }) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signIn, null);
   const copy = auth.signIn;
 
   /*
-    Where they were going before the proxy sent them here. Passed through as a
-    hidden field rather than read from the URL inside the action, because a
-    Server Action has no request URL of its own — it is a POST to an opaque
-    endpoint, and `useSearchParams` in the action would be reading the wrong
-    thing entirely. The action still re-validates it; see safeNext.
+    `next` and `confirmFailed` arrive as props, read from the query string on the
+    server by the route. They used to be read here with `useSearchParams`, which
+    forced this whole form behind a Suspense boundary and kept it out of the
+    server-rendered HTML entirely — see the note in auth-screen.tsx.
+
+    `next` still travels to the action as a hidden field rather than being read
+    from a URL inside it: a Server Action is a POST to an opaque endpoint and has
+    no request URL of its own. The action re-validates it regardless; see
+    safeNext.
   */
-  const params = useSearchParams();
-  const next = params.get("next") ?? "";
 
   /* An account that exists but has never had its confirmation link clicked
      fails here, not at sign-up. Same screen either way. */
   if (state?.checkInbox) {
     return <CheckInbox email={state.checkInbox} />;
   }
-
-  /* Set by /auth/confirm when a link is expired, already used, or opened in a
-     different browser than the one that started the flow — PKCE keeps its
-     verifier in a cookie, so that last case is common and otherwise looks like
-     nothing happened at all. */
-  const confirmFailed = params.get("confirm") === "failed";
 
   return (
     <div className="max-w-[440px]">
