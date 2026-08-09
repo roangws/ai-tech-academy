@@ -61,9 +61,41 @@ const PROTECTED = ["/dashboard", "/instructor", "/judge"];
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  /*
+    NO CREDENTIALS, NO PROXY — and this is not defensive padding, it is a fix for
+    an outage this file caused.
+
+    The first version read `process.env.NEXT_PUBLIC_SUPABASE_URL!`. The `!` is a
+    TypeScript assertion and nothing more: at runtime the value was `undefined`,
+    `createServerClient` threw on it, and because the matcher below covers
+    essentially every path, the throw became a 500 on EVERY PAGE. The marketing
+    site — statically generated, needing no database at all — went down because a
+    backend variable was missing in the deploy environment. Confirmed in
+    production: `/`, `/courses` and `/sign-up` all returned 500 while
+    `/robots.txt`, the one route the matcher excludes, returned 200.
+
+    So the failure mode is inverted. Without credentials this returns the plain
+    response: the public site serves exactly as it did before the LMS existed,
+    and only the signed-in routes are affected — they redirect to /sign-in, which
+    is the honest answer when there is no auth backend to ask.
+
+    A hard failure here can only ever be worse than a degraded one, because
+    nothing on the public site needs this to run.
+  */
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !key) {
+    const { pathname } = request.nextUrl;
+    if (PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      return NextResponse.redirect(new URL("/sign-in", request.nextUrl.origin));
+    }
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll() {

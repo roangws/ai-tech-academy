@@ -385,17 +385,48 @@ export function SignUpSteps() {
           ) : null}
 
           <div className="min-w-[180px] flex-1">
-            {/* One control, two behaviours. On the last step it is a real submit
-                so the browser's own Enter-to-submit works; before that it is a
-                button that advances, because a submit on step 1 would post a
-                third of a form. */}
+            {/*
+              One control, two behaviours. On the last step it is a real submit
+              so the browser's own Enter-to-submit works; before that it is a
+              button that advances, because a submit on step 1 would post a
+              third of a form.
+
+              ------------------------------------------------ THE STEP-2 SKIP
+              `preventDefault` is load-bearing and the reason is not obvious.
+
+              This is ONE DOM node whose `type` is derived from `step`. Clicking
+              Continue on step 2 calls `onContinue` → `goTo(2)`, and React
+              flushes that synchronously because a click is a discrete event. By
+              the time the browser gets round to running the click's DEFAULT
+              action, the very node it was dispatched on has been re-rendered
+              with `type="submit"` — so the browser submits the form.
+
+              The effect in the browser was that step 3 never appeared: pressing
+              Continue on step 2 posted the whole form, the action came back with
+              a Supabase error attached to `email`, and the error latch above
+              dutifully sent the reader back to step 1. It looked like a wizard
+              that refused to reach its last step.
+
+              Cancelling the default on the click that advances is the whole fix.
+              The `key` is belt and braces — it makes the advance button and the
+              submit button separate elements, so React swaps the node rather
+              than mutating the one under the cursor.
+            */}
             <LiquidButton
+              key={isLast ? "submit" : "advance"}
               type={isLast ? "submit" : "button"}
               variant="accent"
               size="lg"
               disabled={pending}
               className="t-button w-full disabled:opacity-60"
-              onClick={isLast ? undefined : onContinue}
+              onClick={
+                isLast
+                  ? undefined
+                  : (e) => {
+                      e.preventDefault();
+                      onContinue();
+                    }
+              }
             >
               {pending ? "Creating your account…" : current.next}
             </LiquidButton>

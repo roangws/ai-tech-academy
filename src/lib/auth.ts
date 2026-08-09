@@ -50,6 +50,22 @@ export type Viewer = {
 };
 
 export const getViewer = cache(async (): Promise<Viewer | null> => {
+  /*
+    No credentials configured means nobody is signed in, rather than a crash.
+
+    `AppHeader` calls this, and the header is in the `(app)` layout — so without
+    this guard a deploy missing the Supabase variables threw inside the layout of
+    every LMS route, before any page-level error boundary could catch it. See the
+    same guard, and the outage that motivated both, in proxy.ts.
+
+    Returning null degrades honestly: the header renders its signed-out controls.
+    A page that genuinely needs data still fails, in its own error boundary,
+    which is where a missing backend should surface.
+  */
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    return null;
+  }
+
   const supabase = await createClient();
 
   const { data: claimsData } = await supabase.auth.getClaims();

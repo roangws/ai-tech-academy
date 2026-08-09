@@ -109,7 +109,32 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
     if (/already registered/i.test(error.message)) {
       return { error: "There is already an account on that address. Try signing in.", field: "email" };
     }
-    return { error: error.message, field: "email" };
+
+    /*
+      NOT a field error, and attaching it to `email` was actively misleading.
+
+      Supabase's built-in SMTP is rate-limited to a handful of messages an hour,
+      and once it is exhausted `signUp` fails with the raw string "email rate
+      limit exceeded". Observed in a real browser run against this project.
+
+      The first version returned that string against `field: "email"`, so the
+      wizard's error latch sent the reader back to step 1 and highlighted an
+      address that was perfectly valid, with a message about rate limits under
+      it. Nothing they could type would fix it.
+
+      No `field`, so it renders as a form-level notice on the last step and the
+      wizard stays put. [FILL: email delivery] — the actual fix is real SMTP.
+    */
+    if (/rate limit|too many requests/i.test(error.message)) {
+      return {
+        error:
+          "We could not send the confirmation email just now — our mail sender is temporarily over its limit. Nothing is wrong with your details. Try again in a few minutes, or start module 1 now with no account.",
+      };
+    }
+
+    /* Anything else is unexpected, so it is shown at form level rather than
+       blamed on a field the reader would then try to correct. */
+    return { error: error.message };
   }
 
   /*
