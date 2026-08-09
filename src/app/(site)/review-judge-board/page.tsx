@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { board, brand, courses } from "@/lib/content";
+import { board, brand, courses, namedJudges, openSeats } from "@/lib/content";
 
 /**
  * `openGraph` REPLACES the root block, it does not merge into it.
@@ -13,9 +13,13 @@ import { board, brand, courses } from "@/lib/content";
  * that overrides `openGraph` restates all six for exactly this reason; this one
  * was written as if it were a patch.
  *
- * The image is the site-wide poster rather than a judge's portrait: the six
- * cards on this page are placeholder frames standing in for seat holders, and
- * putting one in a social card would present a stand-in as a named person.
+ * The image is the site-wide poster rather than a judge's portrait, and it stays
+ * that way now that four of the cards ARE named people with their own
+ * photographs. The original reason was that a stand-in would be presented as a
+ * named person. The reason now is the reverse and just as good: picking one of
+ * the four for the social card would put that judge's face on every share of
+ * this page, which is a use of their likeness well past "we listed you on the
+ * board" and not one anybody agreed to.
  */
 export const metadata: Metadata = {
   title: "Review Judge Board",
@@ -107,10 +111,15 @@ export default function ReviewJudgeBoardPage() {
                 into prose is a number that goes stale; a number read off the
                 array cannot. The other two items name the two jobs, which is
                 what the page is now about. */}
+            {/* Named judges and open seats counted apart, 9 Aug. This printed
+                `board.members.length` as "judges", which was honest while every
+                card was a vacancy described as a seat and stopped being honest
+                the moment four of them became people. */}
             <FactsLine
               className="mt-4"
               items={[
-                `${board.members.length} judges`,
+                `${namedJudges.length} judges`,
+                `${openSeats.length} seats open`,
                 "Curriculum read each term",
                 "Event panels",
               ]}
@@ -146,12 +155,18 @@ export default function ReviewJudgeBoardPage() {
               <BoardCard
                 member={m}
                 id={m.id}
-                courseTitle={byBadge.get(m.reviews)?.title ?? m.reviews}
+                courseTitle={m.reviews ? (byBadge.get(m.reviews)?.title ?? m.reviews) : undefined}
                 checksAlwaysVisible
               />
             </li>
           ))}
         </ul>
+
+        {/* The disclosure, back in words on the page that lists every card.
+            content.ts carries the argument; the short version is that four
+            photographed people above six identical stand-ins is the exact state
+            where the arrangement stops disclosing on its own. */}
+        <p className="t-meta mt-6 max-w-[720px] text-ink-muted">{board.footnote}</p>
       </Section>
     </>
   );

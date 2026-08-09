@@ -1,7 +1,7 @@
 import { BoardCard } from "@/components/board-card";
 import { CarouselRail } from "@/components/carousel-rail";
 import { Section, SectionHeader, TextAction } from "@/components/ui";
-import { board, courses } from "@/lib/content";
+import { board, courses, namedJudges, openSeats } from "@/lib/content";
 
 /**
  * The review judge board, as a controlled carousel of portrait cards.
@@ -43,12 +43,20 @@ export function Board() {
         label="Review Judge board"
         heading={board.headline}
         intro={board.intro}
-        /* The count is derived rather than written, which is the same reason
-           the headline does not carry it: the board is still taking judges, and
-           a number in prose is a number that goes stale. */
+        /*
+          The count is derived rather than written, which is the same reason the
+          headline does not carry it: the board is still taking judges, and a
+          number in prose is a number that goes stale.
+
+          It counts NAMED JUDGES now, not cards. This read `board.members.length`
+          and printed "All 10 judges" over a rail whose last six cards are the
+          same stand-in portrait six times. Ten cards are not ten judges, and the
+          one number this section volunteers should not be the one a reader could
+          disprove by scrolling.
+        */
         action={
           <TextAction href="/review-judge-board">
-            {`All ${board.members.length} judges`}
+            {`All ${namedJudges.length} judges and ${openSeats.length} open seats`}
           </TextAction>
         }
       />
@@ -67,16 +75,18 @@ export function Board() {
           >
             <BoardCard
               member={m}
-              courseTitle={courseTitles.get(m.reviews) ?? m.reviews}
+              courseTitle={m.reviews ? (courseTitles.get(m.reviews) ?? m.reviews) : undefined}
               href={`/review-judge-board#${m.id}`}
             />
           </li>
         ))}
       </CarouselRail>
 
-      {/* No footnote. It went on 7 Aug at Roan's request, and content.ts carries
-          the note on what it was disclosing and the condition under which that
-          disclosure has to come back in words. */}
+      {/* The footnote is back, 9 Aug. It went on 7 Aug when every card was the
+          same stand-in and the repetition disclosed that on its own; four named
+          judges now sit above six vacancies, so it does not any more. The note
+          in content.ts has the full argument. */}
+      <p className="t-meta mt-5 max-w-[720px] text-ink-muted">{board.footnote}</p>
     </Section>
   );
 }
