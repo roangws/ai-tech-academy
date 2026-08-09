@@ -93,6 +93,16 @@ status is the last command's, so the gate had been green over a broken build.
 The gate is now `cmd > log 2>&1 && echo PASS || { tail log; exit 1; }`, and it
 immediately caught a client component importing `next/headers`.
 
+**A BEFORE DELETE guard must let its own cascade through.** `user_roles_guard`
+refused to delete a student role — correct when a human is stripping a role,
+wrong when Postgres is unwinding a deleted account, because `user_roles.user_id`
+is `on delete cascade` from `auth.users`. Account deletion broke the moment the
+guard shipped and was caught by tearing down the QA accounts, not by review. This
+is the third time this schema has hit the shape: `artifacts_feedback_ck` blocked
+instructor deletion, `outcome_rows_guard` blocked its own cascade. The test is
+"does the parent still exist" — if not, it is the cascade, and it must be
+allowed.
+
 ## Deliberate non-decisions
 
 - **Completion stays self-declared.** A row in `lesson_progress` exists because
