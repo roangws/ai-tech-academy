@@ -101,15 +101,29 @@ async function touchEnrollment(
   userId: string,
   courseId: string,
   moduleId: string | null,
+  lessonId?: string | null,
 ): Promise<void> {
   await supabase
     .from("enrollments")
     .upsert({ user_id: userId, course_id: courseId }, { onConflict: "user_id,course_id", ignoreDuplicates: true });
 
+  /*
+    The resume pointer.
+
+    `last_module_id` was written here from the start and read by nothing — the
+    dashboard's "Continue" went to the course table of contents while its own
+    subtitle said "Pick up where you left off". A module is also the wrong
+    granularity: it holds up to eleven lessons, and continue means one of them.
+    So the lesson and a timestamp go down too, and getDashboard reads all three.
+  */
   if (moduleId) {
     await supabase
       .from("enrollments")
-      .update({ last_module_id: moduleId })
+      .update({
+        last_module_id: moduleId,
+        ...(lessonId ? { last_lesson_id: lessonId } : {}),
+        last_seen_at: new Date().toISOString(),
+      })
       .eq("user_id", userId)
       .eq("course_id", courseId);
   }
@@ -157,10 +171,13 @@ export async function toggleLesson(formData: FormData): Promise<void> {
     .eq("course_id", course.id)
     .eq("n", n)
     .maybeSingle();
-  await touchEnrollment(supabase, viewer.id, course.id, module?.id ?? null);
+  await touchEnrollment(supabase, viewer.id, course.id, module?.id ?? null, lessonId);
 
   /* Also the course board, which shows the per-module counts this just changed. */
-  revalidatePath(`/learn/${slug}/${n}`, "layout");
+  /* Page, not "layout". A layout-scoped revalidation re-renders the whole learn
+     tree, which remounts the audio element — so ticking a lesson while an episode
+     plays would silence it. Nothing in the layout depends on this write. */
+  revalidatePath(`/learn/${slug}/${n}`);
   revalidatePath(`/learn/${slug}`);
   revalidatePath("/dashboard");
 

@@ -5,6 +5,7 @@ import type {
   CurriculumReview,
   Enrollment,
   JudgeSeat,
+  Judgement,
   LessonBlock,
   LessonRow,
   ModuleRow,
@@ -281,12 +282,35 @@ export async function getModuleView(
   };
 }
 
+export type ArtifactWithModule = Artifact & {
+  modules: { n: string; name: string; course_id: string };
+};
+
+export type ScoredCriterion = Judgement & {
+  rubric_criteria: { label: string; description: string | null; weight: number };
+};
+
 export type DashboardCourse = {
   course: Course;
   enrollment: Enrollment;
   done: number;
   total: number;
   sheet: OutcomeSheet | null;
+  /** Artifacts an instructor has written back on. */
+  feedback: ArtifactWithModule[];
+  /** Started and never sent. */
+  drafts: ArtifactWithModule[];
+  /** Judge scores on this course's outcome sheet, if any have been filed. */
+  judgements: ScoredCriterion[];
+  /**
+   * The lesson to open when they press Continue, already resolved to a URL.
+   *
+   * Null when nothing has been opened yet, and the caller falls back to the
+   * course board. Resolved here rather than in the page so "Continue" can be
+   * labelled with the lesson's name — "Continue · Find the high-value use cases"
+   * tells a returning learner what they were doing; "Continue" does not.
+   */
+  resume: { href: string; lessonName: string; moduleName: string } | null;
 };
 
 /** The signed-in home: what they are enrolled in and how far through it they are. */
@@ -302,10 +326,19 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     knows statically and that cannot change without a deploy. `totalLessons(c)`
     is right there in the module this file already imports.
   */
-  const [enrollments, progress, sheets] = await Promise.all([
+  const [enrollments, progress, sheets, artifacts, judgements] = await Promise.all([
     rows<Enrollment>(
       "enrolments",
-      supabase.from("enrollments").select("*").eq("user_id", userId).order("enrolled_at"),
+      /* Most recently touched first. It ordered by `enrolled_at`, which answers
+         "which course did you sign up for first" — and the question a returning
+         learner is asking is "what was I doing". NULLS LAST so a course enrolled
+         in but never opened sits below one with real activity. */
+      supabase
+        .from("enrollments")
+        .select("*")
+        .eq("user_id", userId)
+        .order("last_seen_at", { ascending: false, nullsFirst: false })
+        .order("enrolled_at", { ascending: false }),
     ),
     /* The nested selects walk lesson → module → course, so completions can be
        bucketed by course without a query per enrolment. A to-one embed comes
@@ -319,6 +352,27 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         .eq("user_id", userId),
     ),
     rows<OutcomeSheet>("outcome sheets", supabase.from("outcome_sheets").select("*").eq("user_id", userId)),
+    /* Artifacts an instructor has written back on, and drafts still sitting
+       unsent. Both are things the dashboard should be telling the learner about
+       and neither had any surface: feedback arrived silently on a module page
+       nobody has a reason to revisit. */
+    rows<Artifact & { modules: { n: string; name: string; course_id: string } }>(
+      "dashboard artifacts",
+      supabase
+        .from("artifacts")
+        .select("*, modules!inner(n, name, course_id)")
+        .eq("user_id", userId),
+    ),
+    /* The scores. `judgements_read_by_learner` has existed since the schema was
+       written and nothing has ever read it — a learner could be scored by three
+       judges and never see a number. */
+    rows<Judgement & { rubric_criteria: { label: string; description: string | null; weight: number } }>(
+      "my judgements",
+      supabase
+        .from("judgements")
+        .select("*, rubric_criteria!inner(label, description, weight)")
+        .order("created_at"),
+    ),
   ]);
 
   const doneByCourse = new Map<string, number>();
@@ -328,17 +382,43 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
   }
 
   const sheetByCourse = new Map(sheets.map((s) => [s.course_id, s]));
+  const sheetIds = new Set(sheets.map((s) => s.id));
+
+  /* Resolve every resume pointer in one query rather than one per course. */
+  const lastIds = enrollments.map((e) => e.last_lesson_id).filter((id): id is string => Boolean(id));
+  const resumeRows = lastIds.length
+    ? await rows<{ id: string; slug: string; name: string; modules: { n: string; name: string; course_id: string } }>(
+        "resume targets",
+        supabase.from("lessons").select("id, slug, name, modules!inner(n, name, course_id)").in("id", lastIds),
+      )
+    : [];
+  const resumeById = new Map(resumeRows.map((r) => [r.id, r]));
 
   return enrollments
     .map((e) => {
       const course = byId.get(e.course_id);
       if (!course) return null;
+      const mine = artifacts.filter((a) => a.modules?.course_id === e.course_id);
+      const last = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
       return {
         course,
         enrollment: e,
         done: doneByCourse.get(e.course_id) ?? 0,
         total: totalLessons(course),
         sheet: sheetByCourse.get(e.course_id) ?? null,
+        /* Reviewed and unread by the learner is the thing worth surfacing; a
+           draft with something in it is the thing worth nudging. */
+        feedback: mine.filter((a) => a.status === "reviewed" && a.instructor_feedback),
+        drafts: mine.filter((a) => a.status === "draft" && a.body.trim().length > 0),
+        judgements: judgements.filter((j) => sheetIds.has(j.sheet_id)
+          && sheetByCourse.get(e.course_id)?.id === j.sheet_id),
+        resume: last
+          ? {
+              href: `/learn/${course.slug}/${last.modules.n}/${last.slug}`,
+              lessonName: last.name,
+              moduleName: last.modules.name,
+            }
+          : null,
       };
     })
     .filter((x): x is DashboardCourse => x !== null);

@@ -200,6 +200,10 @@ export type Enrollment = {
   enrolled_at: string;
   completed_at: string | null;
   last_module_id: string | null;
+  /** The exact lesson to resume. See the enrollment_resume_pointer migration. */
+  last_lesson_id: string | null;
+  /** When they last did anything in this course. Orders the dashboard. */
+  last_seen_at: string | null;
 };
 
 export type LessonProgress = {

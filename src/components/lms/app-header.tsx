@@ -5,6 +5,7 @@ import { Avatar } from "@/components/lms/avatar";
 import { getViewer } from "@/lib/auth";
 import { getTheme } from "@/lib/theme";
 import { ThemeToggle } from "@/components/lms/theme-toggle";
+import { HeaderLink } from "@/components/lms/header-link";
 import { signOut } from "@/app/actions/auth";
 
 /**
@@ -83,7 +84,7 @@ export async function AppHeader() {
             primary navigation announced as a course list, on a page whose h1 is
             about courses.
           */}
-          <nav aria-label="Main" className="hidden items-center gap-6 sm:flex">
+          <nav aria-label="Main" className="hidden items-center gap-1 sm:flex">
             {links.map((l) => (
               <HeaderLink key={l.href} href={l.href}>
                 {l.label}
@@ -159,7 +160,7 @@ export async function AppHeader() {
         aria-label="Main"
         className="relative border-t border-line bg-surface-subtle sm:hidden"
       >
-        <Container className="flex flex-wrap items-center gap-x-5 gap-y-1 py-2.5">
+        <Container className="flex flex-wrap items-center gap-x-1 gap-y-0 py-1.5">
           {links.map((l) => (
             <HeaderLink key={l.href} href={l.href}>
               {l.label}
@@ -172,13 +173,10 @@ export async function AppHeader() {
   );
 }
 
-function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="t-nav text-ink-secondary no-underline transition-colors hover:text-ink"
-    >
-      {children}
-    </Link>
-  );
-}
+/*
+  `HeaderLink` moved to its own file and became a client component. It needs
+  `usePathname` to mark the current section, which this server component cannot
+  give it, and the alternative — threading the pathname down from every server
+  parent that renders a header — is worse than a few hundred bytes of client
+  JavaScript for a link.
+*/
