@@ -35,7 +35,7 @@ export default function AppNotFound() {
             href="/courses"
             className="t-button text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
           >
-            All five courses
+            Every course
           </Link>
         </div>
       </div>

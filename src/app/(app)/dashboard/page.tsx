@@ -182,7 +182,7 @@ export default async function DashboardPage() {
         </section>
       ) : (
         <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
-          Five courses, all open. Start with the one closest to the work you already do.
+          Every course is open. Start with the one closest to the work you already do.
         </p>
       )}
 
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
       {/* ------------------------------------------------------- your courses */}
       <section aria-labelledby="courses-heading" className="mt-10">
         <h2 id="courses-heading" className="t-h3 text-ink">
-          {current ? "The other courses" : "Five courses, all free"}
+          {current ? "The other courses" : "Every course, free"}
         </h2>
 
         {/*
@@ -304,7 +304,7 @@ export default async function DashboardPage() {
         </ul>
 
         {rest.length === 0 ? (
-          <Empty title="You are in all five.">
+          <Empty title="You are in every course.">
             Every course is open and none of them expire. Finish one, then pick the next.
           </Empty>
         ) : null}

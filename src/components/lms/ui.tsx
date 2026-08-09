@@ -160,7 +160,7 @@ export function LockedPanel({
       <Heading className="t-h3 mt-2.5 text-white">{moduleName} opens with an account</Heading>
       <p className="t-body mt-3 max-w-[52ch] text-white/75">
         Module 1 of every course runs with no account, and you have it. One free account
-        opens modules 2 to 8 in all five courses, and the account stays free: no
+        opens modules 2 to 8 in every course, and the account stays free: no
         certificate fee, no upgrade, no paid tier.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">

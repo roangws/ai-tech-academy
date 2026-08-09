@@ -188,7 +188,7 @@ export const site = {
 export const cta = {
   primary: "Enroll for free",
   view: "View course",
-  compare: "Compare all five courses",
+  compare: "Compare every course",
   howItWorks: "See how the course works",
   watch: "Watch now",
 } as const;
@@ -1899,7 +1899,7 @@ export const closing = {
     },
     {
       id: "courses",
-      title: "Compare all five courses",
+      title: "Compare every course",
       detail: "Pick by the work you own",
       /* The index, not the band. "Compare all five" is a promise the band
          cannot keep — it is the same five cards this page already scrolled
@@ -2130,14 +2130,22 @@ export const catalog = {
     "deploy an AI workflow",
   ],
   label: "All courses",
-  heading: "Five courses, one method",
+  /* No number in the heading.
+
+     It read "Five courses, one method", which was true of a catalogue that
+     could only change by editing a TypeScript file. The console can add a sixth
+     now, and a page that renders six cards under a heading claiming five is the
+     kind of small lie that makes a reader distrust the rest of it. The method is
+     the claim worth making and it does not depend on the count. Same reason
+     `moduleCount` is derived rather than stored. */
+  heading: "One method, whichever course you pick",
   intro:
     "Each course takes a different kind of work through the same five steps. Pick the one closest to your job, or read what they share below.",
   /* One string per paragraph, so the 68-character measure the rest of the site
      holds applies here too. */
   body: [
     {
-      heading: "How the five differ",
+      heading: "How the courses differ",
       text: "The method does not change between courses. What changes is the work you point it at, the tools the labs assume you already have, and the artifact you finish holding. The GTM course runs on your CRM and pipeline data; the media course runs on your own footage; the compliance course produces a policy your team operates under; the infrastructure course puts a service on GPU cloud; the small business course builds one assistant for one task. Choose by which of those you could start on Monday.",
     },
     {

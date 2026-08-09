@@ -30,7 +30,7 @@ export default async function AdminSeats() {
     <>
       <h1 className="t-h2 text-ink">Judge seats</h1>
       <p className="t-body-sm mt-1.5 max-w-[62ch] text-ink-secondary">
-        One seat per course, plus a learning-design seat that reads all five. Binding somebody
+        One seat per course, plus a learning-design seat that reads them all. Binding somebody
         grants them the judge role at the same time.
       </p>
 
@@ -44,7 +44,7 @@ export default async function AdminSeats() {
               <div className="min-w-0">
                 <p className="t-card-title text-ink">{seat.seat}</p>
                 <p className="t-meta text-ink-muted">
-                  {seat.reads_all_courses ? "Reads all five courses" : seat.reviews_label}
+                  {seat.reads_all_courses ? "Reads every course" : seat.reviews_label}
                 </p>
               </div>
               <p className="t-meta text-ink-secondary">
