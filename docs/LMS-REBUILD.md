@@ -145,6 +145,27 @@ The QA accounts were deleted afterwards. Doing so surfaced the cascade bug in
 `user_roles_guard` — which is the argument for running a real teardown rather
 than assuming one would work.
 
+## Deleting an account leaves its photo behind
+
+Confirmed by deleting a QA account that had uploaded one. `storage.objects` has
+no foreign key to `auth.users`, so the cascade does not reach it, and
+`storage.protect_delete()` refuses a direct SQL delete outright:
+
+```
+ERROR: 42501: Direct deletion from storage tables is not allowed.
+       Use the Storage API instead.
+```
+
+The publishable key cannot delete it either, because the avatars policy scopes
+writes to `(storage.foldername(name))[1] = auth.uid()` and that user no longer
+exists to be. So the object survives its owner, and it is a photograph of a
+person — a data-protection problem rather than an untidiness one.
+
+Nothing deletes accounts today, so this only arises when somebody is removed by
+hand. The fix when a delete-account feature is built: reap the folder through
+the Storage API with the service-role key BEFORE removing the row, never after,
+because after is unreachable.
+
 ## Still open
 
 - The first fifteen migrations are not in the repo. One command, needs the
