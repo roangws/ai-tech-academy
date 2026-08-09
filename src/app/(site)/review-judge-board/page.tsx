@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdvisoryBoard } from "@/components/advisory-board";
+import { ApplyBand } from "@/components/apply-band";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { board, brand } from "@/lib/content";
+import { apply, board, brand } from "@/lib/content";
 
 /**
  * `openGraph` REPLACES the root block, it does not merge into it.
@@ -79,9 +81,10 @@ export const metadata: Metadata = {
  * mismatch between the accessible name and the destination. A card titled with a
  * person's name, linking to that person's profile, is the opposite.
  *
- * `detailAlwaysVisible` is the one thing the card does differently from the
- * homepage carousel, which hides the employer and location behind a hover. This
- * page exists to list these judges, and a touch screen never fires that hover.
+ * The card renders identically to the homepage rail's now. It used to differ in
+ * one respect, `detailAlwaysVisible`, because the rail hid the employer and the
+ * location behind a hover; that hover is gone on both surfaces, so the flag went
+ * with it. board-card.tsx has the argument.
  */
 export default function ReviewJudgeBoardPage() {
   return (
@@ -168,12 +171,18 @@ export default function ReviewJudgeBoardPage() {
                 member={m}
                 id={m.id}
                 sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 400px"
-                detailAlwaysVisible
               />
             </li>
           ))}
         </ul>
       </Section>
+
+      {/* The same two bands /instructors carries, on the judge track. One board
+          reads both kinds of application, so the advisory section is one
+          component rendered on both pages rather than a route they both point
+          at. advisory-board.tsx has the argument. */}
+      <ApplyBand track={apply.judge} />
+      <AdvisoryBoard />
     </>
   );
 }

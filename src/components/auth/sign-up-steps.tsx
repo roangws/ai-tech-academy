@@ -490,8 +490,12 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
 
       <p className="t-body-sm mt-7 border-t border-line pt-5 text-ink-secondary">
         {auth.signUp.altPrompt}{" "}
+        {/* Carries `next` across the switch. sign-in-form.tsx has the note on
+            what dropping it did to every gated destination. */}
         <Link
-          href={auth.signUp.altHref}
+          href={
+            next ? `${auth.signUp.altHref}?next=${encodeURIComponent(next)}` : auth.signUp.altHref
+          }
           className="t-button text-accent no-underline transition-colors hover:text-accent-hover hover:underline"
         >
           {auth.signUp.altLabel}

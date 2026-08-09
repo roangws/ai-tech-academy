@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdvisoryBoard } from "@/components/advisory-board";
+import { ApplyBand } from "@/components/apply-band";
 import { InstructorCard, InstructorLeadCard } from "@/components/instructor-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { instructors } from "@/lib/content";
+import { apply, instructors } from "@/lib/content";
 import { instructorsJsonLd } from "@/lib/seo";
 
 /**
@@ -202,6 +204,20 @@ export default function InstructorsPage() {
           </ul>
         </div>
       </Section>
+
+      {/*
+        Below the roster, and below rather than above for a reason worth stating
+        once: this page's job is to tell a learner who teaches them, and the two
+        bands under it are addressed to a completely different reader. Putting a
+        recruitment offer above the five people it is recruiting alongside would
+        answer a question nobody arrived with.
+
+        The order inside them is Roan's: the offer, then how it works, then the
+        board that decides. apply-band.tsx has the note on why the offer and the
+        process are two bands rather than one.
+      */}
+      <ApplyBand track={apply.instructor} />
+      <AdvisoryBoard />
     </>
   );
 }

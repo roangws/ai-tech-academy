@@ -183,8 +183,24 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
 
       <p className="t-body-sm mt-7 border-t border-line pt-5 text-ink-secondary">
         {copy.altPrompt}{" "}
+        {/*
+          `next` travels across the switch, and it did not before.
+
+          The two auth screens each honoured `?next=`, and the link between them
+          dropped it, so any journey that starts somewhere other than the
+          dashboard broke on the one press a first-time visitor always makes.
+          Pressing "Apply to teach" while signed out sent them to
+          /sign-in?next=/apply/instructor, and "Create a free account" then took
+          them to a bare /sign-up, and they landed on the dashboard wondering
+          where the application went. The same hole was under every other gated
+          route; the application flow is only where it became obvious.
+
+          `next` is already the value the route read off the query string and
+          handed down, and it is re-encoded here because it is being put back
+          into a query string.
+        */}
         <Link
-          href={copy.altHref}
+          href={next ? `${copy.altHref}?next=${encodeURIComponent(next)}` : copy.altHref}
           className="t-button text-accent no-underline transition-colors hover:text-accent-hover hover:underline"
         >
           {copy.altLabel}

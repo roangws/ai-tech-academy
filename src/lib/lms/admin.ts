@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAdminCatalog, totalLessons, type Course } from "@/lib/catalog";
 import type {
+  Application,
   AppRole,
   Artifact,
   Enrollment,
@@ -340,4 +341,56 @@ export async function getWeeks(count = 12): Promise<Week[]> {
   }
 
   return weeks;
+}
+
+/* --------------------------------------------------------------- applications
+
+   The advisory board's queue: every application to teach or to judge, with the
+   account behind it.
+
+   ------------------------------------------------------------------ two reads
+
+   `applications` and `profiles` are fetched separately and joined here rather
+   than embedded, because there is no foreign key between them to embed on:
+   `applications.user_id` references `auth.users`, as every user reference on
+   this schema does, and PostgREST can only embed across a declared relationship.
+   `listPeople` above joins the same way for the same reason.
+
+   The profile is only ever used for the email and for how long the account has
+   existed. Everything the board reads and decides on is on the application row
+   itself, which is the point of copying it there -- see the note on the type. */
+
+export type AdminApplication = Application & {
+  email: string | null;
+  accountCreated: string | null;
+};
+
+export async function listApplications(): Promise<AdminApplication[]> {
+  const supabase = await createClient();
+
+  const [{ data: apps, error }, { data: profiles }] = await Promise.all([
+    supabase
+      .from("applications")
+      .select("*")
+      /* Oldest submission at the top, drafts (no `submitted_at`) at the bottom.
+         A queue read newest-first is a queue where the person who has waited
+         longest is on page two. The page re-sorts by status on top of this; this
+         ordering is what decides ties within a status. */
+      .order("submitted_at", { ascending: true, nullsFirst: false }),
+    supabase.from("profiles").select("id, email, created_at"),
+  ]);
+  if (error) throw new Error(`applications: ${error.message}`);
+
+  const byUser = new Map(
+    ((profiles ?? []) as { id: string; email: string | null; created_at: string }[]).map((p) => [
+      p.id,
+      p,
+    ]),
+  );
+
+  return ((apps ?? []) as Application[]).map((a) => ({
+    ...a,
+    email: byUser.get(a.user_id)?.email ?? null,
+    accountCreated: byUser.get(a.user_id)?.created_at ?? null,
+  }));
 }

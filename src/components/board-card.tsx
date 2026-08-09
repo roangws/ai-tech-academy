@@ -4,52 +4,76 @@ import { Photo } from "@/components/ui";
 import type { Seat } from "@/lib/content";
 
 /**
+ * The hover pattern, as a mask.
+ *
+ * ---------------------------------------------------------------- why a mask
+ *
+ * The motif is two-tone: a ground and a shape colour. The ground has to be the
+ * card's own hue, which lives in CSS as `var(--path-a)` and friends, and a CSS
+ * variable cannot be interpolated into a `data:` URI — the browser parses the
+ * URI as an opaque string long before custom properties resolve. So the SVG
+ * carries no colour at all. It is a silhouette used as a `mask-image` over a
+ * flat white-at-alpha layer, and the colour underneath comes from the card.
+ * One static asset, five colours, no per-card image.
+ *
+ * ---------------------------------------------------------------- the motif
+ *
+ * Wavy bands in a two-column check, from the reference Roan sent on 9 Aug: each
+ * column is a stack of bands with a curved top and bottom edge, and the
+ * neighbouring column is the same stack shifted by half a band so the curves
+ * interlock rather than line up.
+ *
+ * The tile is 200 x 200 holding one full column and the two half-bands of its
+ * neighbour. The neighbour is drawn as two pieces, one running off the top edge
+ * and one off the bottom, because the shifted band is cut by the tile boundary
+ * and the halves have to meet exactly when the tile repeats.
+ *
+ * This replaces tiled circles, which replaced a graph-paper grid. The circles
+ * were a legible pattern and still too quiet to read as a deliberate one at the
+ * size a card shows.
+ */
+const WAVE_MASK =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E" +
+  "%3Cg fill='%23fff'%3E" +
+  /* Left column: one band, wavy top at y=50 and wavy bottom at y=150. */
+  "%3Cpath d='M0,50 c25,-30 25,30 50,0 c25,-30 25,30 50,0 L100,150 c-25,30 -25,-30 -50,0 c-25,30 -25,-30 -50,0 Z'/%3E" +
+  /* Right column, shifted half a band, so it arrives as a piece off the top... */
+  "%3Cpath d='M100,-50 c25,-30 25,30 50,0 c25,-30 25,30 50,0 L200,50 c-25,30 -25,-30 -50,0 c-25,30 -25,-30 -50,0 Z'/%3E" +
+  /* ...and the matching piece off the bottom. */
+  "%3Cpath d='M100,150 c25,-30 25,30 50,0 c25,-30 25,30 50,0 L200,250 c-25,30 -25,-30 -50,0 c-25,30 -25,-30 -50,0 Z'/%3E" +
+  "%3C/g%3E%3C/svg%3E\")";
+
+/**
  * One judge, as a portrait card. Shared by the homepage carousel (board.tsx)
  * and the full roster at /review-judge-board, so the card stays one definition.
  *
- * ------------------------------------------------------------- one shape now
+ * ------------------------------------------------------- what a click does
  *
- * This used to render two things: a named judge and an open seat, the second
- * being a discipline over a stand-in portrait with a sentence about what it
- * checked. The seats are gone, so the branching is too. Every card is a person:
- * a name, their own stated role, their employer and where they are, their
- * employer's mark, and a link to their profile.
+ * The card goes to the REVIEW JUDGE BOARD, at that judge's own anchor. The
+ * LinkedIn badge, and only the badge, goes to LinkedIn.
  *
- * -------------------------------------------------------- the card is a link
+ * For one pass the whole card went to LinkedIn, which Roan corrected on 9 Aug
+ * and was wrong for a reason worth keeping: a card on this site that sends you
+ * off it on any click has no way back, and the profile is a fact ABOUT the judge
+ * rather than the thing the site is presenting. The badge is the escape hatch,
+ * clearly marked, and everything else stays here.
  *
- * The whole card links to that person's LinkedIn, on both surfaces, and the
- * badge in the corner is the visible sign of where it goes rather than a second
- * link beside it.
- *
- * The homepage previously stretched a link to `/review-judge-board#<id>` and the
- * roster page carried a small separate profile link, which was two behaviours
- * for one object and left the homepage cards pointing at a page that now says
- * exactly what the card already said. Roan asked for the profile links on the
- * homepage; making the card itself the link is the version where the accessible
- * name and the destination agree — "Liz Zhang on LinkedIn" goes to Liz Zhang on
- * LinkedIn — and where there is still only one link per card to tab through.
- *
- * It is a stretched overlay rather than a `<Link>` wrapped around the markup, so
- * the heading and the sentences stay selectable text and the accessible name is
- * the one below rather than the whole card read out as a label.
+ * The two are siblings rather than nested, with the badge on the higher layer.
+ * A link inside a link is invalid and the inner one is unreachable; two
+ * overlapping absolute anchors are neither, and each keeps its own accessible
+ * name. On the page the card would link to, `href` is left off and the badge is
+ * the only link — a card that navigates to the page it is already on is a dead
+ * control that still looks live.
  */
 export function BoardCard({
   member,
-  detailAlwaysVisible = false,
   sizes,
+  href,
   id,
+  linkTabIndex,
   className = "",
 }: {
   member: Seat;
-  /**
-   * Show the employer and location at every width instead of on hover.
-   *
-   * The carousel on the homepage keeps the hover reveal: it is a teaser beside
-   * nine other sections and the card is 240px wide. The roster page is the
-   * opposite case. It exists to list these people, and a touch screen never
-   * fires the hover that would show it.
-   */
-  detailAlwaysVisible?: boolean;
   /**
    * The `sizes` hint for the portrait, and it is a required thought rather than
    * a detail.
@@ -61,15 +85,28 @@ export function BoardCard({
    * loudly; it just quietly ships a blurry photograph.
    */
   sizes: string;
+  /** Where the card goes. Omitted on the page it would point at. */
+  href?: string;
   /**
    * The anchor id, and it is passed in rather than taken from `member.id`.
    *
    * The roster page is deep-linked into from elsewhere and every judge needs a
-   * landing target. The homepage must not emit them: `CarouselRail` renders its
+   * landing target. The homepage must not emit them: the carousel renders its
    * children a second time to make the loop, so deriving the id here would put
    * every one of them in the homepage document twice.
    */
   id?: string;
+  /**
+   * `-1` for the carousel's duplicate copy.
+   *
+   * The clone exists so the loop has something to scroll into. It must not be a
+   * second set of tab stops or a second reading of the same five people, and it
+   * used to be marked `inert`, which handled both — and also set
+   * `pointer-events: none`, which is what broke hovering on half the rail. See
+   * the note in carousel-rail.tsx. Taking the links out of the tab order here
+   * is the half of `inert` that is still wanted.
+   */
+  linkTabIndex?: number;
   className?: string;
 }) {
   return (
@@ -85,11 +122,49 @@ export function BoardCard({
         className="transition-transform duration-500 group-hover/card:scale-[1.04]"
       />
 
-      {/* Reading scrim. The name sits on the photograph rather than
-          under it, which is what buys the card its height back. */}
+      {/*
+        The hover face: the card's own hue, with the wave mask over it.
+
+        Two elements because the mask needs its own layer. The outer one is the
+        flat ground and carries the fade; the inner is white at alpha with the
+        silhouette cut out of it, so what shows through is the ground.
+
+        Opacity rather than a flip, and from sm up only: below that the face is
+        simply on, so a phone is not asked to hover.
+      */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] via-[rgb(13_26_34/0.28)] via-46% to-transparent"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100 max-sm:opacity-100"
+        style={{ backgroundColor: member.ground }}
+      >
+        <span
+          className="absolute inset-0 bg-[rgb(255_255_255/0.34)]"
+          style={{
+            maskImage: WAVE_MASK,
+            WebkitMaskImage: WAVE_MASK,
+            maskSize: "124px 124px",
+            WebkitMaskSize: "124px 124px",
+            maskRepeat: "repeat",
+            WebkitMaskRepeat: "repeat",
+          }}
+        />
+      </span>
+
+      {/*
+        Reading scrim, and it sits ABOVE the hover face rather than below it.
+
+        That order is the whole reason the pattern can be as strong as it is. The
+        scrim was directly on the photograph, so hovering covered it and left the
+        name, the role and the employer sitting on bare pattern — which caps how
+        bold the pattern may be, because every part of it has to stay dark enough
+        for white text. Moving it up puts one dark wash over both states: the
+        photograph and the pattern each get the same guaranteed contrast at the
+        bottom of the card, and the top of the card, where no text goes, is free
+        to show the motif at full strength.
+      */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] via-[rgb(13_26_34/0.34)] via-56% to-[rgb(13_26_34/0.05)]"
       />
 
       {/*
@@ -104,26 +179,24 @@ export function BoardCard({
         the contrast a fact. It also means eBay's four colours and PG&E's blue
         and yellow arrive as themselves.
 
-        A plain `<img>` rather than `next/image`. These are SVGs, and the image
-        optimizer refuses SVG unless `dangerouslyAllowSVG` is set — a switch that
-        exists because an SVG can carry script, and one worth leaving off for
-        three files that are already a few kilobytes and already resolution
-        independent. Vector is also the direct answer to the sharpness complaint:
-        there is no size at which one of these goes soft.
+        A plain `<img>` rather than `next/image`. Some of these are SVGs, and the
+        image optimizer refuses SVG unless `dangerouslyAllowSVG` is set — a
+        switch that exists because an SVG can carry script, and one worth leaving
+        off for a handful of files that are already a few kilobytes and already
+        resolution independent.
       */}
       {member.logo ? (
         <span className="absolute left-3 top-3 z-10 flex h-8 items-center rounded-[6px] bg-white px-2.5 shadow-e1">
           {/*
-            Bounded on BOTH axes, and sized from the SVG's own viewBox rather
-            than from width and height attributes here.
+            Bounded on BOTH axes, and sized from the file's own intrinsic ratio
+            rather than from width and height attributes here.
 
             The first version pinned every mark to a fixed 14px height, which is
             right for a wordmark and wrong for a badge: NVIDIA is 5.3:1 and eBay
             is 2.5:1, but PG&E's mark is square, so at wordmark height it came
             out 14px across and read as a coloured speck. Two maxima with auto on
             both dimensions lets each mark grow until whichever axis binds first
-            does, so the wide ones stay within the chip and the square one gets
-            its height back.
+            does.
           */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -138,77 +211,93 @@ export function BoardCard({
         </span>
       ) : null}
 
-      {/*
-        The hover face, in the card's own hue. Opacity rather than a flip, and
-        from sm up only: below that the detail is simply visible, so a phone is
-        not asked to hover.
-      */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100 max-sm:opacity-100"
-        style={{
-          background: member.ground,
-          backgroundImage:
-            "linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px)," +
-            "linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px)",
-          backgroundSize: "34px 34px",
-        }}
-      />
+      {/* Stretched link to this judge on the board. `z-20`, under the badge and
+          over everything else, so the whole card is the hit target except the
+          one corner that goes somewhere else. */}
+      {href ? (
+        <Link
+          href={href}
+          tabIndex={linkTabIndex}
+          className="absolute inset-0 z-20 rounded-[var(--radius-feature)] outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink-band"
+        >
+          <span className="sr-only">{member.name} on the Review Judge Board</span>
+        </Link>
+      ) : null}
 
       {/*
-        The badge, which is deliberately NOT a link. The whole card is the link;
-        a second anchor over the same destination would be one more stop for a
-        keyboard reader and would say the same thing twice to a screen reader.
-        `pointer-events-none` so it cannot swallow the click it is advertising.
+        The profile link. `z-30`, above the stretched link, so a click on this
+        corner reaches it rather than the card underneath.
 
-        Its own dark disc rather than sitting bare on the photograph, because
-        the top right of Liz Zhang's portrait is a pale studio backdrop and a
-        white glyph over it was invisible. A known background is the only way to
-        make WCAG 1.4.11 a fact rather than a hope on an arbitrary image.
+        Its own dark disc rather than sitting bare on the photograph, because the
+        top right of Liz Zhang's portrait is a pale studio backdrop and a white
+        glyph over it was invisible. A known background is the only way to make
+        WCAG 1.4.11 a fact rather than a hope on an arbitrary image.
       */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute right-2.5 top-2.5 z-20 grid size-9 place-items-center rounded-full bg-[rgb(13_26_34/0.55)] text-white backdrop-blur-[2px] transition-colors group-hover/card:bg-[rgb(10_63_224/0.92)]"
-      >
-        <LinkedinLogoIcon size={17} weight="fill" />
-      </span>
-
-      {/* Stretched link. `z-30` puts it over the scrim, the hover face and the
-          badge, so the whole card is the hit target. The focus ring is drawn on
-          the card edge rather than on the anchor, because the anchor has no
-          visible box of its own. */}
       <Link
         href={member.linkedin}
         target="_blank"
         rel="noopener noreferrer"
-        className="absolute inset-0 z-30 rounded-[var(--radius-feature)] outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink-band"
+        tabIndex={linkTabIndex}
+        aria-label={`${member.name} on LinkedIn, opens in a new tab`}
+        className="absolute right-2.5 top-2.5 z-30 grid size-9 place-items-center rounded-full bg-[rgb(13_26_34/0.62)] text-white no-underline backdrop-blur-[2px] transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
       >
-        {/* Says where it goes AND that it leaves. A whole card that silently
-            opens a new tab is the kind of surprise WCAG 3.2.5 is about. */}
-        <span className="sr-only">{member.name} on LinkedIn, opens in a new tab</span>
+        <LinkedinLogoIcon size={17} weight="fill" aria-hidden="true" />
       </Link>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 p-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-4">
         <h3 className="t-card-title text-white">{member.name}</h3>
         {/* One line, always. The block is bottom-anchored, so a
             subtitle that wraps lifts its own title 18px clear of the
             titles either side of it: four cards, three baselines. */}
         <p className="t-meta clamp-1 mt-0.5 text-white/70">{member.role}</p>
 
-        {/* Height-animated rather than mounted on hover, so the text
-            is in the document for a screen reader and for anyone
-            whose browser never fires a hover at all. */}
-        <p
-          className={`t-body-sm grid transition-[grid-template-rows,color] duration-200 ${
-            detailAlwaysVisible
-              ? "mt-2.5 grid-rows-[1fr] text-white/90"
-              : "grid-rows-[0fr] text-white/0 group-hover/card:mt-2.5 group-hover/card:grid-rows-[1fr] group-hover/card:text-white/90 max-sm:mt-2.5 max-sm:grid-rows-[1fr] max-sm:text-white/90"
-          }`}
-        >
-          <span className="overflow-hidden">
-            {[member.org, member.location].filter(Boolean).join(" · ")}
-          </span>
-        </p>
+        {/*
+          Employer and location, always visible, two lines rather than one
+          joined by a separator.
+
+          "The AI Collective · San Francisco Bay Area" is 42 characters and the
+          rail's card is 240 wide, so it wrapped wherever it ran out of room and
+          broke a place name in half. The two facts are different kinds of fact,
+          so they get a line each and the break happens where it means
+          something. The employer is the louder of the two: it is the line that
+          says why this person's reading of a curriculum is worth anything.
+        */}
+        {member.org ? (
+          <p className="t-body-sm mt-2.5 clamp-1 text-white/90">{member.org}</p>
+        ) : null}
+        {member.location ? (
+          <p className="t-meta clamp-1 mt-0.5 text-white/60">{member.location}</p>
+        ) : null}
+
+        {/*
+          The summary, on hover.
+
+          Roan asked for it on 9 Aug: hovering used to change the background and
+          tell you nothing new, so the gesture cost a reader their view of the
+          photograph and returned a pattern. Now it returns the thing a board of
+          judges exists to establish, which is what each of them actually works
+          on.
+
+          Height-animated rather than mounted on hover, so the sentence is in the
+          document for a screen reader and for anyone whose browser never fires a
+          hover at all — and simply open below sm, where nothing fires one.
+
+          The block is `pointer-events-none` as a whole and the two links sit
+          above it, so text growing upward under the cursor cannot steal the
+          click from the card it is drawn on.
+        */}
+        {member.summary ? (
+          <p
+            className={
+              "t-body-sm grid transition-[grid-template-rows,color,margin] duration-200 " +
+              "grid-rows-[0fr] text-white/0 " +
+              "group-hover/card:mt-2.5 group-hover/card:grid-rows-[1fr] group-hover/card:text-white/85 " +
+              "max-sm:mt-2.5 max-sm:grid-rows-[1fr] max-sm:text-white/85"
+            }
+          >
+            <span className="overflow-hidden">{member.summary}</span>
+          </p>
+        ) : null}
       </div>
     </article>
   );
