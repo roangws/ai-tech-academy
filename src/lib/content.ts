@@ -2629,9 +2629,14 @@ export type Seat = {
   survives `clamp-1` on a card. Nothing was translated into a claim about this
   program.
 
-  `ground` is one neutral for everybody. It used to be the hue of the course a
-  seat read, and no judge here has been assigned a course, so there is no honest
-  value to vary it by.
+  `ground` is one of the five path hues, and it means nothing.
+
+  It used to mean the course a seat read, and it went flat neutral for everybody
+  when the seats did, on the reasoning that a hue standing for a course should
+  not be handed to a judge who has not been assigned one. Roan asked on 9 Aug for
+  the colour variety back, so it is back as decoration and only as decoration:
+  five hues, in order, so no two adjacent cards match. Nobody should read a
+  course off one of these, and nothing on the card invites them to.
 */
 export const board = {
   headline: "Practitioners judge the curriculum and the events",
@@ -2657,15 +2662,18 @@ export const board = {
          the 240px homepage card, losing the founder half that was the reason
          for the phrasing. Both credentials still fit at this length. */
       role: "Founder, AI developer relations",
+      org: "The AI Collective",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/lizz-zhang/",
-      ground: "var(--ink-secondary)",
+      ground: "var(--path-a)",
       photo: {
         src: "/images/people/liz-zhang.jpg",
         alt: "Studio portrait of Liz Zhang",
       },
-      /* No `org` and so no mark. She publishes no current employer, and a slot
-         left empty is the correct rendering of a fact nobody has stated. */
+      /* Supplied by Roan on 9 Aug. Her card carried no mark until then because
+         her profile publishes no employer, and an empty slot is the correct
+         rendering of a fact nobody has stated. Now somebody has stated it. */
+      logo: { src: "/images/logos/ai-collective.png", alt: "The AI Collective" },
     },
     {
       id: "yunbin-bae",
@@ -2674,14 +2682,17 @@ export const board = {
       org: "a1mobile",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/yunbinbae/",
-      ground: "var(--ink-secondary)",
+      ground: "var(--path-b)",
       photo: {
         src: "/images/people/yunbin-bae.jpg",
         alt: "Studio portrait of Yunbin Bae",
       },
-      /* a1mobile ships no logo file. Its own site renders the name in type, so
-         this does too rather than drawing them a mark they do not have. */
-      wordmark: "a1mobile",
+      /* Their actual mark, supplied by Roan on 9 Aug. This was `wordmark:
+         "a1mobile"`, set in type, because a1mobile publishes no logo file on
+         its own site and inventing one for a company is worse than typesetting
+         its name. The fallback stays in the type for the next company that has
+         none. */
+      logo: { src: "/images/logos/a1mobile.png", alt: "a1mobile" },
     },
     {
       id: "abhinav-balasubramanian",
@@ -2690,7 +2701,7 @@ export const board = {
       org: "NVIDIA",
       location: "Santa Clara, California",
       linkedin: "https://www.linkedin.com/in/abhi-bala/",
-      ground: "var(--ink-secondary)",
+      ground: "var(--path-c)",
       photo: {
         src: "/images/people/abhinav-balasubramanian.jpg",
         alt: "Studio portrait of Abhinav Balasubramanian",
@@ -2704,7 +2715,7 @@ export const board = {
       org: "Pacific Gas and Electric",
       location: "San Francisco, California",
       linkedin: "https://www.linkedin.com/in/abhinandanvasanthin/",
-      ground: "var(--ink-secondary)",
+      ground: "var(--path-d)",
       photo: {
         src: "/images/people/abhi-vasanth.jpg",
         alt: "Studio portrait of Abhi Vasanth",
@@ -2718,7 +2729,7 @@ export const board = {
       org: "eBay",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/guptasachin1/",
-      ground: "var(--ink-secondary)",
+      ground: "var(--path-e)",
       photo: {
         src: "/images/people/sachin-gupta.jpg",
         alt: "Studio portrait of Sachin Gupta",

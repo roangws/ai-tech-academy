@@ -35,21 +35,11 @@ import type { Seat } from "@/lib/content";
  */
 export function BoardCard({
   member,
-  detailAlwaysVisible = false,
   sizes,
   id,
   className = "",
 }: {
   member: Seat;
-  /**
-   * Show the employer and location at every width instead of on hover.
-   *
-   * The carousel on the homepage keeps the hover reveal: it is a teaser beside
-   * nine other sections and the card is 240px wide. The roster page is the
-   * opposite case. It exists to list these people, and a touch screen never
-   * fires the hover that would show it.
-   */
-  detailAlwaysVisible?: boolean;
   /**
    * The `sizes` hint for the portrait, and it is a required thought rather than
    * a detail.
@@ -83,13 +73,6 @@ export function BoardCard({
         height={1200}
         sizes={sizes}
         className="transition-transform duration-500 group-hover/card:scale-[1.04]"
-      />
-
-      {/* Reading scrim. The name sits on the photograph rather than
-          under it, which is what buys the card its height back. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] via-[rgb(13_26_34/0.28)] via-46% to-transparent"
       />
 
       {/*
@@ -139,20 +122,67 @@ export function BoardCard({
       ) : null}
 
       {/*
-        The hover face, in the card's own hue. Opacity rather than a flip, and
-        from sm up only: below that the detail is simply visible, so a phone is
-        not asked to hover.
+        The hover face, in the card's own hue.
+
+        ------------------------------------------------------------ the motif
+
+        It was a 34px graph-paper grid: two hairline gradients, barely visible,
+        and the same on every card. Roan asked on 9 Aug for the colour variety
+        back and for the pattern itself to become a different element, pointing
+        at a mid-century reference — bold rounded shapes tiled edge to edge with
+        the ground showing through as four-pointed stars where they meet.
+
+        That shape is one radial gradient. Circles on a square tile, sized so
+        neighbours just touch, leave exactly that concave four-point star in the
+        gap: the stars are not drawn, they are what is left. `48%` rather than
+        50% keeps a hairline of ground between neighbours so the tiling reads as
+        shapes rather than as a solid field, and the second, offset copy at half
+        the scale puts a smaller mark inside each star, which is what stops the
+        field looking like bubble wrap.
+
+        WHITE AT ALPHA rather than the reference's second colour. Navy on orange
+        is two saturated colours at full strength, and a card whose subject is a
+        person cannot have a background louder than the face on it. Tinting the
+        card's own hue keeps the motif clearly readable as a pattern while
+        keeping the whole card one colour, which is also what makes five of these
+        side by side look like a set rather than five posters.
+
+        The strength it can carry comes from the scrim being moved on top of this
+        rather than under it — see the note on that element. Without that, every
+        part of this had to stay dark enough for white text, and the pattern was
+        capped at a whisper.
+
+        Opacity rather than a flip, and from sm up only: below that the face is
+        simply on, so a phone is not asked to hover.
       */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100 max-sm:opacity-100"
         style={{
-          background: member.ground,
+          backgroundColor: member.ground,
           backgroundImage:
-            "linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px)," +
-            "linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px)",
-          backgroundSize: "34px 34px",
+            "radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.32) 48%, transparent 49%)," +
+            "radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.19) 26%, transparent 27%)",
+          backgroundSize: "76px 76px, 38px 38px",
+          backgroundPosition: "0 0, 38px 38px",
         }}
+      />
+
+      {/*
+        Reading scrim, and it sits ABOVE the hover face rather than below it.
+
+        That order is the whole reason the pattern can be as strong as it is. The
+        scrim was directly on the photograph, so hovering covered it and left the
+        name, the role and the employer sitting on bare pattern — which caps how
+        bold the pattern may be, because every part of it has to stay dark enough
+        for white text. Moving it up puts one dark wash over both states: the
+        photograph and the pattern each get the same guaranteed contrast at the
+        bottom of the card, and the top of the card, where no text goes, is free
+        to show the motif at full strength.
+      */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] via-[rgb(13_26_34/0.32)] via-52% to-[rgb(13_26_34/0.05)]"
       />
 
       {/*
@@ -195,20 +225,40 @@ export function BoardCard({
             titles either side of it: four cards, three baselines. */}
         <p className="t-meta clamp-1 mt-0.5 text-white/70">{member.role}</p>
 
-        {/* Height-animated rather than mounted on hover, so the text
-            is in the document for a screen reader and for anyone
-            whose browser never fires a hover at all. */}
-        <p
-          className={`t-body-sm grid transition-[grid-template-rows,color] duration-200 ${
-            detailAlwaysVisible
-              ? "mt-2.5 grid-rows-[1fr] text-white/90"
-              : "grid-rows-[0fr] text-white/0 group-hover/card:mt-2.5 group-hover/card:grid-rows-[1fr] group-hover/card:text-white/90 max-sm:mt-2.5 max-sm:grid-rows-[1fr] max-sm:text-white/90"
-          }`}
-        >
-          <span className="overflow-hidden">
-            {[member.org, member.location].filter(Boolean).join(" · ")}
-          </span>
-        </p>
+        {/*
+          ALWAYS VISIBLE. This used to open on hover on the homepage rail and
+          stay open on the roster page, and Roan asked on 9 Aug for the employer
+          and the location to be on the card either way.
+
+          He is right, and the hover version was wrong for three reasons beyond
+          the ask. A touch screen never fires the hover, so on a phone half the
+          card's information depended on a gesture that does not exist. The rail
+          advances itself every three seconds, so a card could slide out from
+          under the pointer mid-reveal. And the employer is the point of the
+          card — it is the line that says why this person's opinion of a
+          curriculum is worth anything — so hiding it behind a gesture put the
+          credential in the least reliable place on the card.
+        */}
+        {/*
+          Two lines, not one joined by a separator.
+
+          "The AI Collective · San Francisco Bay Area" is 42 characters and the
+          rail's card is 240 wide, so it wrapped wherever it ran out of room:
+          "The AI Collective · San / Francisco Bay Area" broke a place name in
+          half and left the separator dangling at the end of a line. The two
+          facts are different kinds of fact, so they get a line each, and the
+          break happens where it means something.
+
+          The employer is the louder of the two on purpose. It is the line that
+          says why this person's reading of a curriculum is worth anything; the
+          city is context.
+        */}
+        {member.org ? (
+          <p className="t-body-sm mt-2.5 clamp-1 text-white/90">{member.org}</p>
+        ) : null}
+        {member.location ? (
+          <p className="t-meta clamp-1 mt-0.5 text-white/60">{member.location}</p>
+        ) : null}
       </div>
     </article>
   );

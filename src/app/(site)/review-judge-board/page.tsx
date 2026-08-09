@@ -79,9 +79,10 @@ export const metadata: Metadata = {
  * mismatch between the accessible name and the destination. A card titled with a
  * person's name, linking to that person's profile, is the opposite.
  *
- * `detailAlwaysVisible` is the one thing the card does differently from the
- * homepage carousel, which hides the employer and location behind a hover. This
- * page exists to list these judges, and a touch screen never fires that hover.
+ * The card renders identically to the homepage rail's now. It used to differ in
+ * one respect, `detailAlwaysVisible`, because the rail hid the employer and the
+ * location behind a hover; that hover is gone on both surfaces, so the flag went
+ * with it. board-card.tsx has the argument.
  */
 export default function ReviewJudgeBoardPage() {
   return (
@@ -168,7 +169,6 @@ export default function ReviewJudgeBoardPage() {
                 member={m}
                 id={m.id}
                 sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 400px"
-                detailAlwaysVisible
               />
             </li>
           ))}
