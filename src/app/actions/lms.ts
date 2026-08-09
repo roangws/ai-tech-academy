@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, requireUser } from "@/lib/auth";
-import { byId, bySlug } from "@/lib/lms/queries";
+import { byId, bySlug, getMySeat } from "@/lib/lms/queries";
 
 /**
  * Throw on a failed write instead of pretending it succeeded.
@@ -452,13 +452,20 @@ export async function saveCurriculumReview(formData: FormData): Promise<void> {
   const viewer = await requireRole("judge", "/judge");
   const supabase = await createClient();
 
-  const { data: seat } = await supabase
-    .from("judge_seats")
-    .select("id, reviews_course_id, reads_all_courses")
-    .eq("user_id", viewer.id)
-    .maybeSingle();
+  /*
+    Through the RPC, not a select — and this silently broke filing a review.
 
-  if (!seat) return;
+    `SELECT` on `judge_seats.user_id` is revoked, and Postgres requires that
+    privilege to FILTER on a column as well as to return it. So
+    `.eq("user_id", …)` came back as an error, the discarded `{ data: null }`
+    became `if (!seat) return`, and the judge filled in the whole form, pressed
+    File review, and watched nothing happen — no error, no row.
+
+    `getMySeat()` is the same call the page already uses to render the seat, so
+    the two cannot disagree about which seat this is.
+  */
+  const seat = await getMySeat();
+  if (!seat) throw new Error("You do not hold a judge seat.");
 
   /* [FILL: term definition] — the board "reads the courses each term" and
      nothing on the site says what a term is. Free text until someone decides. */
