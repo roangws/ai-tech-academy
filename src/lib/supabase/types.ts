@@ -65,11 +65,22 @@ export type ModuleRow = {
 export type LessonRow = {
   id: string;
   module_id: string;
+  /**
+   * Stable identity within the module, and the URL segment.
+   *
+   * The upsert key the seed script writes on, and therefore the thing that
+   * decides which uuid a lesson keeps across a re-seed. It used to be
+   * `position`, which meant inserting a lesson mid-module handed every uuid
+   * below it to a different lesson and silently reassigned every completion in
+   * `lesson_progress`. Authored in content.ts; see the note on `Lesson.slug`.
+   */
+  slug: string;
   name: string;
   kind: LessonKind;
   minutes: number | null;
   /** The lesson itself. Seeded by scripts/seed-catalog.mjs. */
   body: string | null;
+  /** Presentation order only. Identity is `slug`. */
   position: number;
 };
 

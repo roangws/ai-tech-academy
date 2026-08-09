@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -23,10 +23,24 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string; n: string; pos: string }>;
+  params: Promise<{ slug: string; n: string; lessonSlug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  return { title: bySlug.get(slug)?.title ?? "Lesson", robots: { index: false, follow: false } };
+  const { slug, n, lessonSlug } = await params;
+  const course = bySlug.get(slug);
+
+  /* The title used to be the course name on every one of the 173 lessons, so a
+     reader with six tabs open had six identical ones and browser history was a
+     column of the same five strings. The lesson names its own page; the course
+     is the suffix. Derived from content.ts rather than the row so this stays a
+     cheap metadata pass with no query. */
+  const lesson = course?.curriculum
+    .find((m) => m.n === n)
+    ?.lessons.find((l) => l.slug === lessonSlug);
+
+  return {
+    title: lesson ? `${lesson.name} — ${course?.title}` : (course?.title ?? "Lesson"),
+    robots: { index: false, follow: false },
+  };
 }
 
 const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
@@ -45,26 +59,36 @@ const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
  *
  * The gate is re-checked here rather than trusted from the module page, for the
  * same reason it is checked there: this is a directly addressable URL, so
- * `/learn/<course>/04/02` has to decide for itself whether module 04 is open to
- * this reader. The check reads `module.access` from the row, not the number in
- * the path.
+ * `/learn/<course>/04/account-brief` has to decide for itself whether module 04
+ * is open to this reader. The check reads `module.access` from the row, not the
+ * number in the path.
  */
 export default async function LessonPage({
   params,
 }: {
-  params: Promise<{ slug: string; n: string; pos: string }>;
+  params: Promise<{ slug: string; n: string; lessonSlug: string }>;
 }) {
-  const { slug, n, pos } = await params;
-  const index = Number(pos);
-  if (!Number.isInteger(index) || index < 0) notFound();
+  const { slug, n, lessonSlug } = await params;
+
+  /* Lessons were addressed by array index until the slug landed, so links saved
+     or shared before then look like `/learn/<course>/04/02`. Those resolve once,
+     permanently, to the lesson that was at that slot. It is three lines and it
+     means no reader ever meets a 404 for a URL this app itself handed them. */
+  if (/^\d+$/.test(lessonSlug)) {
+    const moved = bySlug
+      .get(slug)
+      ?.curriculum.find((m) => m.n === n)?.lessons[Number(lessonSlug)];
+    if (moved) permanentRedirect(`/learn/${slug}/${n}/${moved.slug}`);
+    notFound();
+  }
 
   const viewer = await getViewer();
-  const view = await getLessonView(slug, n, index, viewer?.id ?? null);
+  const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { course, module, lesson, total, done, prev, next, nextModule } = view;
+  const { course, module, lesson, index, total, done, prev, next, nextModule } = view;
   const signedIn = Boolean(viewer);
-  const path = `/learn/${slug}/${n}/${pos}`;
+  const path = `/learn/${slug}/${n}/${lessonSlug}`;
 
   if (isLocked(module.access, signedIn)) {
     return (
@@ -131,7 +155,7 @@ export default async function LessonPage({
               <input
                 type="hidden"
                 name="then"
-                value={next ? `/learn/${slug}/${n}/${index + 1}` : `/learn/${slug}/${n}`}
+                value={next ? `/learn/${slug}/${n}/${next.slug}` : `/learn/${slug}/${n}`}
               />
               <button
                 type="submit"
@@ -166,7 +190,7 @@ export default async function LessonPage({
         >
           {prev ? (
             <Link
-              href={`/learn/${slug}/${n}/${index - 1}`}
+              href={`/learn/${slug}/${n}/${prev.slug}`}
               className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-ink-secondary no-underline hover:text-ink"
             >
               <ArrowLeftIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
@@ -184,7 +208,7 @@ export default async function LessonPage({
 
           {next ? (
             <Link
-              href={`/learn/${slug}/${n}/${index + 1}`}
+              href={`/learn/${slug}/${n}/${next.slug}`}
               className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-right text-accent no-underline hover:underline"
             >
               <span className="clamp-1">{next.name}</span>

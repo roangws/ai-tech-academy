@@ -123,6 +123,34 @@ the free-first-module gate exists only in the rendering layer. Today it leaks
 scaffolding; once lessons carry YouTube ids, podcast paths and quiz answers it
 gives away the course.
 
+## Found during implementation, missed by all ten
+
+**Every 404 in the signed-in app returns HTTP 200.** Confirmed against the dev
+server:
+
+```
+/learn/no-such-course      → 200   (renders the branded not-found page)
+/learn/no-such-course/01   → 200
+/totally-made-up           → 404   (no page.tsx — Next handles it directly)
+```
+
+`notFound()` is called from inside a page whose `(app)` layout has already
+flushed the shell — the layout awaits `AppHeader`, which awaits `getViewer()`,
+so the header streams before the page body resolves. Next cannot revise the
+status line after that, so it recovers on the client and the response stays 200.
+The reader sees the right page; every machine sees a success.
+
+That costs monitoring (a broken-link sweep finds nothing), analytics (404s are
+invisible), and correctness for anything reading status codes. It is not caused
+by the slug work — the same is true of any bad URL under `(app)` today. Fixed in
+Phase 5, where the layout is restructured and the viewer-dependent chrome moves
+behind a Suspense boundary so the status resolves before the shell flushes.
+
+**A related, smaller one:** the numeric→slug redirect added in Phase 2b lands
+correctly in a real browser but degrades from a 308 to a `<meta http-equiv=
+"refresh">` for the same reason. Acceptable here — these routes are `noindex`
+and transitional — and it resolves itself when the streaming order is fixed.
+
 ## Corrections
 
 Two specialist claims were softened after checking:

@@ -873,6 +873,32 @@ export type Course = {
 
 /** One row inside a module. */
 export type Lesson = {
+  /**
+   * Stable identity, and the public URL segment.
+   *
+   * ------------------------------------------------- why this is not a position
+   *
+   * Lessons used to be keyed by their slot: the seed script upserted on
+   * `(module_id, position)` and the route was `/learn/<course>/04/02`. Both are
+   * the same bug. `lesson_progress` points at a lesson's uuid, so re-seeding a
+   * module after inserting a lesson at slot 2 moved every uuid below it up one
+   * row, and every completion under it silently became a completion of the wrong
+   * lesson. Nobody would see it happen; the counts stay plausible.
+   *
+   * The slug fixes it because it does not move. `position` is now presentation
+   * only — reorder freely, the identity is here.
+   *
+   * ------------------------------------------------------------ how to change it
+   *
+   * These were generated once from the names and are hand-maintained from then
+   * on. **Never re-derive a slug from `name`.** Renaming `name` is a typo fix;
+   * renaming this is a data migration that detaches every learner's completion
+   * of that lesson. If a lesson is genuinely replaced, changing the slug is the
+   * correct way to say so — the old row and its completions are then swept.
+   *
+   * Unique within a module, asserted at module load below.
+   */
+  slug: string;
   name: string;
   kind: "lesson" | "lab" | "template";
   /**
@@ -1083,10 +1109,10 @@ export const courses: readonly Course[] = [
         access: "open",
         artifact: "Baseline and use-case map",
         lessons: [
-          { name: "Map your customer journey end to end", kind: "lesson", minutes: 14 },
-          { name: "Find the high-value use cases", kind: "lesson" },
-          { name: "Record your baseline on time, cost or quality", kind: "lab" },
-          { name: "Decide where a human stays in the loop", kind: "lesson" },
+          { slug: "map-your-customer-journey-end-to-end", name: "Map your customer journey end to end", kind: "lesson", minutes: 14 },
+          { slug: "find-the-high-value-use-cases", name: "Find the high-value use cases", kind: "lesson" },
+          { slug: "record-your-baseline-on-time-cost-or-quality", name: "Record your baseline on time, cost or quality", kind: "lab" },
+          { slug: "decide-where-a-human-stays-in-the-loop", name: "Decide where a human stays in the loop", kind: "lesson" },
         ],
       },
       {
@@ -1098,11 +1124,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "ICP and account brief",
         lessons: [
-          { name: "Build the ICP from your own closed-won data", kind: "lab" },
-          { name: "Persona and account research", kind: "lesson" },
-          { name: "Competitive and intent signals", kind: "lesson" },
-          { name: "Verify a source before it reaches a rep", kind: "lesson" },
-          { name: "The account brief", kind: "template" },
+          { slug: "build-the-icp-from-your-own-closed-won-data", name: "Build the ICP from your own closed-won data", kind: "lab" },
+          { slug: "persona-and-account-research", name: "Persona and account research", kind: "lesson" },
+          { slug: "competitive-and-intent-signals", name: "Competitive and intent signals", kind: "lesson" },
+          { slug: "verify-a-source-before-it-reaches-a-rep", name: "Verify a source before it reaches a rep", kind: "lesson" },
+          { slug: "the-account-brief", name: "The account brief", kind: "template" },
         ],
       },
       {
@@ -1113,11 +1139,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Campaign system",
         lessons: [
-          { name: "Positioning and the offer", kind: "lesson" },
-          { name: "Channel adaptations from one source message", kind: "lab" },
-          { name: "Build the content calendar", kind: "lab" },
-          { name: "Email sequence and landing page", kind: "lab" },
-          { name: "Ad variants and the review step", kind: "lesson" },
+          { slug: "positioning-and-the-offer", name: "Positioning and the offer", kind: "lesson" },
+          { slug: "channel-adaptations-from-one-source-message", name: "Channel adaptations from one source message", kind: "lab" },
+          { slug: "build-the-content-calendar", name: "Build the content calendar", kind: "lab" },
+          { slug: "email-sequence-and-landing-page", name: "Email sequence and landing page", kind: "lab" },
+          { slug: "ad-variants-and-the-review-step", name: "Ad variants and the review step", kind: "lesson" },
         ],
       },
       {
@@ -1128,11 +1154,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Sales sequence",
         lessons: [
-          { name: "Prospecting and personalization at account level", kind: "lab" },
-          { name: "Call preparation from the account brief", kind: "lesson" },
-          { name: "Call summaries and next steps", kind: "lab" },
-          { name: "Qualification and objection handling", kind: "lesson" },
-          { name: "Follow-up a rep will actually send", kind: "lab" },
+          { slug: "prospecting-and-personalization-at-account-level", name: "Prospecting and personalization at account level", kind: "lab" },
+          { slug: "call-preparation-from-the-account-brief", name: "Call preparation from the account brief", kind: "lesson" },
+          { slug: "call-summaries-and-next-steps", name: "Call summaries and next steps", kind: "lab" },
+          { slug: "qualification-and-objection-handling", name: "Qualification and objection handling", kind: "lesson" },
+          { slug: "follow-up-a-rep-will-actually-send", name: "Follow-up a rep will actually send", kind: "lab" },
         ],
       },
       {
@@ -1143,11 +1169,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Automation diagram",
         lessons: [
-          { name: "Connect the approved prompts to your CRM", kind: "lab" },
-          { name: "Marketing automation and meeting tools", kind: "lab" },
-          { name: "Handoff rules and who owns each step", kind: "lesson" },
-          { name: "The launch checklist", kind: "template" },
-          { name: "Run the first week live", kind: "lab" },
+          { slug: "connect-the-approved-prompts-to-your-crm", name: "Connect the approved prompts to your CRM", kind: "lab" },
+          { slug: "marketing-automation-and-meeting-tools", name: "Marketing automation and meeting tools", kind: "lab" },
+          { slug: "handoff-rules-and-who-owns-each-step", name: "Handoff rules and who owns each step", kind: "lesson" },
+          { slug: "the-launch-checklist", name: "The launch checklist", kind: "template" },
+          { slug: "run-the-first-week-live", name: "Run the first week live", kind: "lab" },
         ],
       },
       {
@@ -1158,11 +1184,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Pipeline scorecard",
         lessons: [
-          { name: "Opportunity scoring on your own pipeline", kind: "lab" },
-          { name: "Pipeline hygiene rules", kind: "lesson" },
-          { name: "Forecasting with the agent in the loop", kind: "lab" },
-          { name: "Churn risk and expansion signals", kind: "lesson" },
-          { name: "The executive report", kind: "template" },
+          { slug: "opportunity-scoring-on-your-own-pipeline", name: "Opportunity scoring on your own pipeline", kind: "lab" },
+          { slug: "pipeline-hygiene-rules", name: "Pipeline hygiene rules", kind: "lesson" },
+          { slug: "forecasting-with-the-agent-in-the-loop", name: "Forecasting with the agent in the loop", kind: "lab" },
+          { slug: "churn-risk-and-expansion-signals", name: "Churn risk and expansion signals", kind: "lesson" },
+          { slug: "the-executive-report", name: "The executive report", kind: "template" },
         ],
       },
       {
@@ -1173,10 +1199,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Test log and outcome sheet",
         lessons: [
-          { name: "Design the test", kind: "lesson" },
-          { name: "Measure time saved and cost per output", kind: "lab" },
-          { name: "Quality review against a rubric", kind: "lesson" },
-          { name: "The outcome sheet", kind: "template" },
+          { slug: "design-the-test", name: "Design the test", kind: "lesson" },
+          { slug: "measure-time-saved-and-cost-per-output", name: "Measure time saved and cost per output", kind: "lab" },
+          { slug: "quality-review-against-a-rubric", name: "Quality review against a rubric", kind: "lesson" },
+          { slug: "the-outcome-sheet", name: "The outcome sheet", kind: "template" },
         ],
       },
       {
@@ -1187,12 +1213,12 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Completion record",
         lessons: [
-          { name: "Approved-data rules and brand controls", kind: "lesson" },
-          { name: "Disclosure and human accountability", kind: "lesson" },
-          { name: "Document the workflow for a successor", kind: "lab" },
-          { name: "Maintenance, and how to judge a replacement tool", kind: "lesson" },
-          { name: "Assemble the completion record", kind: "lab" },
-          { name: "Publish it and book the review", kind: "lesson" },
+          { slug: "approved-data-rules-and-brand-controls", name: "Approved-data rules and brand controls", kind: "lesson" },
+          { slug: "disclosure-and-human-accountability", name: "Disclosure and human accountability", kind: "lesson" },
+          { slug: "document-the-workflow-for-a-successor", name: "Document the workflow for a successor", kind: "lab" },
+          { slug: "maintenance-and-how-to-judge-a-replacement-tool", name: "Maintenance, and how to judge a replacement tool", kind: "lesson" },
+          { slug: "assemble-the-completion-record", name: "Assemble the completion record", kind: "lab" },
+          { slug: "publish-it-and-book-the-review", name: "Publish it and book the review", kind: "lesson" },
         ],
       },
     ],
@@ -1274,10 +1300,10 @@ export const courses: readonly Course[] = [
         access: "open",
         artifact: "Creative brief and baseline",
         lessons: [
-          { name: "Audience, platform, message, format", kind: "lesson" },
-          { name: "Constraints, references and budget", kind: "lesson" },
-          { name: "Record the baseline on your current delivery", kind: "lab" },
-          { name: "Define the success measure", kind: "lesson" },
+          { slug: "audience-platform-message-format", name: "Audience, platform, message, format", kind: "lesson" },
+          { slug: "constraints-references-and-budget", name: "Constraints, references and budget", kind: "lesson" },
+          { slug: "record-the-baseline-on-your-current-delivery", name: "Record the baseline on your current delivery", kind: "lab" },
+          { slug: "define-the-success-measure", name: "Define the success measure", kind: "lesson" },
         ],
       },
       {
@@ -1288,10 +1314,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Logline and script",
         lessons: [
-          { name: "Ideation and the logline", kind: "lab" },
-          { name: "Narrative structure and shot intent", kind: "lesson" },
-          { name: "Factuality and brand voice", kind: "lesson" },
-          { name: "The script pass", kind: "lab" },
+          { slug: "ideation-and-the-logline", name: "Ideation and the logline", kind: "lab" },
+          { slug: "narrative-structure-and-shot-intent", name: "Narrative structure and shot intent", kind: "lesson" },
+          { slug: "factuality-and-brand-voice", name: "Factuality and brand voice", kind: "lesson" },
+          { slug: "the-script-pass", name: "The script pass", kind: "lab" },
         ],
       },
       {
@@ -1302,10 +1328,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Storyboard and continuity bible",
         lessons: [
-          { name: "Style frames and the mood board", kind: "lab" },
-          { name: "Character and style consistency", kind: "lesson" },
-          { name: "Storyboard and shot list", kind: "lab" },
-          { name: "The continuity bible", kind: "template" },
+          { slug: "style-frames-and-the-mood-board", name: "Style frames and the mood board", kind: "lab" },
+          { slug: "character-and-style-consistency", name: "Character and style consistency", kind: "lesson" },
+          { slug: "storyboard-and-shot-list", name: "Storyboard and shot list", kind: "lab" },
+          { slug: "the-continuity-bible", name: "The continuity bible", kind: "template" },
         ],
       },
       {
@@ -1316,11 +1342,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Prompt and iteration log",
         lessons: [
-          { name: "Text to video and image to video", kind: "lab" },
-          { name: "Camera language and motion control", kind: "lesson" },
-          { name: "Iteration, and reading a failure", kind: "lab" },
-          { name: "Asset management and naming", kind: "lesson" },
-          { name: "The iteration log", kind: "template" },
+          { slug: "text-to-video-and-image-to-video", name: "Text to video and image to video", kind: "lab" },
+          { slug: "camera-language-and-motion-control", name: "Camera language and motion control", kind: "lesson" },
+          { slug: "iteration-and-reading-a-failure", name: "Iteration, and reading a failure", kind: "lab" },
+          { slug: "asset-management-and-naming", name: "Asset management and naming", kind: "lesson" },
+          { slug: "the-iteration-log", name: "The iteration log", kind: "template" },
         ],
       },
       {
@@ -1331,10 +1357,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Audio bed and voice record",
         lessons: [
-          { name: "Voice direction", kind: "lab" },
-          { name: "Consent and cloning rules", kind: "lesson" },
-          { name: "Music and effects generation", kind: "lab" },
-          { name: "Timing and licensing", kind: "lesson" },
+          { slug: "voice-direction", name: "Voice direction", kind: "lab" },
+          { slug: "consent-and-cloning-rules", name: "Consent and cloning rules", kind: "lesson" },
+          { slug: "music-and-effects-generation", name: "Music and effects generation", kind: "lab" },
+          { slug: "timing-and-licensing", name: "Timing and licensing", kind: "lesson" },
         ],
       },
       {
@@ -1345,11 +1371,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Final master",
         lessons: [
-          { name: "Assembly and pacing", kind: "lab" },
-          { name: "Transitions and lip sync", kind: "lesson" },
-          { name: "Captions and colour", kind: "lab" },
-          { name: "Upscaling and quality control", kind: "lesson" },
-          { name: "Export specifications", kind: "template" },
+          { slug: "assembly-and-pacing", name: "Assembly and pacing", kind: "lab" },
+          { slug: "transitions-and-lip-sync", name: "Transitions and lip sync", kind: "lesson" },
+          { slug: "captions-and-colour", name: "Captions and colour", kind: "lab" },
+          { slug: "upscaling-and-quality-control", name: "Upscaling and quality control", kind: "lesson" },
+          { slug: "export-specifications", name: "Export specifications", kind: "template" },
         ],
       },
       {
@@ -1360,10 +1386,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Two channel adaptations",
         lessons: [
-          { name: "Platform versions and thumbnails", kind: "lab" },
-          { name: "Accessibility as a delivery requirement", kind: "lesson" },
-          { name: "Retention signals and the performance review", kind: "lab" },
-          { name: "Reuse and the outcome sheet", kind: "template" },
+          { slug: "platform-versions-and-thumbnails", name: "Platform versions and thumbnails", kind: "lab" },
+          { slug: "accessibility-as-a-delivery-requirement", name: "Accessibility as a delivery requirement", kind: "lesson" },
+          { slug: "retention-signals-and-the-performance-review", name: "Retention signals and the performance review", kind: "lab" },
+          { slug: "reuse-and-the-outcome-sheet", name: "Reuse and the outcome sheet", kind: "template" },
         ],
       },
       {
@@ -1374,11 +1400,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Completion record",
         lessons: [
-          { name: "Releases and copyright", kind: "lesson" },
-          { name: "Disclosure and the source ledger", kind: "lab" },
-          { name: "The model and tool record", kind: "template" },
-          { name: "Assemble the completion record", kind: "lab" },
-          { name: "Publish it and book the review", kind: "lesson" },
+          { slug: "releases-and-copyright", name: "Releases and copyright", kind: "lesson" },
+          { slug: "disclosure-and-the-source-ledger", name: "Disclosure and the source ledger", kind: "lab" },
+          { slug: "the-model-and-tool-record", name: "The model and tool record", kind: "template" },
+          { slug: "assemble-the-completion-record", name: "Assemble the completion record", kind: "lab" },
+          { slug: "publish-it-and-book-the-review", name: "Publish it and book the review", kind: "lesson" },
         ],
       },
     ],
@@ -1479,10 +1505,10 @@ export const courses: readonly Course[] = [
         access: "open",
         artifact: "Current-state baseline",
         lessons: [
-          { name: "What the systems do and do not do", kind: "lesson" },
-          { name: "Probabilistic output and hallucination", kind: "lesson" },
-          { name: "Record how your team uses AI today", kind: "lab" },
-          { name: "Where human reliance belongs", kind: "lesson" },
+          { slug: "what-the-systems-do-and-do-not-do", name: "What the systems do and do not do", kind: "lesson" },
+          { slug: "probabilistic-output-and-hallucination", name: "Probabilistic output and hallucination", kind: "lesson" },
+          { slug: "record-how-your-team-uses-ai-today", name: "Record how your team uses AI today", kind: "lab" },
+          { slug: "where-human-reliance-belongs", name: "Where human reliance belongs", kind: "lesson" },
         ],
       },
       {
@@ -1493,11 +1519,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Data classification",
         lessons: [
-          { name: "Public, internal, confidential, restricted", kind: "lesson" },
-          { name: "Personal data and retention", kind: "lesson" },
-          { name: "Vendor terms and prompt leakage", kind: "lesson" },
-          { name: "Classify your own data", kind: "lab" },
-          { name: "The approved-tool decision", kind: "template" },
+          { slug: "public-internal-confidential-restricted", name: "Public, internal, confidential, restricted", kind: "lesson" },
+          { slug: "personal-data-and-retention", name: "Personal data and retention", kind: "lesson" },
+          { slug: "vendor-terms-and-prompt-leakage", name: "Vendor terms and prompt leakage", kind: "lesson" },
+          { slug: "classify-your-own-data", name: "Classify your own data", kind: "lab" },
+          { slug: "the-approved-tool-decision", name: "The approved-tool decision", kind: "template" },
         ],
       },
       {
@@ -1508,10 +1534,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Risk assessment",
         lessons: [
-          { name: "Bias, fairness and human impact", kind: "lesson" },
-          { name: "Transparency, explainability and accessibility", kind: "lesson" },
-          { name: "Intellectual property and misinformation", kind: "lesson" },
-          { name: "Assess one of your own use cases", kind: "lab" },
+          { slug: "bias-fairness-and-human-impact", name: "Bias, fairness and human impact", kind: "lesson" },
+          { slug: "transparency-explainability-and-accessibility", name: "Transparency, explainability and accessibility", kind: "lesson" },
+          { slug: "intellectual-property-and-misinformation", name: "Intellectual property and misinformation", kind: "lesson" },
+          { slug: "assess-one-of-your-own-use-cases", name: "Assess one of your own use cases", kind: "lab" },
         ],
       },
       {
@@ -1522,11 +1548,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Use-case register",
         lessons: [
-          { name: "Use-case intake and risk tiering", kind: "lesson" },
-          { name: "Owners and responsibilities", kind: "lesson" },
-          { name: "Approval gates", kind: "lesson" },
-          { name: "Build the model and vendor inventory", kind: "lab" },
-          { name: "Monitoring and retirement", kind: "lesson" },
+          { slug: "use-case-intake-and-risk-tiering", name: "Use-case intake and risk tiering", kind: "lesson" },
+          { slug: "owners-and-responsibilities", name: "Owners and responsibilities", kind: "lesson" },
+          { slug: "approval-gates", name: "Approval gates", kind: "lesson" },
+          { slug: "build-the-model-and-vendor-inventory", name: "Build the model and vendor inventory", kind: "lab" },
+          { slug: "monitoring-and-retirement", name: "Monitoring and retirement", kind: "lesson" },
         ],
       },
       {
@@ -1537,10 +1563,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Obligations map",
         lessons: [
-          { name: "The EU AI Act, in the shape of your use cases", kind: "lesson" },
-          { name: "Privacy principles", kind: "lesson" },
-          { name: "The NIST AI risk management framework", kind: "lesson" },
-          { name: "Where this material stops and counsel starts", kind: "lesson" },
+          { slug: "the-eu-ai-act-in-the-shape-of-your-use-cases", name: "The EU AI Act, in the shape of your use cases", kind: "lesson" },
+          { slug: "privacy-principles", name: "Privacy principles", kind: "lesson" },
+          { slug: "the-nist-ai-risk-management-framework", name: "The NIST AI risk management framework", kind: "lesson" },
+          { slug: "where-this-material-stops-and-counsel-starts", name: "Where this material stops and counsel starts", kind: "lesson" },
         ],
       },
       {
@@ -1551,11 +1577,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Control plan",
         lessons: [
-          { name: "Write the acceptable-use policy", kind: "lab" },
-          { name: "Human review and escalation", kind: "lesson" },
-          { name: "Red teaming and audit evidence", kind: "lab" },
-          { name: "Employee training and third-party oversight", kind: "lesson" },
-          { name: "Put it in force across the team", kind: "lab" },
+          { slug: "write-the-acceptable-use-policy", name: "Write the acceptable-use policy", kind: "lab" },
+          { slug: "human-review-and-escalation", name: "Human review and escalation", kind: "lesson" },
+          { slug: "red-teaming-and-audit-evidence", name: "Red teaming and audit evidence", kind: "lab" },
+          { slug: "employee-training-and-third-party-oversight", name: "Employee training and third-party oversight", kind: "lesson" },
+          { slug: "put-it-in-force-across-the-team", name: "Put it in force across the team", kind: "lab" },
         ],
       },
       {
@@ -1566,11 +1592,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Decision log",
         lessons: [
-          { name: "Hiring and marketing content", kind: "lab" },
-          { name: "Customer support and education", kind: "lab" },
-          { name: "Finance and healthcare", kind: "lab" },
-          { name: "Measure the change in decisions", kind: "lab" },
-          { name: "The outcome sheet", kind: "template" },
+          { slug: "hiring-and-marketing-content", name: "Hiring and marketing content", kind: "lab" },
+          { slug: "customer-support-and-education", name: "Customer support and education", kind: "lab" },
+          { slug: "finance-and-healthcare", name: "Finance and healthcare", kind: "lab" },
+          { slug: "measure-the-change-in-decisions", name: "Measure the change in decisions", kind: "lab" },
+          { slug: "the-outcome-sheet", name: "The outcome sheet", kind: "template" },
         ],
       },
       {
@@ -1581,10 +1607,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Completion record",
         lessons: [
-          { name: "Assemble the register and classification", kind: "lab" },
-          { name: "User notice and the incident playbook", kind: "template" },
-          { name: "Write the executive summary", kind: "lab" },
-          { name: "Publish it and book the review", kind: "lesson" },
+          { slug: "assemble-the-register-and-classification", name: "Assemble the register and classification", kind: "lab" },
+          { slug: "user-notice-and-the-incident-playbook", name: "User notice and the incident playbook", kind: "template" },
+          { slug: "write-the-executive-summary", name: "Write the executive summary", kind: "lab" },
+          { slug: "publish-it-and-book-the-review", name: "Publish it and book the review", kind: "lesson" },
         ],
       },
     ],
@@ -1674,10 +1700,10 @@ export const courses: readonly Course[] = [
         access: "open",
         artifact: "Baseline and decision record",
         lessons: [
-          { name: "Training against inference", kind: "lesson" },
-          { name: "Hosted API against self-hosting", kind: "lesson" },
-          { name: "Record latency, throughput and cost today", kind: "lab" },
-          { name: "Data sensitivity and reliability targets", kind: "lesson" },
+          { slug: "training-against-inference", name: "Training against inference", kind: "lesson" },
+          { slug: "hosted-api-against-self-hosting", name: "Hosted API against self-hosting", kind: "lesson" },
+          { slug: "record-latency-throughput-and-cost-today", name: "Record latency, throughput and cost today", kind: "lab" },
+          { slug: "data-sensitivity-and-reliability-targets", name: "Data sensitivity and reliability targets", kind: "lesson" },
         ],
       },
       {
@@ -1688,11 +1714,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Cost model",
         lessons: [
-          { name: "CPU and GPU trade-offs", kind: "lesson" },
-          { name: "Memory and storage patterns", kind: "lesson" },
-          { name: "Data movement, and where it costs", kind: "lesson" },
-          { name: "Cloud, on-premises and hybrid", kind: "lesson" },
-          { name: "Build the cost estimate", kind: "lab" },
+          { slug: "cpu-and-gpu-trade-offs", name: "CPU and GPU trade-offs", kind: "lesson" },
+          { slug: "memory-and-storage-patterns", name: "Memory and storage patterns", kind: "lesson" },
+          { slug: "data-movement-and-where-it-costs", name: "Data movement, and where it costs", kind: "lesson" },
+          { slug: "cloud-on-premises-and-hybrid", name: "Cloud, on-premises and hybrid", kind: "lesson" },
+          { slug: "build-the-cost-estimate", name: "Build the cost estimate", kind: "lab" },
         ],
       },
       {
@@ -1703,9 +1729,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Versioned build",
         lessons: [
-          { name: "Environments and containers", kind: "lab" },
-          { name: "Versioning code, data, model and prompt assets", kind: "lesson" },
-          { name: "Registries and artifact lineage", kind: "lab" },
+          { slug: "environments-and-containers", name: "Environments and containers", kind: "lab" },
+          { slug: "versioning-code-data-model-and-prompt-assets", name: "Versioning code, data, model and prompt assets", kind: "lesson" },
+          { slug: "registries-and-artifact-lineage", name: "Registries and artifact lineage", kind: "lab" },
         ],
       },
       {
@@ -1716,11 +1742,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Serving stack",
         lessons: [
-          { name: "APIs, batching and caching", kind: "lab" },
-          { name: "Queues and backpressure", kind: "lesson" },
-          { name: "Kubernetes fundamentals for this workload", kind: "lesson" },
-          { name: "Autoscaling and multi-tenancy", kind: "lab" },
-          { name: "Secrets and configuration", kind: "lesson" },
+          { slug: "apis-batching-and-caching", name: "APIs, batching and caching", kind: "lab" },
+          { slug: "queues-and-backpressure", name: "Queues and backpressure", kind: "lesson" },
+          { slug: "kubernetes-fundamentals-for-this-workload", name: "Kubernetes fundamentals for this workload", kind: "lesson" },
+          { slug: "autoscaling-and-multi-tenancy", name: "Autoscaling and multi-tenancy", kind: "lab" },
+          { slug: "secrets-and-configuration", name: "Secrets and configuration", kind: "lesson" },
         ],
       },
       {
@@ -1731,9 +1757,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Model serving path",
         lessons: [
-          { name: "Quantization and model selection", kind: "lesson" },
-          { name: "Retrieval and streaming", kind: "lab" },
-          { name: "Guardrails and fallbacks", kind: "lab" },
+          { slug: "quantization-and-model-selection", name: "Quantization and model selection", kind: "lesson" },
+          { slug: "retrieval-and-streaming", name: "Retrieval and streaming", kind: "lab" },
+          { slug: "guardrails-and-fallbacks", name: "Guardrails and fallbacks", kind: "lab" },
         ],
       },
       {
@@ -1744,11 +1770,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Release pipeline",
         lessons: [
-          { name: "Continuous integration and delivery", kind: "lab" },
-          { name: "Evaluation gates", kind: "lab" },
-          { name: "Release strategies and rollback", kind: "lesson" },
-          { name: "Experiment tracking and change management", kind: "lesson" },
-          { name: "Deploy to production infrastructure", kind: "lab" },
+          { slug: "continuous-integration-and-delivery", name: "Continuous integration and delivery", kind: "lab" },
+          { slug: "evaluation-gates", name: "Evaluation gates", kind: "lab" },
+          { slug: "release-strategies-and-rollback", name: "Release strategies and rollback", kind: "lesson" },
+          { slug: "experiment-tracking-and-change-management", name: "Experiment tracking and change management", kind: "lesson" },
+          { slug: "deploy-to-production-infrastructure", name: "Deploy to production infrastructure", kind: "lab" },
         ],
       },
       {
@@ -1759,11 +1785,11 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Dashboard and runbook",
         lessons: [
-          { name: "Logs, metrics and traces", kind: "lab" },
-          { name: "Quality evaluation and drift", kind: "lesson" },
-          { name: "GPU utilisation and cost", kind: "lab" },
-          { name: "Service objectives, alerts and incident response", kind: "template" },
-          { name: "Measure against your baseline", kind: "lab" },
+          { slug: "logs-metrics-and-traces", name: "Logs, metrics and traces", kind: "lab" },
+          { slug: "quality-evaluation-and-drift", name: "Quality evaluation and drift", kind: "lesson" },
+          { slug: "gpu-utilisation-and-cost", name: "GPU utilisation and cost", kind: "lab" },
+          { slug: "service-objectives-alerts-and-incident-response", name: "Service objectives, alerts and incident response", kind: "template" },
+          { slug: "measure-against-your-baseline", name: "Measure against your baseline", kind: "lab" },
         ],
       },
       {
@@ -1774,12 +1800,12 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Completion record",
         lessons: [
-          { name: "Access control and data protection", kind: "lesson" },
-          { name: "Prompt injection and supply chain", kind: "lab" },
-          { name: "Compliance evidence and vendor inventory", kind: "template" },
-          { name: "Demonstrate the rollback", kind: "lab" },
-          { name: "Assemble the completion record", kind: "lab" },
-          { name: "Publish it and book the review", kind: "lesson" },
+          { slug: "access-control-and-data-protection", name: "Access control and data protection", kind: "lesson" },
+          { slug: "prompt-injection-and-supply-chain", name: "Prompt injection and supply chain", kind: "lab" },
+          { slug: "compliance-evidence-and-vendor-inventory", name: "Compliance evidence and vendor inventory", kind: "template" },
+          { slug: "demonstrate-the-rollback", name: "Demonstrate the rollback", kind: "lab" },
+          { slug: "assemble-the-completion-record", name: "Assemble the completion record", kind: "lab" },
+          { slug: "publish-it-and-book-the-review", name: "Publish it and book the review", kind: "lesson" },
         ],
       },
     ],
@@ -1860,9 +1886,9 @@ export const courses: readonly Course[] = [
         access: "open",
         artifact: "Workflow inventory and baseline",
         lessons: [
-          { name: "List where your week actually goes", kind: "lab" },
-          { name: "Time and cost your busiest task", kind: "lab" },
-          { name: "Shortlist the high-value use cases", kind: "lesson" },
+          { slug: "list-where-your-week-actually-goes", name: "List where your week actually goes", kind: "lab" },
+          { slug: "time-and-cost-your-busiest-task", name: "Time and cost your busiest task", kind: "lab" },
+          { slug: "shortlist-the-high-value-use-cases", name: "Shortlist the high-value use cases", kind: "lesson" },
         ],
       },
       {
@@ -1873,10 +1899,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Prompt library",
         lessons: [
-          { name: "Verify before you send", kind: "lesson" },
-          { name: "Your brand voice, written down", kind: "lab" },
-          { name: "Reusable prompt patterns", kind: "template" },
-          { name: "Working with your own files and data", kind: "lesson" },
+          { slug: "verify-before-you-send", name: "Verify before you send", kind: "lesson" },
+          { slug: "your-brand-voice-written-down", name: "Your brand voice, written down", kind: "lab" },
+          { slug: "reusable-prompt-patterns", name: "Reusable prompt patterns", kind: "template" },
+          { slug: "working-with-your-own-files-and-data", name: "Working with your own files and data", kind: "lesson" },
         ],
       },
       {
@@ -1887,9 +1913,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Campaign kit",
         lessons: [
-          { name: "Customer research and the offer", kind: "lab" },
-          { name: "Content, email and social", kind: "lab" },
-          { name: "Local discovery and reuse", kind: "lesson" },
+          { slug: "customer-research-and-the-offer", name: "Customer research and the offer", kind: "lab" },
+          { slug: "content-email-and-social", name: "Content, email and social", kind: "lab" },
+          { slug: "local-discovery-and-reuse", name: "Local discovery and reuse", kind: "lesson" },
         ],
       },
       {
@@ -1900,9 +1926,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Response kit",
         lessons: [
-          { name: "Lead response and qualification", kind: "lab" },
-          { name: "Proposals and quotes", kind: "lab" },
-          { name: "Common questions and support drafts", kind: "template" },
+          { slug: "lead-response-and-qualification", name: "Lead response and qualification", kind: "lab" },
+          { slug: "proposals-and-quotes", name: "Proposals and quotes", kind: "lab" },
+          { slug: "common-questions-and-support-drafts", name: "Common questions and support drafts", kind: "template" },
         ],
       },
       {
@@ -1913,9 +1939,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Operations pack",
         lessons: [
-          { name: "Meeting notes and procedures", kind: "lab" },
-          { name: "Document drafting and vendor comparison", kind: "lesson" },
-          { name: "Reporting and finding what you wrote before", kind: "lab" },
+          { slug: "meeting-notes-and-procedures", name: "Meeting notes and procedures", kind: "lab" },
+          { slug: "document-drafting-and-vendor-comparison", name: "Document drafting and vendor comparison", kind: "lesson" },
+          { slug: "reporting-and-finding-what-you-wrote-before", name: "Reporting and finding what you wrote before", kind: "lab" },
         ],
       },
       {
@@ -1926,10 +1952,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Deployed assistant",
         lessons: [
-          { name: "Triggers and actions, without code", kind: "lesson" },
-          { name: "The human approval step", kind: "lab" },
-          { name: "Exceptions and logging", kind: "lesson" },
-          { name: "Put it to work", kind: "lab" },
+          { slug: "triggers-and-actions-without-code", name: "Triggers and actions, without code", kind: "lesson" },
+          { slug: "the-human-approval-step", name: "The human approval step", kind: "lab" },
+          { slug: "exceptions-and-logging", name: "Exceptions and logging", kind: "lesson" },
+          { slug: "put-it-to-work", name: "Put it to work", kind: "lab" },
         ],
       },
       {
@@ -1940,9 +1966,9 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Outcome sheet",
         lessons: [
-          { name: "Time saved and output quality", kind: "lab" },
-          { name: "Operating cost, tool cost and privacy risk", kind: "lesson" },
-          { name: "The keep, change or stop decision", kind: "template" },
+          { slug: "time-saved-and-output-quality", name: "Time saved and output quality", kind: "lab" },
+          { slug: "operating-cost-tool-cost-and-privacy-risk", name: "Operating cost, tool cost and privacy risk", kind: "lesson" },
+          { slug: "the-keep-change-or-stop-decision", name: "The keep, change or stop decision", kind: "template" },
         ],
       },
       {
@@ -1953,10 +1979,10 @@ export const courses: readonly Course[] = [
         access: "account",
         artifact: "Completion record",
         lessons: [
-          { name: "Deploy the second workflow", kind: "lab" },
-          { name: "A one-page AI use policy for your business", kind: "template" },
-          { name: "Maintenance calendar and next quarter", kind: "lesson" },
-          { name: "Assemble the completion record", kind: "lab" },
+          { slug: "deploy-the-second-workflow", name: "Deploy the second workflow", kind: "lab" },
+          { slug: "a-one-page-ai-use-policy-for-your-business", name: "A one-page AI use policy for your business", kind: "template" },
+          { slug: "maintenance-calendar-and-next-quarter", name: "Maintenance calendar and next quarter", kind: "lesson" },
+          { slug: "assemble-the-completion-record", name: "Assemble the completion record", kind: "lab" },
         ],
       },
     ],
@@ -1978,6 +2004,38 @@ export const courses: readonly Course[] = [
   What is left here is everything the merged band needs that the method never
   had: the course video, the access model, and what every module contains.
 */
+
+/**
+ * Lesson slugs must be unique inside their module, and this asserts it at module
+ * load rather than trusting the author.
+ *
+ * It runs here rather than beside `totalLessons` because `courses` is declared
+ * above and a module-level read before that initialiser has run is a temporal
+ * dead zone error, not a helpful message.
+ *
+ * `courseHref` sets the precedent for throwing out of this file: a miss is an
+ * author-time typo and should fail the build rather than ship. A duplicate slug
+ * is worse than a bad href, because the seed script upserts on
+ * `(module_id, slug)` — two lessons sharing one would collapse into a single row
+ * and take one of the two lessons, and any completions of it, with them.
+ */
+for (const course of courses) {
+  /* `mod`, not `module`: Next forbids assigning to a variable of that name
+     because it shadows the CommonJS binding, and eslint fails the build on it. */
+  for (const mod of course.curriculum) {
+    const seen = new Set<string>();
+    for (const lesson of mod.lessons) {
+      if (seen.has(lesson.slug)) {
+        throw new Error(
+          `content.ts: duplicate lesson slug "${lesson.slug}" in ${course.id} module ${mod.n}. ` +
+            `Slugs are the identity a learner's progress hangs on and must be unique within a module.`,
+        );
+      }
+      seen.add(lesson.slug);
+    }
+  }
+}
+
 export const moduleFormat = {
   video: {
     src: "/media/tutorial-2.mp4",

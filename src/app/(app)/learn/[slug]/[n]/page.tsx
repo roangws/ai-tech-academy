@@ -133,7 +133,7 @@ export default async function ModulePage({
                       across the site and open none of them — a syllabus rather
                       than a course. */}
                   <Link
-                    href={`/learn/${slug}/${n}/${lesson.position}`}
+                    href={`/learn/${slug}/${n}/${lesson.slug}`}
                     className="group min-w-0 flex-1 no-underline"
                   >
                     <span

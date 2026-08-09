@@ -349,16 +349,24 @@ export type LessonView = {
 };
 
 /**
- * One lesson, by its position within a module.
+ * One lesson, by its slug within a module.
  *
- * Keyed on `position` rather than a lesson id in the URL, so a lesson address is
- * readable and stable — `/learn/<course>/04/02` is the second lesson of module
- * four, and it stays that even after a re-seed gives the row a new uuid.
+ * ------------------------------------------------- this used to key on position
+ *
+ * The address was `/learn/<course>/04/02` and the note here argued it was
+ * "readable and stable". Half right. It is readable, and it is the opposite of
+ * stable: `02` names whatever is currently second, so inserting a lesson higher
+ * up silently repoints the URL at a different lesson, and every link anyone
+ * saved now goes somewhere else. The slug names the lesson itself, which is what
+ * the reader meant.
+ *
+ * `position` survives as presentation — the order lessons are listed in, and
+ * nothing more.
  */
 export async function getLessonView(
   slug: string,
   n: string,
-  pos: number,
+  lessonSlug: string,
   userId: string | null,
 ): Promise<LessonView | null> {
   const course = bySlug.get(slug);
@@ -378,8 +386,14 @@ export async function getLessonView(
     "lesson list",
     supabase.from("lessons").select("*").eq("module_id", current.id).order("position"),
   );
-  const lesson = lessons.find((l) => l.position === pos);
-  if (!lesson) return null;
+  /* Neighbours come from the index in this ordered list, not from arithmetic on
+     `position`. The two used to be mixed — the lesson was found by matching
+     `position` and prev/next were `lessons[pos ± 1]` — which agree only while
+     positions are gapless and zero-based. A single gap made "next" skip a lesson
+     or point at itself. */
+  const li = lessons.findIndex((l) => l.slug === lessonSlug);
+  if (li === -1) return null;
+  const lesson = lessons[li];
 
   let done = false;
   if (userId) {
@@ -398,11 +412,11 @@ export async function getLessonView(
     course,
     module: current,
     lesson,
-    index: pos,
+    index: li,
     total: lessons.length,
     done,
-    prev: lessons[pos - 1] ?? null,
-    next: lessons[pos + 1] ?? null,
+    prev: lessons[li - 1] ?? null,
+    next: lessons[li + 1] ?? null,
     nextModule: modules[mi + 1] ?? null,
   };
 }
