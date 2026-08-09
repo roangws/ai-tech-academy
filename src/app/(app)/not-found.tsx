@@ -27,7 +27,7 @@ export default function AppNotFound() {
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
           <Link
             href="/dashboard"
-            className="t-button inline-flex h-11 items-center rounded-[var(--radius-control)] bg-accent px-5 text-white no-underline transition-colors hover:bg-accent-hover"
+            className="t-button inline-flex h-11 items-center rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
           >
             Your courses
           </Link>

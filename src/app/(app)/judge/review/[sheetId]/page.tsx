@@ -200,7 +200,7 @@ export default async function ReviewSheetPage({
                               />
                               <label
                                 htmlFor={`${c.id}-${score}`}
-                                className="t-body-sm grid size-10 cursor-pointer place-items-center rounded-[var(--radius-control)] border border-line bg-surface text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
+                                className="t-body-sm grid size-10 cursor-pointer place-items-center rounded-[var(--radius-control)] border border-line-control bg-surface text-ink-secondary transition-colors hover:border-line-control-strong peer-checked:border-accent peer-checked:bg-accent peer-checked:text-on-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
                               >
                                 {score}
                                 <span className="sr-only"> out of 5</span>
@@ -218,7 +218,7 @@ export default async function ReviewSheetPage({
                           type="text"
                           defaultValue={prior?.notes ?? ""}
                           placeholder="Optional note"
-                          className="t-body-sm mt-2.5 h-10 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
+                          className="t-body-sm mt-2.5 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
                         />
                       </fieldset>
                     </li>
@@ -228,7 +228,7 @@ export default async function ReviewSheetPage({
 
               <button
                 type="submit"
-                className="t-button mt-8 h-11 w-full rounded-[var(--radius-control)] bg-accent text-white transition-colors hover:bg-accent-hover"
+                className="t-button mt-8 h-11 w-full rounded-[var(--radius-control)] bg-accent text-on-accent transition-colors hover:bg-accent-hover"
               >
                 {scored.size ? "Update my scores" : "File my scores"}
               </button>

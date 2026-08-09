@@ -115,7 +115,7 @@ export default async function CourseBoardPage({
               {enrollment ? (
                 <Link
                   href={`/learn/${slug}/${resumeN}`}
-                  className="t-button mt-5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-accent text-white no-underline transition-colors hover:bg-accent-hover"
+                  className="t-button mt-5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-accent text-on-accent no-underline transition-colors hover:bg-accent-hover"
                 >
                   {doneLessons > 0 ? "Continue" : "Start module 1"}
                   <ArrowRightIcon size={14} weight="bold" aria-hidden="true" />
@@ -125,7 +125,7 @@ export default async function CourseBoardPage({
                   <input type="hidden" name="slug" value={slug} />
                   <button
                     type="submit"
-                    className="t-button h-11 w-full rounded-[var(--radius-control)] bg-accent text-white transition-colors hover:bg-accent-hover"
+                    className="t-button h-11 w-full rounded-[var(--radius-control)] bg-accent text-on-accent transition-colors hover:bg-accent-hover"
                   >
                     Add to my courses
                   </button>
@@ -141,7 +141,7 @@ export default async function CourseBoardPage({
               </p>
               <Link
                 href={`/learn/${slug}/${modules[0]?.n ?? "01"}`}
-                className="t-button mt-5 inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-accent text-white no-underline transition-colors hover:bg-accent-hover"
+                className="t-button mt-5 inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-accent text-on-accent no-underline transition-colors hover:bg-accent-hover"
               >
                 Start module 1
               </Link>

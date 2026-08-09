@@ -124,7 +124,7 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
                 autoComplete={f.autoComplete}
                 aria-invalid={state?.field === f.name || undefined}
                 aria-describedby={state?.field === f.name ? "sign-in-error" : undefined}
-                className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 aria-[invalid]:border-danger"
+                className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 aria-[invalid]:border-danger"
               />
             </div>
           ))}

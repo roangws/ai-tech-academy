@@ -161,8 +161,8 @@ export default async function LessonPage({
                 type="submit"
                 className={`t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] px-5 transition-colors ${
                   done
-                    ? "border border-line text-ink-secondary hover:border-line-strong hover:text-ink"
-                    : "bg-accent text-white hover:bg-accent-hover"
+                    ? "border border-line-control text-ink-secondary hover:border-line-control-strong hover:text-ink"
+                    : "bg-accent text-on-accent hover:bg-accent-hover"
                 }`}
               >
                 <CheckIcon size={15} weight="bold" aria-hidden="true" />

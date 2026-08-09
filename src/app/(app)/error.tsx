@@ -43,7 +43,7 @@ export default function AppError({
           <button
             type="button"
             onClick={reset}
-            className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-white transition-colors hover:bg-accent-hover"
+            className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
           >
             Try again
           </button>

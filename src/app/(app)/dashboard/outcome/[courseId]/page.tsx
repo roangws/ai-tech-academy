@@ -144,7 +144,7 @@ export default async function OutcomeSheetPage({
               readOnly={locked}
               defaultValue={sheet?.title ?? ""}
               placeholder={outcomes.sheet.title}
-              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
+              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
             />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default async function OutcomeSheetPage({
               max={365}
               readOnly={locked}
               defaultValue={sheet?.measured_after_days ?? 14}
-              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
+              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
             />
           </div>
         </div>
@@ -255,7 +255,7 @@ export default async function OutcomeSheetPage({
             readOnly={locked}
             defaultValue={sheet?.footnote ?? ""}
             placeholder={outcomes.sheet.footnote}
-            className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
+            className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted"
           />
         </div>
 
@@ -265,7 +265,7 @@ export default async function OutcomeSheetPage({
               type="submit"
               name="intent"
               value="save"
-              className="t-button h-11 rounded-[var(--radius-control)] border border-line px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+              className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-control-strong hover:text-ink"
             >
               Save draft
             </button>
@@ -273,7 +273,7 @@ export default async function OutcomeSheetPage({
               type="submit"
               name="intent"
               value="submit"
-              className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-white transition-colors hover:bg-accent-hover"
+              className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
             >
               Submit to the review board
             </button>
@@ -290,4 +290,4 @@ export default async function OutcomeSheetPage({
 }
 
 const fieldClass =
-  "t-body h-10 w-full rounded-[var(--radius-control)] border border-line bg-surface px-2.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted";
+  "t-body h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-2.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25 read-only:bg-surface-subtle read-only:text-ink-muted";

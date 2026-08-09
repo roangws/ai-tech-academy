@@ -8,7 +8,11 @@
   primary visual targets. Tokens honour the project's own LMS design system in
   references/lms-benchmark/DESIGN-SYSTEM-AND-LMS-UX.md.
 
-  White theme only. There is no dark mode and no dark full-bleed band.
+  White theme for the marketing site, which is the page these tokens were derived
+  for. A dark theme was added 10 Aug at the foot of this file and is scoped to
+  the signed-in app group alone — the LMS is where somebody watches a 40-minute
+  video at night. Marketing never mounts the element it is scoped to, so nothing
+  above this line changed and nothing on the public site can go dark.
 
   Accent lock: --accent appears on filled primary buttons (max one per
   section), text actions, the search submit button, active underlines, and
@@ -56,6 +60,46 @@
 
   --line: #d8e1e8;
   --line-strong: #aebecb;
+
+  /*
+    THE EDGE OF ANYTHING A PERSON OPERATES, added 10 Aug.
+
+    `--line` is 1.32:1 against `--surface` and 1.19:1 against `--surface-subtle`.
+    Both computed, neither eyeballed. WCAG 1.4.11 asks 3:1 for "visual
+    information required to identify user interface components", so every input,
+    textarea, select and outline button in the LMS — all of which used
+    `border-line` as their only boundary — had no perceivable edge at all.
+
+    That is one token, and it is a large part of why the signed-in product read
+    as unfinished: the outcome sheet's fields, the artifact textarea, the judge's
+    five score boxes and "Save draft" were all drawn with an edge nobody can see.
+    The text contrast on this site was done carefully and the non-text contrast
+    was never checked.
+
+    So the token splits. `--line` keeps the decorative job — card edges, dividers,
+    the rules between rows — where 1.32:1 is a deliberate whisper and correct.
+    `--line-control` is for anything a person operates:
+
+      #78899a on --surface ......... 3.59:1
+      #78899a on --surface-subtle .. 3.22:1
+
+    Both clear, which matters because forms appear on both grounds.
+  */
+  --line-control: #78899a;
+
+  /*
+    What text goes on a filled `--accent` control.
+
+    White, here, and it exists as a token because it stops being white in the
+    dark theme. The lifted blue dark mode needs in order to be visible on a dark
+    ground takes white down to 2.71:1 — a filled accent button with white on it
+    fails outright. Ink on that same blue is 6.62:1.
+
+    Hardcoding `text-white` at the call sites would have made that unfixable
+    without editing every button, and the failure would have been invisible until
+    somebody looked at the dark theme in daylight.
+  */
+  --on-accent: #ffffff;
 
   /*
     Deep electric blue, set 7 Aug to the tone Roan sent.
@@ -165,10 +209,12 @@
 
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-line-control: var(--line-control);
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-tint: var(--accent-tint);
+  --color-on-accent: var(--on-accent);
 
   --color-state-open: var(--state-open);
   --color-state-open-surface: var(--state-open-surface);
@@ -525,4 +571,159 @@
 
 .rail::-webkit-scrollbar {
   display: none;
+}
+
+/* ============================================================================
+   DARK THEME — the signed-in app only
+   ============================================================================
+
+   Added 10 Aug. The LMS is where somebody watches a 40-minute video and listens
+   to a podcast at night; the marketing site is a page you read once in daylight.
+   Only the first of those needs a dark theme, and the marketing site is frozen.
+
+   ---------------------------------------------------------- how this works
+
+   Nothing here needs a `dark:` variant, a `@custom-variant`, or a single edit to
+   a component. `@theme inline` above maps `--color-surface: var(--surface)` — to
+   the *variable*, not to its value — so redefining `--surface` inside a scoped
+   selector re-colours every `bg-surface`, `text-ink` and `border-line` utility in
+   that subtree. The mechanism was already here and unused.
+
+   The scope is the wrapper element in the app group's layout, never `<html>`.
+   Marketing never renders that element, so marketing cannot go dark by accident.
+
+   ------------------------------------------------------- no flash, no script
+
+   `data-theme` is emitted server-side from a cookie, so the first byte is
+   already correct. localStorage cannot do that — reading it requires hydration,
+   and that gap IS the flash.
+
+   `system` is resolved in pure CSS by the media query below rather than by a
+   blocking inline script in <head>. The server cannot know an OS preference, so
+   the usual answer is `dangerouslySetInnerHTML` with a bootstrap script. Not
+   needed: emit `data-theme="system"` and let the cascade decide.
+
+   ---------------------------------------------- three values that are not inversions
+
+   Most of this set is the light ramp reflected. Three are not, and each would be
+   a real bug if it had been:
+
+   1. `--accent`. #0a3fe0 on a dark ground is 2.1:1 — invisible. Dark carries a
+      lifted blue at 6.62:1. The light value is untouched, so the accent lock
+      still holds for the page it was written for; the theme carries a second
+      value, which is not the same as the lock being broken.
+
+   2. `--on-accent` flips to ink. White on that lifted blue is 2.71:1 and fails.
+      This is why the token exists at all.
+
+   3. `--ink-band` inverts its relationship to `--surface`. In light it is darker
+      than the page. If it stayed darker in dark, `LockedPanel` — which is
+      `<Panel tone="dark">` with hardcoded white text — would become a hole cut
+      out of the page. In dark it must be LIGHTER than the surface it sits on.
+      Nobody would have found that except by opening a locked module at night.
+
+   The five `--path-*` grounds are lifted together, because holding them at one
+   lightness against each other is the entire point of the set.
+
+   Every ratio below is computed, not eyeballed.
+*/
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: #10181e;
+  /* Subtle is RAISED in dark, not sunken — the light ramp's direction reverses. */
+  --surface-subtle: #18232b;
+  --surface-sunken: #0a1014;
+
+  --ink: #e9eff4;           /* 15.47:1 on surface */
+  --ink-secondary: #b6c5d1; /* 10.16:1 */
+  --ink-muted: #90a1af;     /*  6.75:1 */
+
+  --line: #2b3843;          /* decorative, deliberately quiet */
+  --line-control: #5d7182;  /*  3.54:1 on surface, 3.16:1 on subtle */
+  --line-strong: #41525f;
+
+  --accent: #6b9bff;        /*  6.62:1 on surface */
+  --accent-hover: #8ab0ff;  /*  8.31:1 */
+  --accent-tint: #1b2b4d;   /*  accent on it: 5.17:1 */
+  --on-accent: #10181e;     /*  6.62:1 — ink, not white. See note 2 above. */
+
+  --state-open: #5cc79a;         /* 8.61:1 on surface */
+  --state-open-surface: #16302a; /* state-open on it: 6.77:1 */
+
+  --danger: #ff8a7a;        /*  7.83:1 */
+  --focus: #a48fff;         /*  6.79:1 */
+
+  /* Lighter than --surface. See note 3. White on it: 13.53:1. */
+  --ink-band: #22303a;
+
+  --path-a: #1b7ea3;
+  --path-b: #6b4b8f;
+  --path-c: #2f7d5f;
+  --path-d: #2d5f9c;
+  --path-e: #9c5a34;
+
+  /*
+    Heavier and blacker. The light shadows are ink at 6-8%, which is invisible
+    on a dark ground — an elevation that cannot be seen is a card with no edge.
+  */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    color-scheme: dark;
+
+    --surface: #10181e;
+    --surface-subtle: #18232b;
+    --surface-sunken: #0a1014;
+
+    --ink: #e9eff4;
+    --ink-secondary: #b6c5d1;
+    --ink-muted: #90a1af;
+
+    --line: #2b3843;
+    --line-control: #5d7182;
+    --line-strong: #41525f;
+
+    --accent: #6b9bff;
+    --accent-hover: #8ab0ff;
+    --accent-tint: #1b2b4d;
+    --on-accent: #10181e;
+
+    --state-open: #5cc79a;
+    --state-open-surface: #16302a;
+
+    --danger: #ff8a7a;
+    --focus: #a48fff;
+
+    --ink-band: #22303a;
+
+    --path-a: #1b7ea3;
+    --path-b: #6b4b8f;
+    --path-c: #2f7d5f;
+    --path-d: #2d5f9c;
+    --path-e: #9c5a34;
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+    --shadow-2: 0 8px 24px rgb(0 0 0 / 0.55);
+  }
+}
+
+/*
+  Overscroll only. The themed element is inside <body>, so rubber-banding past it
+  on iOS exposes the document canvas underneath — a white band above a dark app.
+  This paints the canvas to match and does nothing else; the theme itself stays
+  scoped to the app group.
+*/
+html:has([data-theme="dark"]) {
+  background: #10181e;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:has([data-theme="system"]) {
+    background: #10181e;
+  }
 }

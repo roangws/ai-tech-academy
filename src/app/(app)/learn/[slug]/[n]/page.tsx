@@ -188,7 +188,7 @@ export default async function ModulePage({
                         className={`grid size-8 place-items-center rounded-full border transition-colors ${
                           isDone
                             ? "border-accent bg-accent-tint text-accent"
-                            : "border-line text-ink-muted hover:border-accent hover:text-accent"
+                            : "border-line-control text-ink-muted hover:border-accent hover:text-accent"
                         }`}
                       >
                         <CheckIcon size={15} weight="bold" aria-hidden="true" />
@@ -226,7 +226,7 @@ export default async function ModulePage({
                     name="body"
                     rows={10}
                     defaultValue={artifact?.body ?? ""}
-                    className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
+                    className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
                     placeholder="Write it here. Nobody sees this until you submit it."
                   />
 
@@ -242,7 +242,7 @@ export default async function ModulePage({
                       type="submit"
                       name="intent"
                       value="save"
-                      className="t-button h-11 rounded-[var(--radius-control)] border border-line px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+                      className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-control-strong hover:text-ink"
                     >
                       Save draft
                     </button>
@@ -250,7 +250,7 @@ export default async function ModulePage({
                       type="submit"
                       name="intent"
                       value="submit"
-                      className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-white transition-colors hover:bg-accent-hover"
+                      className="t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
                     >
                       Submit for review
                     </button>

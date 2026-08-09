@@ -311,7 +311,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
                     className={`t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:ring-2 ${
                       error
                         ? "border-danger focus:border-danger focus:ring-danger/25"
-                        : "border-line focus:border-accent focus:ring-accent/25"
+                        : "border-line-control focus:border-accent focus:ring-accent/25"
                     }`}
                   />
                   {error ? (
@@ -338,7 +338,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
               autoComplete="organization"
               value={values.company ?? ""}
               onChange={(e) => set("company", e.target.value)}
-              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
+              className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
             />
             <p className="t-micro mt-1.5 text-ink-muted">{auth.work.companyHint}</p>
           </div>
@@ -579,7 +579,7 @@ function ChoiceGroup({
               />
               <label
                 htmlFor={id}
-                className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line bg-surface px-3.5 text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
+                className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line-control bg-surface px-3.5 text-ink-secondary transition-colors hover:border-line-control-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
               >
                 {option}
               </label>
@@ -605,7 +605,7 @@ function ChoiceGroup({
             placeholder={otherPlaceholder}
             value={otherValue}
             onChange={(e) => onOtherChange(e.target.value)}
-            className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
+            className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
           />
         </div>
       ) : null}

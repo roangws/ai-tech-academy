@@ -136,12 +136,12 @@ export default async function InstructorPage() {
                   rows={4}
                   required
                   defaultValue={item.instructor_feedback ?? ""}
-                  className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
+                  className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
                   placeholder="What is working, and the one thing to change before it runs live."
                 />
                 <button
                   type="submit"
-                  className="t-button mt-3 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-white transition-colors hover:bg-accent-hover"
+                  className="t-button mt-3 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
                 >
                   Send feedback
                 </button>
