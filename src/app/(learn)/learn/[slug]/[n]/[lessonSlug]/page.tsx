@@ -311,7 +311,12 @@ export default async function LessonPage({
           "The launch checklist" on its own tells you nothing about whether you
           have read it.
         */}
-        <nav aria-label="Lessons in this module" className="mt-10 grid gap-3 border-t border-line pt-6 sm:grid-cols-2">
+        {/* "Move between lessons", not "Lessons in this module": the syllabus rail
+            already owns that name, and two navigation landmarks with the same
+            label leave a screen reader listing two identical regions with no way
+            to tell the outline from the pagination. The site-header note records
+            the same fix for the footer and the courses panel. */}
+        <nav aria-label="Move between lessons" className="mt-10 grid gap-3 border-t border-line pt-6 sm:grid-cols-2">
           {prev ? (
             <Link
               href={`/learn/${slug}/${n}/${prev.slug}`}
