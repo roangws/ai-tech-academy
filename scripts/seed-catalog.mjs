@@ -174,7 +174,7 @@ function lessonBody(course, m, lesson) {
     */
     lesson: "Read this, then write down where it applies to your own process.",
     lab: "Do this one in your own environment, on your own data.",
-    template: "Copy this, fill it in, and keep it — it goes into your artifact.",
+    template: "Copy this, fill it in, and keep it. It goes into your artifact.",
   }[lesson.kind];
 
   const steps = {
@@ -191,7 +191,7 @@ function lessonBody(course, m, lesson) {
     template: [
       "Copy the template into wherever your team keeps working documents.",
       "Fill in only the rows you have evidence for. Leave the rest blank.",
-      "Blank rows are the questions to answer next — do not invent values.",
+      "Blank rows are the questions to answer next. Leave them blank until you have a value.",
     ],
   }[lesson.kind];
 
@@ -225,7 +225,7 @@ function lessonBody(course, m, lesson) {
       generated, on every lesson-kind row. It now names the thing that is
       actually there.
     */
-    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, work through ${lesson.kind === "lab" ? "the lab" : "the points"} above again — the point is not to finish it, it is to have run it on something real.`,
+    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, work through ${lesson.kind === "lab" ? "the lab" : "the points"} above again. The point is to have run this on something real, not to have finished it.`,
     /*
       The scaffolding note used to be appended here, in italics, at the foot of
       every one of the 173 bodies: "the structure of this lesson is final, the
