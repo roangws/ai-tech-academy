@@ -18,6 +18,7 @@ import { LockedPanel, Meter } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
 import { getModuleView, bySlug, type LessonWithKinds } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
+import { lessonCount } from "@/lib/content";
 import { saveArtifact } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
@@ -142,7 +143,10 @@ export default async function ModulePage({
           ) : null}
           <FactsLine
             className="mt-4"
-            items={[`${lessons.length} lessons`, course.badge, module.step ? `Step ${module.step}` : ""].filter(Boolean)}
+            /* `lessonCount`, not a template with a hard-coded "s". A module with one
+                lesson read "1 lessons", which is only reachable now that the
+                console can create a module with one lesson in it. */
+            items={[lessonCount({ lessons }), course.badge, module.step ? `Step ${module.step}` : ""].filter(Boolean)}
           />
 
           {/* ---------------------------------------------------------- lessons */}
@@ -221,7 +225,7 @@ export default async function ModulePage({
                   <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
                   <span>
                     <strong className="font-medium text-ink">{finished.name}</strong> is done. That is
-                    all {lessons.length} lessons in module {module.n}.
+                    all {lessonCount({ lessons })} in module {module.n}.
                   </span>
                 </p>
               ) : null}

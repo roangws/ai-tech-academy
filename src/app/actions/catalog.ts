@@ -99,7 +99,11 @@ function slugify(value: string): string {
 
 /** A textarea of one-per-line values, as an array. Blank lines are not data. */
 function lines(value: FormDataEntryValue | null): string[] {
+  /* `\r\n` because that is what a browser submits from a textarea, per the HTML
+     spec. Splitting on `\n` alone leaves a trailing carriage return on every
+     item, which then renders as one. */
   return String(value ?? "")
+    .replace(/\r\n/g, "\n")
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -248,7 +252,7 @@ export async function saveCourse(_prev: FormState, formData: FormData): Promise<
       duration: String(formData.get("duration") ?? "").trim() || null,
       workload_hours: Number.isFinite(workload) && workload > 0 ? workload : null,
       ground: String(formData.get("ground") ?? "").trim() || null,
-      tagline: String(formData.get("tagline") ?? "").trim() || null,
+      tagline: String(formData.get("tagline") ?? "").replace(/\r\n/g, "\n").trim() || null,
       audience: String(formData.get("audience") ?? "").trim() || null,
       build: String(formData.get("build") ?? "").trim() || null,
       cover_build: String(formData.get("coverBuild") ?? "").trim() || null,
@@ -258,7 +262,7 @@ export async function saveCourse(_prev: FormState, formData: FormData): Promise<
       cover_height: coverHeight > 0 ? coverHeight : null,
       cover_focus: String(formData.get("coverFocus") ?? "").trim() || null,
       seo_title: String(formData.get("seoTitle") ?? "").trim() || null,
-      seo_description: String(formData.get("seoDescription") ?? "").trim() || null,
+      seo_description: String(formData.get("seoDescription") ?? "").replace(/\r\n/g, "\n").trim() || null,
       keywords: lines(formData.get("keywords")),
       skills: lines(formData.get("skills")),
       what_learn: lines(formData.get("whatLearn")),
@@ -443,7 +447,7 @@ export async function saveModule(_prev: FormState, formData: FormData): Promise<
     .from("modules")
     .update({
       name: String(formData.get("name") ?? "").trim() || "Untitled module",
-      summary: String(formData.get("summary") ?? "").trim() || null,
+      summary: String(formData.get("summary") ?? "").replace(/\r\n/g, "\n").trim() || null,
       artifact: String(formData.get("artifact") ?? "").trim() || null,
       step: step >= 1 && step <= 5 ? step : 1,
     })

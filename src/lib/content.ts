@@ -954,12 +954,30 @@ export type CourseModule = {
  * maintained count goes wrong. There is now one source for the number.
  */
 /*
-  moduleCount, lessonCount, totalLessons and courseHref used to live here, beside
-  the array they read. They are in `src/lib/catalog.ts` with the catalogue now.
-  courseHref became async on the way: resolving an id to a public slug is a query
-  rather than an array lookup, and most call sites turned out to hold the course
-  already and can interpolate `/courses/${course.slug}` directly.
+  Three counters and one URL builder used to live here beside the array they
+  read. `courseHref` went with the catalogue and became async — resolving an id
+  to a public slug is a query now, and most call sites turned out to hold the
+  course already and can interpolate `/courses/${course.slug}` directly.
+
+  These three stayed, and the reason is a boundary rather than tidiness. They are
+  pure functions of the `Course` type with no data of their own, and three CLIENT
+  components call them. `catalog.ts` imports the request-scoped Supabase client,
+  which imports `next/headers` — so a client component importing a counter from
+  there pulls `next/headers` into the browser graph and every course page 500s
+  with a message about the Pages Router that names none of this.
+
+  A type and its pure helpers belong in a module with no runtime dependencies.
+  `catalog.ts` re-exports them, so server code can keep importing both from one
+  place.
 */
+
+export const moduleCount = (c: Pick<Course, "curriculum">) => `${c.curriculum.length} modules`;
+
+export const lessonCount = (m: { lessons: readonly unknown[] }) =>
+  `${m.lessons.length} ${m.lessons.length === 1 ? "lesson" : "lessons"}`;
+
+export const totalLessons = (c: Pick<Course, "curriculum">) =>
+  c.curriculum.reduce((n, m) => n + m.lessons.length, 0);
 
 /*
   Curriculum ordering was corrected on 6 Aug. Module 01 of every course used to be

@@ -17,7 +17,7 @@ import { CoursesMenu } from "@/components/lms/courses-menu";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { nav } from "@/lib/content";
-import type { Course } from "@/lib/catalog";
+import type { Course } from "@/lib/content";
 
 /**
  * Single-tier product header, 72px.

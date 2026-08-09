@@ -9,8 +9,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { AccordionItem, useDisclosureSet } from "@/components/ui/accordion";
 import { StatusChip, TextButton } from "@/components/ui";
-import { method, type CourseModule } from "@/lib/content";
-import { lessonCount } from "@/lib/catalog";
+import { lessonCount, method, type CourseModule } from "@/lib/content";
 
 /**
  * The curriculum, which is what somebody came to this page to read.

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpIcon, ArrowDownIcon, TrashIcon } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
-import { byId } from "@/lib/lms/queries";
+import { getAdminCourseById } from "@/lib/catalog";
 import { saveBlock, deleteBlock, moveBlock } from "@/app/actions/admin";
 import type { LessonBlock } from "@/lib/supabase/types";
 
@@ -61,7 +61,11 @@ export default async function AdminLesson({
   params: Promise<{ courseId: string; lessonId: string }>;
 }) {
   const { courseId, lessonId } = await params;
-  const course = await byId(courseId);
+  /* The ADMIN catalogue, which includes drafts. `byId` reads the published one,
+     so writing the first lesson of a course that had not been published yet —
+     which is the entire point of a draft — answered "There is nothing at this
+     address". */
+  const course = await getAdminCourseById(courseId);
   if (!course) notFound();
 
   const supabase = await createClient();

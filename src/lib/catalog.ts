@@ -254,17 +254,14 @@ export async function getFeatured(): Promise<AdminCourse[]> {
 }
 
 /* ------------------------------------------------------------------ helpers
-   The three counters that used to live in content.ts beside the array. They are
-   pure functions of a Course, so they move with it rather than staying behind
-   importing a type. */
 
-export const totalLessons = (c: Pick<Course, "curriculum">) =>
-  c.curriculum.reduce((n, m) => n + m.lessons.length, 0);
+   Re-exported, not defined here. They are pure functions of the `Course` type
+   and three client components call them; defining them in this module — which
+   imports the request-scoped Supabase client, which imports `next/headers` —
+   put `next/headers` in the browser graph and 500'd every course page. They live
+   in content.ts beside the type, and server code still gets them from here. */
 
-export const moduleCount = (c: Pick<Course, "curriculum">) => `${c.curriculum.length} modules`;
-
-export const lessonCount = (m: Pick<CourseModule, "lessons">) =>
-  `${m.lessons.length} ${m.lessons.length === 1 ? "lesson" : "lessons"}`;
+export { moduleCount, lessonCount, totalLessons } from "@/lib/content";
 
 /** `/courses/<slug>` for a course id. Async now that slugs live in Postgres. */
 export async function courseHref(id: string, hash?: string): Promise<string> {

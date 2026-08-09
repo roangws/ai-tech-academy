@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRightIcon, CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import { CourseGlyph } from "@/components/course/icons";
-import type { Course } from "@/lib/catalog";
+import type { Course } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 /**

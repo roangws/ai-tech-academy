@@ -268,7 +268,11 @@ export async function saveBlock(formData: FormData) {
       exactly as before. What changed is that a person types Markdown into a
       textarea and this wraps it.
     */
-    payload = { md: String(formData.get("md") ?? "") };
+    /* CRLF out. A browser submits textarea content with \r\n line endings — it
+       is in the HTML spec, not a quirk — and the Markdown renderer splits on
+       \n, so every paragraph authored here would carry a trailing \r into the
+       rendered output. */
+    payload = { md: String(formData.get("md") ?? "").replace(/\r\n/g, "\n") };
   } else {
     try {
       payload = JSON.parse(String(formData.get("payload") ?? "{}"));
