@@ -27,6 +27,46 @@ else needs a human with a browser.
 
 ---
 
+## 0a. Verified end to end in a headless browser, 11 Aug 2026
+
+Run against a dev server on the live database, driving the real UI as an admin
+and then as a learner, with the resulting rows checked in Postgres. Test course
+and the four QA accounts deleted afterwards; row counts confirmed back to where
+they started (5 courses, 1 user, 173 lessons, 174 blocks).
+
+**Authoring, as an admin** — every console page loaded (Overview, People, Judge
+seats, Learners, Courses) → created a course from the Courses page → landed in
+its editor → filled every field on the course form including the one-per-line
+lists and the `label | value` facts and stats, and confirmed each persisted →
+renamed the first module and set its artifact → added a second lesson → opened
+the lesson editor → wrote a prose block as Markdown with no JSON → published →
+the course appeared on the homepage, on `/courses`, on its own
+`/courses/<slug>` page and in the footer.
+
+**Reading it, as a learner** — the authored prose rendered with its bullets, no
+scaffolding banner → the primary control read "Complete and open the next
+lesson" → pressing it completed and advanced in one press → the destination named
+the lesson just finished and its real progress ("1 of 2 in module 01").
+
+Zero console errors and zero failed requests across the whole run.
+
+**Found and fixed by this pass, in order:**
+
+1. Every course page 500'd — three client components imported a counter or the
+   `Course` type from `catalog.ts`, putting `next/headers` in the browser graph.
+2. Writing the first lesson of a draft answered "There is nothing at this
+   address": the lesson editor resolved the course through the published
+   catalogue.
+3. A duplicate course id threw to the error boundary, which hides
+   `error.message`, so the author saw "This page broke" and lost the form.
+4. Textareas submit CRLF, so every authored paragraph carried a trailing `\r`.
+5. Draft courses were readable through PostgREST by anyone with the publishable
+   key; the filter was a WHERE clause in application code.
+6. "1 lessons" on a module page, reachable once a module could have one lesson.
+7. The module-page acknowledgement claimed the module was finished whenever a
+   reader arrived from its last lesson, however many they had skipped.
+8. Hardcoded "five courses" copy on six surfaces.
+
 ## 0b. Verified end to end in a real browser, on production
 
 Run against `academy.roanweigert.com` on 8 Aug 2026, driving the actual UI and
