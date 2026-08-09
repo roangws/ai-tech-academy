@@ -50,3 +50,6 @@ next-env.d.ts
 # Course media pushed to Supabase Storage by scripts/push-media.mjs.
 # Audio does not belong in git; a repo that grows 40MB an episode stops being clonable.
 /media/
+
+# Worktrees created by EnterWorktree are scratch space, not content.
+.claude/worktrees/

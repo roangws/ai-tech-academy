@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CaretLeftIcon, CaretRightIcon, PauseIcon, PlayIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 /**
  * An infinite, self-advancing scroll-snap rail.
@@ -35,21 +35,35 @@ import { CaretLeftIcon, CaretRightIcon, PauseIcon, PlayIcon } from "@phosphor-ic
  *
  * ------------------------------------------------------------ why it stops
  *
- * Four ways, and they cover different people.
+ * The pointer stops it, focus stops it, a hidden tab stops it, and under
+ * `prefers-reduced-motion` it never starts: a carousel that advances itself is
+ * the canonical example of the motion that setting exists to stop, so it does
+ * not get a gentler version, it gets none.
  *
- * Focus inside the rail pauses it, and a hidden tab pauses it. Under
- * `prefers-reduced-motion` there is no autoplay at all and the arrows jump
- * rather than glide: a carousel that advances itself is the canonical example
- * of the motion that setting exists to stop, so it does not get a gentler
- * version, it gets none.
+ * THE PAUSE BUTTON IS GONE, removed 9 Aug at Roan's instruction, and pointer
+ * pause is what replaces it rather than nothing. That is not a workaround for
+ * the removal; it is the fix for the bug Roan reported in the same breath.
  *
- * The fourth is the Pause button, and it is the one that makes this rail
- * conform rather than nearly conform. Hover-pause was removed on 7 Aug at
- * Roan's instruction — the right call, since a pointer crosses a rail on the
- * way to somewhere else and a row that stops every time reads as broken — but
- * removing it left a mouse user with no way at all to stop moving content, which
- * is what WCAG 2.2.2 requires. A control answers it without bringing back a
- * behaviour that fires by accident.
+ * The bug: hover on a card would stop working after the first interaction. The
+ * cause is that a browser fires `mouseenter` on a pointer that moves, not on an
+ * element that moves under a stationary pointer. A rail that steps every three
+ * seconds slides one card out from under the cursor and the next card in, and
+ * the new one never receives a hover event — so the reader sits with the pointer
+ * on a card and nothing happens until they jiggle the mouse. Intermittent by
+ * nature, which is exactly how it was described.
+ *
+ * Stopping on pointer-in fixes it at the source: the card under the cursor stays
+ * under the cursor. It also restores what WCAG 2.2.2 requires, a mechanism for a
+ * mouse user to stop moving content, which is the whole reason the button
+ * existed.
+ *
+ * Hover-pause was itself removed on 7 Aug, on the argument that a pointer
+ * crosses a rail on the way to somewhere else and a row that halts every time
+ * reads as broken. That argument was about a rail whose cards revealed their
+ * content on hover, where stopping and revealing fired together and fought. The
+ * cards now show everything without being hovered, so a stop is just a stop, and
+ * a row that holds still while you are pointing at it is the behaviour a reader
+ * expects rather than a surprise.
  *
  * ------------------------------------------------------------ the edges
  *
@@ -80,19 +94,21 @@ export function CarouselRail({
 }) {
   const rail = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  /**
+   * Held still, by a pointer or by focus.
+   *
+   * A ref rather than state because it is transient and nothing renders from it.
+   * It used to have a sibling, `stopped`, which was state because the Pause
+   * button rendered from it; that button is gone and so is the distinction.
+   *
+   * One flag for both gestures is correct here even though they can overlap: a
+   * click inside the rail is a pointer that is also focus, and both clear on the
+   * way out. The pair only needed keeping apart when one of them was a
+   * deliberate, sticky choice that a passing gesture must not undo.
+   */
   const paused = useRef(false);
   const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [index, setIndex] = useState(0);
-
-  /**
-   * Stopped by the reader, as distinct from `paused`.
-   *
-   * `paused` is a ref because it is transient — focus enters, focus leaves — and
-   * nothing renders from it. This is state because a control renders from it,
-   * and it is separate because the two must not overwrite each other: tabbing
-   * out of a rail somebody deliberately stopped must not start it moving again.
-   */
-  const [stopped, setStopped] = useState(false);
 
   /**
    * Whether the position readout is allowed to announce.
@@ -193,11 +209,11 @@ export function CarouselRail({
     };
   }, [count, metrics, normalize]);
 
-  /* Autoplay. `stopped` is in the dependency list rather than checked inside the
-     tick, so pressing Pause tears the interval down instead of leaving a timer
-     firing into a guard. */
+  /* Autoplay. The tick reads `paused` rather than the effect depending on it,
+     because a pointer entering and leaving must not tear down and rebuild the
+     interval on every pass. */
   useEffect(() => {
-    if (reduced() || stopped) return;
+    if (reduced()) return;
 
     const id = setInterval(() => {
       if (paused.current || document.hidden) return;
@@ -206,7 +222,7 @@ export function CarouselRail({
     }, STEP_MS);
 
     return () => clearInterval(id);
-  }, [step, stopped]);
+  }, [step]);
 
   /* A resize changes the pitch while the browser keeps `scrollLeft` in pixels,
      so the reader ends up between two cards on a card they did not ask for.
@@ -223,19 +239,15 @@ export function CarouselRail({
   }, []);
 
   /*
-    Focus pauses it. The mouse does not, at Roan's instruction on 7 Aug.
+    Pointer and focus both hold it. See the note at the top for why the pointer
+    is back and why the Pause button is not.
 
-    Hover-pause was in here for a real reason: the board cards reveal what each
-    seat checks on hover, and a track that keeps moving under the cursor makes
-    that state hard to read. Roan looked at both and wants the row to keep
-    moving, which is the call to make — a carousel that stops whenever the
-    pointer crosses it reads as broken far more often than it reads as
-    considerate, because a pointer crosses it on the way to somewhere else.
-
-    Focus is a different gesture and it keeps the pause. Somebody who has tabbed
-    into the rail is reading it deliberately and cannot chase a moving target,
-    which is the accessibility failure this pattern is known for. Reduced motion
-    still turns autoplay off entirely.
+    POINTER EVENTS, NOT MOUSE EVENTS. `pointerenter` fires for a pen and for a
+    touch as well as for a mouse, and `mouseenter` on a touch screen fires a
+    synthetic one on tap that never pairs with a leave — so a phone reader who
+    tapped a card once would have stopped the rail for the rest of the session
+    with no way to start it again. `pointerleave` fires on lifting off, so the
+    touch case resolves itself.
   */
   const hold = () => {
     paused.current = true;
@@ -258,6 +270,8 @@ export function CarouselRail({
         aria-label={label}
         onFocus={hold}
         onBlur={resume}
+        onPointerEnter={hold}
+        onPointerLeave={resume}
         className={`rail flex snap-x snap-mandatory overflow-x-auto pb-1 ${bleed}`}
       >
         <ul ref={listRef} className="flex shrink-0 gap-4 pr-4">
@@ -322,34 +336,11 @@ export function CarouselRail({
           the list itself, but erasing their names breaks voice control, which
           drives by accessible name and needs "click next" to match something.
 
-          THE PAUSE CONTROL IS THE EXCEPTION and it is a real tab stop.
-
-          Focus-pause and `prefers-reduced-motion` between them covered the two
-          readers this rail was designed around, and missed the one WCAG 2.2.2
-          is actually written for: somebody who reads slowly, or is distracted by
-          movement, and is using a mouse. Nothing they can do with a pointer stops
-          the row — hover was deliberately taken out on 7 Aug — so the content
-          moved for as long as the page was open with no mechanism to stop it.
-          That is the failure condition verbatim, and it needs a control rather
-          than a smarter default.
-
-          It sits before the arrows because it governs them, and it is the only
-          one of the three that is reachable by Tab: the arrows duplicate the
-          rail's own scrolling, and this does something nothing else can.
+          There were three controls here. The Pause button came out on 9 Aug at
+          Roan's instruction; the note at the top of this file has what took over
+          its job, which is pointer pause rather than nothing.
         */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={stopped ? "Play carousel" : "Pause carousel"}
-            onClick={() => setStopped((s) => !s)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            {stopped ? (
-              <PlayIcon size={14} weight="fill" />
-            ) : (
-              <PauseIcon size={14} weight="fill" />
-            )}
-          </button>
           <button
             type="button"
             tabIndex={-1}

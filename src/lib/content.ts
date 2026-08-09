@@ -2557,104 +2557,88 @@ export const teams = {
 } as const;
 
 /*
-  A judge, in one of two states, and the type carries both because the board is
-  in both at once.
+  A judge on the review board.
 
-  ------------------------------------------------------------- named, or open
+  ------------------------------------------------------- everyone here is real
 
-  A NAMED judge is a real person: `name`, `role`, `org`, `location`, `linkedin`
-  and a portrait, every field copied from what that person publishes about
-  themselves and nothing else. They carry no `reviews` and no `checks`.
+  There used to be a second kind of entry: an OPEN SEAT, which was a discipline,
+  the course it read and the check it performed, carrying no name and the same
+  stand-in portrait six times over. Those are gone, removed 9 Aug at Roan's
+  instruction, and the type went with them. `seat`, `reviews` and `checks` no
+  longer exist as fields because there is no longer anything they could describe:
+  every entry is a person, `name` is required, and the card has one shape.
 
-  That absence is the point and it is worth stating plainly, because the
-  temptation is to fill it. `checks` is a sentence asserting what a judge
-  verifies — "confirms the pipeline labs match how revenue teams work day to
-  day" — and `reviews` assigns them a course. Both are fine to write about a
-  seat, which is a job description nobody has been fitted to yet. Written under
-  a real name they become claims about a real person's duties, made up by the
-  site rather than agreed by them. There is nowhere those facts could have come
-  from, so there is nothing to print, so the fields are optional.
-
-  An OPEN seat is the reverse: a discipline, the course it reads and the check
-  it performs, with no name and a stand-in portrait. That is a job description,
-  and describing a vacancy is not a claim about anybody.
+  It is worth keeping why they were structured that way, because it is the rule
+  the remaining fields still obey. `checks` asserted what a judge verifies and
+  `reviews` assigned them a course. Both are fine written about a vacancy, which
+  is a job description nobody has been fitted to. Written under a real name they
+  become claims about a real person's duties that the site made up. So no such
+  field survives, and every field that does is copied from what that person
+  publishes about themselves.
 
   ------------------------------------------------------------------ the marks
 
-  A named judge gets NO `logo`, even though their employer is known and named in
-  `org`. public/images/logos/README.txt has the rule and it is a rule about
-  meaning rather than about assets: a mark on a card reads as that organization
-  endorsing this program, which is a much stronger claim than "this person works
-  there" and is not one any of these employers has made. The name is a fact
-  about the person. The mark would be a fact about the company.
+  `logo` is the employer's own mark and it renders on the card. That is a
+  reversal of the rule in public/images/logos/README.txt, made deliberately on
+  9 Aug at Roan's instruction, and the reason it was a rule is worth leaving
+  written down: a mark on a card reads as that organization endorsing this
+  program, which is a stronger claim than "this person works there" and is not
+  one any of these employers has made. Roan's call, stated plainly, is that the
+  employer is the credibility and it belongs on the card.
+
+  What has NOT changed is that `org` must be that person's actual employer and
+  the mark must be that employer's actual mark. The marks are official vector
+  files, drawn on a white chip at their own colours rather than recoloured to
+  fit the card, which is both more legible and closer to how each company's own
+  guidelines say to use them.
+
+  `wordmark` is the fallback for a company that publishes no logo file at all.
+  a1mobile is one: its own site sets its name in type rather than in an image,
+  so the card does the same thing rather than inventing a mark for them.
 */
 export type Seat = {
   id: string;
-  /**
-   * The practitioner holding the seat. Absent until the person and their
-   * employer have both cleared it, at which point `seat` drops to the subtitle
-   * and this becomes the card's headline. Nothing here is invented.
-   */
-  name?: string;
-  /** Their own stated title, for a named judge. Their words, shortened. */
-  role?: string;
-  /** Employer. A name only; see the note above on why no mark comes with it. */
+  /** The judge. Required: every entry on this board is a real person. */
+  name: string;
+  /** Their own stated title, shortened. Their words. */
+  role: string;
+  /** Employer, when they publish one. */
   org?: string;
   location?: string;
-  seat: string;
-  /** The path or the discipline this seat reads. Open seats only. */
-  reviews?: string;
-  /** What this seat checks. Open seats only. See the note above. */
-  checks?: string;
-  /** Path hue from globals.css. The assessment seat serves no single path. */
+  /** Backdrop hue for the hover face, from globals.css. */
   ground: string;
-  photo?: Img;
+  photo: Img;
+  /** The employer's mark. See the note above on `wordmark` for the fallback. */
   logo?: Img;
-  /** Full LinkedIn profile URL. Renders the profile link when present. */
-  linkedin?: string;
+  /** The employer's name set in type, for a company with no mark to ship. */
+  wordmark?: string;
+  /** Full LinkedIn profile URL. The card links to it. */
+  linkedin: string;
 };
 
 /*
-  Seats, stated by what each one checks.
+  The judges.
 
-  The headline used to count them: "Six practitioners review the curriculum each
-  term". The board is still taking seats, so a numeral in the headline is a
-  number that needs editing every time one is added, and a reader who counts the
-  cards and gets seven reads it as an error rather than as growth. The sentence
-  works without it and the grid states the count on its own.
+  Order is Roan's: Liz Zhang first, then the three he listed on 9 Aug, then
+  Sachin Gupta, added later the same day.
 
-  Portrait and mark slots match the instructor roster. Same rule: a slot that is
-  empty says so.
+  EVERY FIELD IS THEIR OWN COPY, shortened and nothing else. `role` is the
+  headline off their profile with the pipes and the keyword strings taken out,
+  because "250k Community Builder" and "Architecting Massive-Scale Systems & AI
+  Innovations" are a profile's search-bait rather than a job title and neither
+  survives `clamp-1` on a card. Nothing was translated into a claim about this
+  program.
 
-  The cards now run in a marquee and carry four things: the name, the title, the
-  organization mark and the LinkedIn link. `checks` is no longer on the card. It
-  stays here because it is the definition of the seat, which is what a new seat
-  gets written against and what the intro line summarises for the reader.
+  `ground` is one of the five path hues, and it means nothing.
+
+  It used to mean the course a seat read, and it went flat neutral for everybody
+  when the seats did, on the reasoning that a hue standing for a course should
+  not be handed to a judge who has not been assigned one. Roan asked on 9 Aug for
+  the colour variety back, so it is back as decoration and only as decoration:
+  five hues, in order, so no two adjacent cards match. Nobody should read a
+  course off one of these, and nothing on the card invites them to.
 */
 export const board = {
-  /*
-    REWRITTEN 7 Aug at Roan's instruction, and the change is what these people
-    are rather than how it is worded.
-
-    They were "seats", each one paired to a single course, and the roster page
-    grouped them on that pairing: "One seat per course" over five cards and
-    "Across every course" over the sixth. Roan's correction is that they are not
-    a committee organised by course. They are judges, and the curriculum is one
-    of two things they judge, so the page is one flat list and the copy names
-    both jobs.
-
-    JUDGING EVENTS IS THE NEW CLAIM HERE and it is the only sentence on this
-    page that no other page supports. It came from Roan directly rather than
-    from the program brief, and the brief has no event in it yet, so if the
-    brief is ever used as source of truth again this line is the one to check
-    first. It stays deliberately unspecific about which events and how often,
-    because those are facts nobody has stated.
-
-    The intro still carries the one thing a card cannot: that the person holding
-    the seat is still doing the work. What went is "each one reads the single
-    course closest to their own work", which was the sentence the grouping was
-    built on and is exactly what Roan says is not the shape of it.
-  */
   headline: "Practitioners judge the curriculum and the events",
   intro:
     "Every judge on this board runs these systems in production. They read the courses each term, the lessons, the labs and the outcome sheet a learner leaves with, and they sit on the panel that judges the events where learners present the workflows they deployed.",
@@ -2666,49 +2650,30 @@ export const board = {
     it as its meta description, its og:description and its twitter:description,
     so all three ended mid-clause at "...the outcome sheet a learner", losing
     both the sentence about the events and the point of the board.
-
-    Every other route on the site keeps this split — `seoDescription` beside the
-    visible copy rather than instead of it — and this was the one that did not.
   */
   seoDescription:
     "The practitioners who read these courses each term and judge the events where learners present the workflows they deployed.",
   members: [
-    /*
-      ------------------------------------------------------- the named judges
-
-      Four real people, added 9 Aug from profiles Roan supplied. Liz Zhang is
-      first because Roan placed her first; the other three keep the order he
-      listed them in.
-
-      EVERY FIELD IS THEIR OWN COPY, shortened and nothing else. `role` is the
-      headline off their profile with the pipes and the metric badges taken out,
-      because "250k Community Builder" and "Generative AI, Agentic Systems, RAG,
-      AI Observability" are a profile's keyword line rather than a job title and
-      neither survives `clamp-1` on a 240px card. Nothing was translated into a
-      claim about this program: no course assignment, no review duty, no
-      employer mark. The type above has the argument for why those are blank
-      rather than guessed at.
-
-      Roan supplied a portrait for each one, all four cut to the same blue
-      studio backdrop. They are the first faces on this board that are not the
-      stand-in, which is exactly the condition the removed footnote was recorded
-      against, so the footnote is back below and it now names which is which.
-    */
     {
       id: "liz-zhang",
       name: "Liz Zhang",
-      role: "AI developer relations, and a two-time founder",
+      /* Shortened from "AI developer relations, and a two-time founder", which
+         was 45 characters and clamped to "AI developer relations, and a..." on
+         the 240px homepage card, losing the founder half that was the reason
+         for the phrasing. Both credentials still fit at this length. */
+      role: "Founder, AI developer relations",
+      org: "The AI Collective",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/lizz-zhang/",
-      /* No path, so no path hue. Same neutral the assessment seat uses, and for
-         the same reason: this hue means "the course this seat reads" and there
-         is no honest value for a judge who has not been assigned one. */
-      ground: "var(--ink-secondary)",
-      seat: "Judge",
+      ground: "var(--path-a)",
       photo: {
         src: "/images/people/liz-zhang.jpg",
         alt: "Studio portrait of Liz Zhang",
       },
+      /* Supplied by Roan on 9 Aug. Her card carried no mark until then because
+         her profile publishes no employer, and an empty slot is the correct
+         rendering of a fact nobody has stated. Now somebody has stated it. */
+      logo: { src: "/images/logos/ai-collective.png", alt: "The AI Collective" },
     },
     {
       id: "yunbin-bae",
@@ -2717,12 +2682,17 @@ export const board = {
       org: "a1mobile",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/yunbinbae/",
-      ground: "var(--ink-secondary)",
-      seat: "Judge",
+      ground: "var(--path-b)",
       photo: {
         src: "/images/people/yunbin-bae.jpg",
         alt: "Studio portrait of Yunbin Bae",
       },
+      /* Their actual mark, supplied by Roan on 9 Aug. This was `wordmark:
+         "a1mobile"`, set in type, because a1mobile publishes no logo file on
+         its own site and inventing one for a company is worse than typesetting
+         its name. The fallback stays in the type for the next company that has
+         none. */
+      logo: { src: "/images/logos/a1mobile.png", alt: "a1mobile" },
     },
     {
       id: "abhinav-balasubramanian",
@@ -2731,12 +2701,12 @@ export const board = {
       org: "NVIDIA",
       location: "Santa Clara, California",
       linkedin: "https://www.linkedin.com/in/abhi-bala/",
-      ground: "var(--ink-secondary)",
-      seat: "Judge",
+      ground: "var(--path-c)",
       photo: {
         src: "/images/people/abhinav-balasubramanian.jpg",
         alt: "Studio portrait of Abhinav Balasubramanian",
       },
+      logo: { src: "/images/logos/nvidia.svg", alt: "NVIDIA" },
     },
     {
       id: "abhi-vasanth",
@@ -2745,174 +2715,49 @@ export const board = {
       org: "Pacific Gas and Electric",
       location: "San Francisco, California",
       linkedin: "https://www.linkedin.com/in/abhinandanvasanthin/",
-      ground: "var(--ink-secondary)",
-      seat: "Judge",
+      ground: "var(--path-d)",
       photo: {
         src: "/images/people/abhi-vasanth.jpg",
         alt: "Studio portrait of Abhi Vasanth",
       },
-    },
-
-    /*
-      ---------------------------------------------------------- the open seats
-
-      Everything below this line is a vacancy. Same stand-in portrait, same
-      placeholder mark, and the discipline plus the check is a job description
-      rather than a person.
-    */
-    {
-      id: "revops",
-      seat: "Revenue operations",
-      reviews: "Course A",
-      checks: "Confirms the pipeline labs match how revenue teams work day to day.",
-      ground: "var(--path-a)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
-      },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
+      logo: { src: "/images/logos/pge.svg", alt: "Pacific Gas and Electric" },
     },
     {
-      id: "post",
-      seat: "Post-production",
-      reviews: "Course B",
-      checks: "Validates ingest and rough-cut workflows against studio delivery schedules.",
-      ground: "var(--path-b)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
-      },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
-    },
-    {
-      /*
-        This seat was "Field operations", checking "the vision and triage labs
-        against real claims and inspection volume", and it had been wrong since
-        Path C stopped being the industry vision track and became AI literacy,
-        ethics and data compliance. The card looks its path title up from the
-        catalog, so the board was printing "Field operations" over "AI literacy,
-        ethics and data compliance" and describing labs that no longer exist.
-
-        Renamed to the discipline the path now needs a reviewer from, which is
-        also the discipline the instructor roster already names for Path C. The
-        note at the head of the paths array still stands: the program brief
-        describes Track C the other way, and either the brief moves or this is a
-        deliberate departure from it.
-      */
-      id: "governance",
-      seat: "Data governance",
-      reviews: "Course C",
-      checks: "Reads the policy and review labs against how a regulated team governs its tools.",
-      ground: "var(--path-c)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
-      },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
-    },
-    {
-      id: "platform",
-      seat: "Platform engineering",
-      reviews: "Course D",
-      checks: "Reviews serving, scaling and cost control against production practice.",
-      ground: "var(--path-d)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
-      },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
-    },
-    {
-      id: "smb",
-      seat: "Small business operations",
-      reviews: "Course E",
-      /* Not "in one sitting": the catalog sells this course as eight modules
-         over two weeks, so a board seat whose stated job is to confirm it fits
-         one sitting is checking against a promise the site does not make. */
-      checks:
-        "Confirms the starter course stays completable by a solo owner alongside the day job.",
+      id: "sachin-gupta",
+      name: "Sachin Gupta",
+      role: "Engineering leader",
+      org: "eBay",
+      location: "San Francisco Bay Area",
+      linkedin: "https://www.linkedin.com/in/guptasachin1/",
       ground: "var(--path-e)",
       photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
+        src: "/images/people/sachin-gupta.jpg",
+        alt: "Studio portrait of Sachin Gupta",
       },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
-    },
-    {
-      id: "learning",
-      seat: "Learning design",
-      /* The one seat with no path. `reviews` is a path badge on the other five
-         and the card looks the title up from the catalog; this value has no
-         match, so it falls through and prints as written. */
-      reviews: "Assessment across all five courses",
-      checks: "Reviews outcome measurement, assessment design and the completion record.",
-      ground: "var(--ink-secondary)",
-      photo: {
-        src: "/images/people/board-seat-placeholder.jpg",
-        alt: "Placeholder studio portrait standing in for this seat holder",
-      },
-      logo: {
-        src: "/images/logos/gmi-white.png",
-        alt: "GMI",
-      },
+      logo: { src: "/images/logos/ebay.svg", alt: "eBay" },
     },
   ] as readonly Seat[],
   /*
-    THE FOOTNOTE IS BACK, 9 Aug, and it is back because the condition its
-    removal was recorded against has now happened.
+    NO FOOTNOTE, and this time there is nothing left for one to disclose.
 
-    The history, because it is the whole argument. It was removed on 7 Aug at
-    Roan's request. What it disclosed was that the portrait and the mark on all
-    six cards were placeholders, and the case for removing the words was that
-    the arrangement said it without them: six identical faces and six identical
-    wordmarks are self-evidently a stand-in rather than six practitioners. The
-    note left behind set the tripwire in as many words — "the moment two
-    different faces or two different marks appear on these cards, the disclosure
-    has to come back in words, because at that point the set stops announcing
-    itself as a stand-in and starts asserting a roster."
+    The history matters because the sentence has been added and removed twice.
+    It existed to say that the portrait and the mark on every card were
+    placeholders. It came out on 7 Aug on the argument that six identical faces
+    disclose that on their own. It went back on 9 Aug when four real people
+    landed above six stand-ins and the repetition stopped reading as a
+    placeholder.
 
-    Four real faces just landed above six identical ones. That is precisely the
-    state where the arrangement stops disclosing and starts misleading in the
-    other direction: a reader who sees four photographed people at the top has
-    every reason to read the six below as four more of the same, and the
-    repetition that used to read as "placeholder" now reads as "a design
-    choice". So the sentence is doing work again, and it says which cards are
-    which rather than restating the general policy.
+    It comes out now because the stand-ins are gone. Every card is a real person
+    with their own photograph, their own employer and their own profile link, so
+    there is no placeholder left to disclose and the sentence would be describing
+    a state of the page that no longer exists. Roan flagged it as reading like
+    stray copy, and on a board with no vacancies on it, that is exactly what it
+    had become.
 
-    No numeral in it, for the same reason the headline carries none: the board is
-    still taking judges, and "four" is a word that goes stale the day a fifth is
-    added. The cards are countable and the facts line counts them.
+    The condition for it coming back a third time is unchanged: the day an entry
+    appears without a real portrait, it needs a sentence saying so.
   */
-  footnote:
-    "The judges named here carry their own photograph and profile. The remaining seats are open, and each one shows a stand-in portrait and a placeholder mark until the person and their employer have both cleared it.",
 } as const;
-
-/*
-  Named judges and open seats, counted separately.
-
-  Both surfaces used to print `board.members.length` as "judges", which was true
-  while every card was a vacancy described as a seat. It stopped being true the
-  moment four of them became people: ten cards are not ten judges, and a facts
-  line saying so over six stand-in portraits is the page overstating itself in
-  the one place it cannot afford to.
-*/
-export const namedJudges = board.members.filter((m) => m.name);
-export const openSeats = board.members.filter((m) => !m.name);
 
 /*
   Ordered for a sceptic. Cost first, then the question a free offer with a

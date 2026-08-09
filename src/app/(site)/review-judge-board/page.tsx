@@ -4,7 +4,7 @@ import { AdvisoryBoard } from "@/components/advisory-board";
 import { ApplyBand } from "@/components/apply-band";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { apply, board, brand, courses, namedJudges, openSeats } from "@/lib/content";
+import { apply, board, brand } from "@/lib/content";
 
 /**
  * `openGraph` REPLACES the root block, it does not merge into it.
@@ -50,10 +50,6 @@ export const metadata: Metadata = {
   },
 };
 
-/* Badge to course, so the card's subtitle can name the course a judge reads
-   rather than printing the badge at them. */
-const byBadge = new Map(courses.map((c) => [c.badge, c]));
-
 /**
  * The full list of judges.
  *
@@ -65,9 +61,7 @@ const byBadge = new Map(courses.map((c) => [c.badge, c]));
  *
  * Then, for one pass, a text roster on the DESIGN-SPEC line that keeps this
  * board text-only until real photographs exist. Rolled back at Roan's
- * instruction: the faces stay while the portraits are stand-ins. The note in
- * content.ts on the removed footnote is where that disclosure has to come back
- * in words.
+ * instruction, and now moot: the photographs are real.
  *
  * ---------------------------------------------------------------- what it is
  *
@@ -75,20 +69,22 @@ const byBadge = new Map(courses.map((c) => [c.badge, c]));
  * the same idea. The cards were grouped under "One seat per course" and "Across
  * every course", which asserted that this board is organised by course and that
  * one member is the exception to it. It is not organised that way: they are
- * judges, they judge the curriculum and they judge the events, and which course
- * a judge happens to read is a fact about them rather than the structure they
- * sit in. Two headings for six cards was also two headings more than a list of
- * six needs.
+ * judges, they judge the curriculum and they judge the events.
  *
- * The cards do not link. Each one is titled with a discipline and subtitled with
- * a course, so a stretched link over the whole card announces "Revenue
- * operations, link" and lands on a course page. That is a mismatch between the
- * accessible name and the destination, and this page is a list rather than a
- * router.
+ * THE VACANCIES ARE GONE, removed 9 Aug at Roan's instruction, and with them the
+ * stand-in portrait that was repeated on six of the ten cards and the footnote
+ * that had to disclose it. Every card here is now a person.
  *
- * `checksAlwaysVisible` is the one thing the card does differently from the
- * homepage carousel, which hides `checks` behind a hover. This page exists to
- * list these judges, and a touch screen never fires that hover.
+ * The cards link, which they did not before. That objection was specific and it
+ * no longer holds: a card titled with a discipline and stretched into a link
+ * announced "Revenue operations, link" and landed on a course page, which is a
+ * mismatch between the accessible name and the destination. A card titled with a
+ * person's name, linking to that person's profile, is the opposite.
+ *
+ * The card renders identically to the homepage rail's now. It used to differ in
+ * one respect, `detailAlwaysVisible`, because the rail hid the employer and the
+ * location behind a hover; that hover is gone on both surfaces, so the flag went
+ * with it. board-card.tsx has the argument.
  */
 export default function ReviewJudgeBoardPage() {
   return (
@@ -113,15 +109,15 @@ export default function ReviewJudgeBoardPage() {
                 into prose is a number that goes stale; a number read off the
                 array cannot. The other two items name the two jobs, which is
                 what the page is now about. */}
-            {/* Named judges and open seats counted apart, 9 Aug. This printed
-                `board.members.length` as "judges", which was honest while every
-                card was a vacancy described as a seat and stopped being honest
-                the moment four of them became people. */}
+            {/* "N seats open" is gone, 9 Aug. There are no open seats left to
+                count, and Roan read the line as stray copy even before that:
+                a page introducing five practitioners does not lead with how
+                many people are missing from it. The two facts that remain name
+                the two jobs, which is what the page is about. */}
             <FactsLine
               className="mt-4"
               items={[
-                `${namedJudges.length} judges`,
-                `${openSeats.length} seats open`,
+                `${board.members.length} judges`,
                 "Curriculum read each term",
                 "Event panels",
               ]}
@@ -147,28 +143,38 @@ export default function ReviewJudgeBoardPage() {
           The judges
         </h2>
 
+        {/*
+          TALLER CARDS THAN THE HOMEPAGE RAIL, and this is the page Roan meant
+          when he asked for the portraits to look good.
+
+          The rail's card is 240 x 340, which is roughly 3:4 and frames a head
+          and shoulders properly. This grid draws the same component about 400
+          wide, and it was drawing it at the rail's fixed 340 tall — so at three
+          columns the frame was landscape, and a portrait photograph in a
+          landscape frame gets cropped to a face with the top of the head and the
+          shoulders cut off. `aspect-[3/4]` gives the picture back its shape at
+          every column count.
+
+          `sizes` matches this layout rather than the rail's. It said `240px`
+          here too, so the browser was picking a candidate for a box 40% narrower
+          than the one it drew into and scaling it up. That is the softness, and
+          it is invisible in code review because a wrong `sizes` never errors.
+        */}
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {board.members.map((m) => (
-            <li key={m.id}>
+            <li key={m.id} className="aspect-[3/4]">
               {/* `id` is passed here and nowhere else: this page is the one the
                   homepage teaser deep-links into, so this is the only render
-                  where the seats are anchor targets. board-card.tsx has the
-                  note on why it stopped deriving the id from the seat. */}
+                  where the judges are anchor targets. board-card.tsx has the
+                  note on why it stopped deriving the id itself. */}
               <BoardCard
                 member={m}
                 id={m.id}
-                courseTitle={m.reviews ? (byBadge.get(m.reviews)?.title ?? m.reviews) : undefined}
-                checksAlwaysVisible
+                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 400px"
               />
             </li>
           ))}
         </ul>
-
-        {/* The disclosure, back in words on the page that lists every card.
-            content.ts carries the argument; the short version is that four
-            photographed people above six identical stand-ins is the exact state
-            where the arrangement stops disclosing on its own. */}
-        <p className="t-meta mt-6 max-w-[720px] text-ink-muted">{board.footnote}</p>
       </Section>
 
       {/* The same two bands /instructors carries, on the judge track. One board
