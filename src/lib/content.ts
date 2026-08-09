@@ -3663,3 +3663,322 @@ export const auth = {
    * somebody looking for a note to put under a button.
    */
 } as const;
+
+/* ===========================================================================
+   APPLYING TO TEACH, APPLYING TO JUDGE, AND THE BOARD THAT DECIDES
+
+   AT THE FOOT OF THE FILE ON PURPOSE, and the reason is mechanical rather than
+   editorial. This block was written while a second session was rewriting the
+   `board` region two hundred lines up, and the two sets of edits had to be able
+   to land without touching each other. `advisors` reads naturally beside
+   `board`; putting it there would have put both changes in one hunk. Move it up
+   whenever the file is next quiet.
+
+   Same reasoning behind `Advisor` being its own type instead of another use of
+   `Seat`: `Seat` is under active edit, and an advisor is not a seat anyway. An
+   advisor holds no course, reads no curriculum and scores no sheet. They decide
+   who gets to.
+   =========================================================================== */
+
+export type Advisor = {
+  id: string;
+  name: string;
+  /**
+   * Their own headline, shortened and nothing else.
+   *
+   * The same rule the instructor roster and the judge board both hold, for the
+   * same reason: a headline is the one description of a person that the person
+   * wrote. Everything this site says about a named human being on a public page
+   * has to be traceable to them. Pipes and keyword strings come out because they
+   * are search bait rather than a job title and because none of them survives
+   * `clamp-1` on a card.
+   */
+  role: string;
+  /** The firm, when they publish one. */
+  org?: string;
+  location?: string;
+  /** Backdrop hue behind the hover face. */
+  ground: string;
+  photo: Img;
+  linkedin: string;
+};
+
+/*
+  The advisory board.
+
+  ------------------------------------------------------------------ what it is
+
+  The body that reads applications to teach and applications to judge. It is
+  deliberately NOT the instructor roster and NOT the judge board: an advisor
+  holds no path and no seat, which is the whole point of asking them. Roan wrote
+  the curriculum, so Roan deciding who gets to teach it is a closed loop, and a
+  judge deciding who else joins the judge board is the same loop one page over.
+
+  ---------------------------------------------------------------- one advisor
+
+  Sean Kelley, supplied by Roan on 9 Aug with his profile and his portrait. He
+  is the first and today the only one, and the copy below is written so that it
+  is true of one and stays true of six: no numeral in the prose, and the count
+  in the facts line is read off the array. `plural` exists because "1 advisors"
+  is the kind of small wrongness that makes a reader stop trusting the page.
+
+  What is NOT here, and is absent rather than guessed: any characterisation of
+  what Sean does for this program beyond reading applications. He agreed to sit
+  on the board. He has not been given a title, a term, a vote count or a
+  specialism here, and inventing one is the failure the imagery policy at the
+  head of this file exists to prevent, in words instead of pixels.
+*/
+export const advisors = {
+  label: "Advisory board",
+  headline: "The advisory board decides who teaches and who judges",
+  /*
+    THE INDEPENDENCE CLAIM IS THE POINT OF THIS PARAGRAPH, so it is stated
+    first and stated plainly. Everything else here is process, and process is
+    only interesting once a reader believes the decision is not being made by
+    the person whose work is being added to.
+  */
+  intro:
+    "Applications to teach and applications to judge are read by the advisory board, not by the person who wrote the curriculum. Advisors hold no course and no seat here. They are operators and investors from outside the program, and what they read is the evidence rather than the name on it.",
+  seoDescription:
+    "The advisory board reads every application to teach or to judge on this program, and decides which ones are seated.",
+  /*
+    How a decision is actually made, in four steps.
+
+    Written as steps rather than as a paragraph because this is the section a
+    sceptical applicant reads twice, and because each line has to survive being
+    checked against what the platform does. Step one is the application form.
+    Step two is the board reading it. Step three is the interview, which is the
+    one step with no software behind it. Step four is what the applicant sees,
+    and they see it because the application page shows its own status.
+  */
+  process: [
+    {
+      title: "Everything in one file",
+      body: "Your evidence, your links, your portrait and how to reach you, submitted from inside your account rather than emailed around.",
+    },
+    {
+      title: "Read against the bar, not against the field",
+      body: "An application is measured against what the seat requires. It is not ranked against the other applications in the intake, so a strong intake does not lower the bar and a thin one does not raise it.",
+    },
+    {
+      title: "A conversation, if it gets that far",
+      body: "Anyone the board is seriously considering talks to an advisor. For a teaching seat that includes watching you explain one thing you built.",
+    },
+    {
+      title: "An answer either way",
+      body: "The status of your application is on the page you submitted it from, and it changes when the board decides. Nobody is left to work it out from silence.",
+    },
+  ],
+  members: [
+    {
+      id: "sean-kelley",
+      name: "Sean Kelley",
+      /*
+        His own headline, which reads in full:
+
+          "Advisor & Angel (Climate Tech / Regenerative Ag/BioChar/ Talent Tech)
+           | Veteran Champion | Crohn's & Colitis Cure Seeker |"
+
+        The two pipe-separated clauses are causes he champions rather than a
+        description of what he does, and neither is a claim this program has any
+        business restating on his behalf. The parenthetical is his sector list,
+        which is the part that says what an advisor of his actually reads, so it
+        stays and is set as prose.
+      */
+      role: "Advisor and angel investor across climate tech, regenerative agriculture and talent tech",
+      org: "Sage&Sea Ventures",
+      location: "Folsom, California",
+      /* One neutral for everybody, the same value the judge cards use, and for
+         the same reason: this hue means "the course this person reads" and an
+         advisor reads no course. */
+      ground: "var(--ink-secondary)",
+      photo: {
+        src: "/images/people/sean-kelley.jpg",
+        alt: "Studio portrait of Sean Kelley",
+      },
+      linkedin: "https://www.linkedin.com/in/pxkelley/",
+    },
+  ] as readonly Advisor[],
+  /*
+    The disclosure, and it is doing the job the judge board's footnote used to
+    do at the equivalent moment.
+
+    A section headed "Advisory board" carrying one card invites exactly one
+    reading — that the rest are hidden, or coming, or were not worth listing —
+    and the honest answer is the third thing: the board is one person because
+    one person has agreed. Saying so costs a sentence and is the difference
+    between a page that is small and a page that is overstating itself.
+  */
+  footnote:
+    "The board is still being seated. Nobody appears on it until they have agreed to sit on it, so what you see here is the whole of it.",
+} as const;
+
+/** "1 advisor", "6 advisors". A count in a facts line has to agree with itself. */
+export const advisorCount = `${advisors.members.length} advisor${
+  advisors.members.length === 1 ? "" : "s"
+}`;
+
+/* ---------------------------------------------------------------- the tracks
+
+  Two ways in, and the shape below is shared so that neither one quietly grows
+  a section the other lacks.
+
+  ------------------------------------------------------------ on selectivity
+
+  Roan asked for this to read the way a genuinely selective process reads, and
+  the way to do that is NOT adjectives. "Ultra-selective" as a word does no work
+  a reader will believe; what does the work is a bar written specifically enough
+  that most readers can tell, from reading it, that they do not clear it. So
+  every `bar` item below names a thing that either exists or does not, and
+  `asked` states the cost of accepting, because a page that only sells the
+  status is recruiting the wrong applicant.
+
+  ------------------------------------------------------ on numbers, and on one
+
+  `seats` is present on the instructor track and absent on the judge track,
+  which is Roan's call on 9 Aug and not an oversight. Two instructor seats is a
+  fact he has decided. The judge board has no vacancy count he wants published,
+  and a number invented to sound scarce is the exact thing this file refuses
+  everywhere else. A track with no `seats` renders `scarcity` alone.
+
+  ---------------------------------------------------------------- on the flow
+
+  Three steps, because the flow Roan specified has three: sign in, complete the
+  form inside the platform, add contact details and submit. The reason the form
+  is behind a login is written into step one rather than left implied. It is a
+  real reason: the second half of it asks for a photograph, a phone number and a
+  WhatsApp number, and a public form that collects those is a public form
+  collecting those.
+*/
+export type ApplyStep = { n: string; title: string; body: string };
+
+export type ApplyTrack = {
+  id: "instructor" | "judge";
+  /** Route under /apply. Guarded by `requireUser`, so this is also the sign-in gate. */
+  href: string;
+  label: string;
+  headline: string;
+  intro: string;
+  /** The number, where a number has been decided. Absent renders nothing. */
+  seats?: string;
+  /** Why it is hard, stated as what happens rather than as an adjective. */
+  scarcity: string;
+  /** What the board looks for. Every item is checkable by a stranger. */
+  bar: readonly string[];
+  /** What the seat costs, so nobody accepts one and then discovers it. */
+  asked: readonly string[];
+  steps: readonly ApplyStep[];
+  cta: string;
+  /** For somebody who already started one. Same href; the page knows the state. */
+  resume: string;
+  note: string;
+};
+
+/*
+  Annotated rather than `as const`, and that is load-bearing rather than a style
+  choice. Under `as const` the two tracks are two different literal types, only
+  one of which has a `seats` key, so `apply[track].seats` at a call site that does
+  not know which track it holds is a compile error — which is exactly the call
+  site the /apply route is. The annotation makes both tracks the same type, with
+  `seats` optional on it, which is what the shape actually is.
+*/
+export const apply: Record<"instructor" | "judge", ApplyTrack> = {
+  instructor: {
+    id: "instructor",
+    href: "/apply/instructor",
+    label: "Teach on this program",
+    headline: "Two instructor seats are open",
+    intro:
+      "Every lesson here is recorded by somebody who runs the system they are teaching. That is the whole standard, and it is why the roster above is five people rather than fifty.",
+    seats: "Two seats this intake",
+    /*
+      The sentence that makes the selectivity credible is the last one. Anybody
+      can say a bar is high; saying that an intake closes empty when nobody
+      clears it is a statement that can be checked against what the board does,
+      and it is the one claim here that costs something to make.
+    */
+    scarcity:
+      "The bar is closer to an academic appointment than to a marketplace listing. The advisory board reads every application against it, and an intake that produces nobody at the bar closes with the seats still open rather than filling them.",
+    bar: [
+      "A system you built or run in production, and the standing to say how it actually behaves rather than how it is meant to.",
+      "Work a stranger can check without asking you: a repository, a product, a paper, a talk, a public profile with your name on it.",
+      "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people who do not work with you.",
+      "The ability to teach one thing well on camera, which is a separate skill from doing it well and is the one the board tests directly.",
+      "Time. One path is roughly eight modules of recording, plus reading the work that comes back.",
+    ],
+    asked: [
+      "Record the deep dives on one path, in your own voice, against a curriculum you did not write.",
+      "Read the artifacts learners submit on that path and reply to each one.",
+      "Sit for the board's review each term, on the same terms the curriculum does.",
+    ],
+    steps: [
+      {
+        n: "01",
+        title: "Sign in, or make an account",
+        body: "The application lives inside the platform, behind your own login. The second half of it asks for your photograph and your phone number, and neither belongs in a form anyone on the internet can post to. The account is the same free one that opens the courses.",
+      },
+      {
+        n: "02",
+        title: "Fill in the rest of the form",
+        body: "Your portrait, your profile links, the path you would record, and the evidence behind it. It saves as a draft every time, so you can leave it half done and come back to it.",
+      },
+      {
+        n: "03",
+        title: "Add how to reach you, then submit",
+        body: "Phone and WhatsApp, whether you can sit on an in-person panel and in which city, whether you would also read curriculum each term, and anything else you want the board to know. Submitting sends it to the advisory board, and the page then shows you where it stands.",
+      },
+    ],
+    cta: "Apply to teach",
+    resume: "Continue your application",
+    note: "Applying takes about fifteen minutes if your links are to hand.",
+  },
+  judge: {
+    id: "judge",
+    href: "/apply/judge",
+    label: "Judge on this program",
+    headline: "The board is taking judges",
+    intro:
+      "A judge reads the courses each term and sits on the panel that judges the events where learners present the workflows they deployed. It is the one role here that can tell a learner their work is not finished yet.",
+    /*
+      NO `seats`. See the note above the type: the judge board publishes no
+      vacancy count, so this track states why it is hard and says nothing about
+      how many. The scarcity line therefore has to carry the whole weight on its
+      own, which is why it is about exposure rather than about arithmetic: a
+      judge's name is on a public page and their verdict is on the record, and
+      that is a truer account of why few people are seated than any number.
+    */
+    scarcity:
+      "This is not a panel that meets to agree. A seat is held by one person for one discipline, that person's name is on the board in public, and their verdict is on the record under it. The advisory board turns down far more applications than it seats.",
+    bar: [
+      "Depth in one discipline, measured in years of doing it rather than years of managing it.",
+      "A public record somebody else can check: published work, a product shipped, a panel sat on, a profile that matches what you claim.",
+      "Judgement that has been tested in the open. Hiring, reviewing, grading, funding, or shipping to a deadline somebody else set.",
+      "No conflict with the course you would be reading, and the willingness to say so when one appears later.",
+    ],
+    asked: [
+      "One curriculum review per term, filed against the sentence that defines your seat.",
+      "Score the outcome sheets learners submit, against the rubric, without being told whose work it is.",
+      "Sit on the event panel when there is one.",
+    ],
+    steps: [
+      {
+        n: "01",
+        title: "Sign in, or make an account",
+        body: "The application lives inside the platform, behind your own login. The second half of it asks for your photograph and your phone number, and neither belongs in a form anyone on the internet can post to. The account is the same free one that opens the courses.",
+      },
+      {
+        n: "02",
+        title: "Fill in the rest of the form",
+        body: "Your portrait, your profile links, the discipline you would read, and the evidence behind it. It saves as a draft every time, so you can leave it half done and come back to it.",
+      },
+      {
+        n: "03",
+        title: "Add how to reach you, then submit",
+        body: "Phone and WhatsApp, whether you can sit on an in-person panel and in which city, whether you would also read curriculum each term, and anything else you want the board to know. Submitting sends it to the advisory board, and the page then shows you where it stands.",
+      },
+    ],
+    cta: "Apply to judge",
+    resume: "Continue your application",
+    note: "Applying takes about fifteen minutes if your links are to hand.",
+  },
+};

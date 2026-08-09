@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ChartLineUpIcon,
+  EnvelopeSimpleIcon,
   GavelIcon,
   GraduationCapIcon,
   StackIcon,
@@ -35,6 +36,9 @@ import { requireRole } from "@/lib/auth";
 const SECTIONS = [
   { href: "/admin", label: "Overview", Icon: ChartLineUpIcon },
   { href: "/admin/people", label: "People", Icon: UsersThreeIcon },
+  /* Above Judge seats, because it is the step before one: somebody is accepted
+     here and then bound to a seat there. */
+  { href: "/admin/applications", label: "Applications", Icon: EnvelopeSimpleIcon },
   { href: "/admin/seats", label: "Judge seats", Icon: GavelIcon },
   { href: "/admin/learners", label: "Learners", Icon: GraduationCapIcon },
   { href: "/admin/courses", label: "Courses", Icon: StackIcon },

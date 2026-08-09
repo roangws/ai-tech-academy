@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdvisoryBoard } from "@/components/advisory-board";
+import { ApplyBand } from "@/components/apply-band";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
-import { board, brand, courses, namedJudges, openSeats } from "@/lib/content";
+import { apply, board, brand, courses, namedJudges, openSeats } from "@/lib/content";
 
 /**
  * `openGraph` REPLACES the root block, it does not merge into it.
@@ -168,6 +170,13 @@ export default function ReviewJudgeBoardPage() {
             where the arrangement stops disclosing on its own. */}
         <p className="t-meta mt-6 max-w-[720px] text-ink-muted">{board.footnote}</p>
       </Section>
+
+      {/* The same two bands /instructors carries, on the judge track. One board
+          reads both kinds of application, so the advisory section is one
+          component rendered on both pages rather than a route they both point
+          at. advisory-board.tsx has the argument. */}
+      <ApplyBand track={apply.judge} />
+      <AdvisoryBoard />
     </>
   );
 }

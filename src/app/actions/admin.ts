@@ -347,3 +347,43 @@ export async function moveBlock(formData: FormData) {
   revalidatePath("/admin/courses", "layout");
   revalidatePath("/learn", "layout");
 }
+
+/**
+ * The advisory board's decision on an application.
+ *
+ * Four columns are sent and only two of them are trusted: `status` and
+ * `decision_note`. `decided_at` and `decided_by` are stamped by
+ * `applications_guard` from `now()` and `auth.uid()` inside Postgres, for the
+ * same reason `artifacts_guard` stamps `feedback_by`: an audit line that can be
+ * written by hand is not an audit line. Every field the applicant filled in is
+ * pinned by the same trigger, so a reviewer cannot edit the thing they are
+ * deciding on.
+ *
+ * Accepting does NOT grant a role. That is on purpose and it is the one thing
+ * worth arguing for here: an instructor still has to be put on a course in
+ * /admin/people and a judge still has to be bound to a seat in /admin/seats,
+ * because those are the writes that decide what somebody can actually read, and
+ * `bind_seat` already grants the judge role in the same transaction. Wiring
+ * acceptance straight through to a role would mean a stray click in this queue
+ * hands somebody access to learner work.
+ */
+export async function decideApplication(formData: FormData) {
+  await requireRole("admin");
+
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!["in_review", "accepted", "declined"].includes(status)) {
+    throw new Error(`decideApplication: unknown status "${status}"`);
+  }
+
+  const note = String(formData.get("decision_note") ?? "").trim().slice(0, 4000);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("applications")
+    .update({ status, decision_note: note || null })
+    .eq("id", id);
+  if (error) throw new Error(`decideApplication: ${error.message}`);
+
+  revalidatePath("/admin/applications");
+}

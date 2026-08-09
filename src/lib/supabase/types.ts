@@ -30,6 +30,17 @@ export type ArtifactStatus = "draft" | "submitted" | "reviewed";
 export type SheetStatus = "draft" | "submitted" | "verified";
 export type ReviewVerdict = "pass" | "concerns" | "fail";
 export type AssignmentKind = "lead" | "specialist";
+export type ApplicationTrack = "instructor" | "judge";
+/* `withdrawn` and `declined` are separate values, not one 'closed'. The
+   applicant's word and the board's word about the same row are different facts,
+   and a selective process has to be able to count the second one. */
+export type ApplicationStatus =
+  | "draft"
+  | "submitted"
+  | "in_review"
+  | "accepted"
+  | "declined"
+  | "withdrawn";
 export type LessonBlockKind =
   | "prose"
   | "video"
@@ -328,6 +339,49 @@ export type Judgement = {
   criterion_id: string;
   score: number;
   notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * An application to teach or to judge.
+ *
+ * The identity fields are copied onto the row rather than joined from
+ * `profiles`, which is the one thing about this shape worth knowing before
+ * reading a query against it: an application is a document submitted on a date,
+ * and the board has to read what was submitted rather than what the applicant's
+ * profile happens to say today. The migration has the argument.
+ *
+ * Everything below `submitted_at` is written by the guard trigger, never by the
+ * client. `decided_by` in particular is taken from `auth.uid()` inside Postgres
+ * for the same reason `Artifact.feedback_by` is.
+ */
+export type Application = {
+  id: string;
+  user_id: string;
+  track: ApplicationTrack;
+  status: ApplicationStatus;
+  full_name: string;
+  headline: string | null;
+  org: string | null;
+  location: string | null;
+  linkedin_url: string | null;
+  site_url: string | null;
+  photo_url: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  course_id: string | null;
+  focus: string | null;
+  evidence: string | null;
+  sample_url: string | null;
+  in_person: boolean;
+  in_person_city: string | null;
+  reviews_curriculum: boolean;
+  notes: string | null;
+  submitted_at: string | null;
+  decided_at: string | null;
+  decided_by: string | null;
+  decision_note: string | null;
   created_at: string;
   updated_at: string;
 };

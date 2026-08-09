@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { courses as catalog, totalLessons, type Course } from "@/lib/content";
 import type {
+  Application,
+  ApplicationTrack,
   Artifact,
   CurriculumReview,
   Enrollment,
@@ -803,5 +805,24 @@ export async function getCurriculumReviews(seatId: string): Promise<CurriculumRe
       .eq("seat_id", seatId)
       .order("term", { ascending: false })
       .limit(PAGE_SIZE),
+  );
+}
+
+/* --------------------------------------------------------------- applications
+
+   The applicant's own view of an application to teach or to judge. One row per
+   person per track, so this is `maybeSingle` and a null means they have not
+   started one -- not that something failed.
+
+   No filter on `user_id`. `applications_own` is the policy, and the note at the
+   head of this file applies here more than anywhere: a WHERE clause duplicating
+   a policy is a WHERE clause that can disagree with it. An admin reading this
+   function reads their OWN application, which is correct -- the queue lives in
+   lms/admin.ts, where every function is scoped across accounts by design. */
+export async function getMyApplication(track: ApplicationTrack): Promise<Application | null> {
+  const supabase = await createClient();
+  return one<Application>(
+    "application",
+    supabase.from("applications").select("*").eq("track", track).maybeSingle(),
   );
 }

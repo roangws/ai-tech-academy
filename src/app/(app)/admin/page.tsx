@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Empty } from "@/components/lms/ui";
-import { getInsights, getWeeks, listLearners, listSeats, listPeople } from "@/lib/lms/admin";
+import {
+  getInsights,
+  getWeeks,
+  listApplications,
+  listLearners,
+  listSeats,
+  listPeople,
+} from "@/lib/lms/admin";
 import { BarChart, Funnel } from "@/components/lms/chart";
 
 export const dynamic = "force-dynamic";
@@ -21,12 +28,13 @@ export const metadata: Metadata = { title: "Admin", robots: { index: false, foll
  * you have to go and find.
  */
 export default async function AdminOverview() {
-  const [people, seats, learners, insights, weeks] = await Promise.all([
+  const [people, seats, learners, insights, weeks, applications] = await Promise.all([
     listPeople(),
     listSeats(),
     listLearners(),
     getInsights(),
     getWeeks(),
+    listApplications(),
   ]);
 
   const newThisWeek = weeks.at(-1)?.signups ?? 0;
@@ -92,6 +100,19 @@ export default async function AdminOverview() {
   }
   if (unboundSeats === 6) {
     blocking.push("no judge seat is bound, so no outcome sheet can be scored");
+  }
+  /* An application waiting is the one item on this list that costs a person
+     rather than the platform: somebody put their evidence and their phone number
+     in and is being asked to wait. It goes last because it blocks nothing that is
+     already running, and it goes on the list because nothing else on this screen
+     would ever mention it. */
+  const applicationsWaiting = applications.filter(
+    (a) => a.status === "submitted" || a.status === "in_review",
+  ).length;
+  if (applicationsWaiting > 0) {
+    blocking.push(
+      `${applicationsWaiting} application${applicationsWaiting === 1 ? " is" : "s are"} waiting on the advisory board`,
+    );
   }
 
   return (
