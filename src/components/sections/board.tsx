@@ -1,16 +1,16 @@
 import { BoardCard } from "@/components/board-card";
 import { CarouselRail } from "@/components/carousel-rail";
 import { Section, SectionHeader, TextAction } from "@/components/ui";
-import { board, courses, namedJudges, openSeats } from "@/lib/content";
+import { board } from "@/lib/content";
 
 /**
  * The review judge board, as a controlled carousel of portrait cards.
  *
  * The card design is unchanged and it is the good part: at 240 x 340 the face
  * is the card, the name and the role sit on the frame under a scrim, and the
- * seat's definition arrives on the hue of the path that seat reads. That came
- * from the reference capture and it stays. The card markup itself now lives in
- * board-card.tsx, shared with the full roster at /review-judge-board.
+ * rest arrives on hover. That came from the reference capture and it stays. The
+ * card markup itself lives in board-card.tsx, shared with the full roster at
+ * /review-judge-board.
  *
  * WHAT CHANGED IS THE TRACK. It was a marquee, on the argument that a roster
  * has no order worth paging through and that arrows imply an end to reach.
@@ -23,19 +23,13 @@ import { board, courses, namedJudges, openSeats } from "@/lib/content";
  *   - It carried two fade masks to hide the clip at each edge, and at 390px a
  *     card is most of the screen, so the mask was a gradient across a face
  *     rather than across a gap. That is the hard-clipped edge Roan flagged.
- *   - Six cards is a set a reader finishes. An indicator that says "3 / 6" is
- *     information; a track that never ends withholds it.
+ *   - A set a reader finishes deserves an indicator that says "3 / 5"; a track
+ *     that never ends withholds it.
  *
  * So it is a scroll-snap rail now, with arrows and a position indicator, and
  * the cards are 82vw on a phone so the next one peeks. carousel-rail.tsx has
  * the note on why the edges come out clean without masks.
- *
- * The `checks` line is revealed on hover from sm up and simply shown below it.
- * A phone fires no hover, and on a card that is 82% of the screen there is room
- * for the one sentence that says what the seat is for.
  */
-const courseTitles = new Map(courses.map((c) => [c.badge, c.title]));
-
 export function Board() {
   return (
     <Section id="board" tint>
@@ -43,50 +37,39 @@ export function Board() {
         label="Review Judge board"
         heading={board.headline}
         intro={board.intro}
-        /*
-          The count is derived rather than written, which is the same reason the
-          headline does not carry it: the board is still taking judges, and a
-          number in prose is a number that goes stale.
-
-          It counts NAMED JUDGES now, not cards. This read `board.members.length`
-          and printed "All 10 judges" over a rail whose last six cards are the
-          same stand-in portrait six times. Ten cards are not ten judges, and the
-          one number this section volunteers should not be the one a reader could
-          disprove by scrolling.
-        */
+        /* The count is derived rather than written, which is the same reason
+           the headline does not carry it: the board is still taking judges, and
+           a number in prose is a number that goes stale. */
         action={
           <TextAction href="/review-judge-board">
-            {`All ${namedJudges.length} judges and ${openSeats.length} open seats`}
+            {`All ${board.members.length} judges`}
           </TextAction>
         }
       />
 
       {/*
-        Each card links to its own judge on the list page rather than to the
-        top of it. Six cards pointing at one URL is one link repeated six times;
-        a reader who clicked a specific face wants that face, and `scroll-mt-24`
-        on the card clears the sticky header when they land.
+        Every card links to that judge's own LinkedIn now, which is what Roan
+        asked for on this page. They used to point at `/review-judge-board#<id>`,
+        and with the open seats gone that page says exactly what the card in
+        front of you already says: five cards linking to a longer copy of
+        themselves.
       */}
       <CarouselRail count={board.members.length} label="The judges on the Review Judge board">
         {board.members.map((m) => (
           <li
             key={m.id}
-            className="flex w-[82vw] max-w-[320px] shrink-0 snap-start sm:w-[240px]"
+            /* The height lives here rather than in the card, because the roster
+               page wants a taller frame for the same component. */
+            className="flex h-[300px] w-[82vw] max-w-[320px] shrink-0 snap-start sm:h-[340px] sm:w-[240px]"
           >
-            <BoardCard
-              member={m}
-              courseTitle={m.reviews ? (courseTitles.get(m.reviews) ?? m.reviews) : undefined}
-              href={`/review-judge-board#${m.id}`}
-            />
+            <BoardCard member={m} sizes="(max-width: 640px) 82vw, 240px" />
           </li>
         ))}
       </CarouselRail>
 
-      {/* The footnote is back, 9 Aug. It went on 7 Aug when every card was the
-          same stand-in and the repetition disclosed that on its own; four named
-          judges now sit above six vacancies, so it does not any more. The note
-          in content.ts has the full argument. */}
-      <p className="t-meta mt-5 max-w-[720px] text-ink-muted">{board.footnote}</p>
+      {/* No footnote. There is nothing left to disclose: every card is a real
+          person with their own photograph. content.ts carries the history of
+          that sentence and the condition for it coming back. */}
     </Section>
   );
 }
