@@ -285,7 +285,7 @@ export default async function JudgePage() {
                         extend to judges and why nothing here asks. */}
                     <span className="t-meta mt-1 block text-ink-muted">
                       {sheet.reference} · {byId.get(sheet.course_id)?.badge ?? sheet.course_id} ·{" "}
-                      {sheet.rows.length} measures
+                      {sheet.rows.length} measure{sheet.rows.length === 1 ? "" : "s"}
                       {sheet.measured_after_days ? ` · measured after ${sheet.measured_after_days} days` : ""}
                     </span>
                   </span>
