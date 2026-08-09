@@ -1,9 +1,14 @@
 # AI Tech Education Academy
 
 Frontend for **AITechEducation.academy**, the public site for the Applied AI
-Implementation program. This repo currently holds the marketing homepage; the
-authenticated learner surfaces (dashboard, course player, assessments) are not
-built yet.
+Implementation program. It holds the marketing site and
+the LMS: a dashboard that resumes to the exact lesson you left, a course player
+carrying video, podcast audio, documents, quizzes and exercises, instructor and
+judge consoles, and an admin console at `/admin`.
+
+What changed in the 10 Aug rebuild, and what is still open, is in
+`docs/LMS-REBUILD.md`. The ten-specialist review that drove it is in
+`docs/LMS-UX-REVIEW.md`.
 
 ## Stack
 
@@ -26,8 +31,9 @@ npm run lint
 ```
 src/
   app/
-    globals.css        design tokens, light + dark palettes, base layer
-    layout.tsx         fonts, metadata, pre-paint theme script
+    globals.css        design tokens; the dark palette is scoped to the app group
+    (app)/ (learn)/    the signed-in surfaces; (site)/ is the marketing one
+    layout.tsx         fonts, metadata
     page.tsx           section order for the homepage
   components/
     ui.tsx             Container, ButtonLink, Eyebrow, SectionHeading, Photo

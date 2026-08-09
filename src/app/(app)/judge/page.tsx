@@ -137,7 +137,7 @@ export default async function JudgePage() {
                 name="courseId"
                 required
                 defaultValue=""
-                className="t-body mt-1.5 h-11 w-full max-w-[380px] rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
+                className="t-body mt-1.5 h-11 w-full max-w-[380px] rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
               >
                 <option value="" disabled>
                   Pick the course this review is about
@@ -165,7 +165,7 @@ export default async function JudgePage() {
                 type="text"
                 required
                 placeholder="2026-H2"
-                className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
+                className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
               />
             </div>
             {/*
@@ -203,7 +203,7 @@ export default async function JudgePage() {
                     />
                     <label
                       htmlFor={`verdict-${v}`}
-                      className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line bg-surface px-3.5 capitalize text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
+                      className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line-control bg-surface px-3.5 capitalize text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
                     >
                       {v}
                     </label>
@@ -221,14 +221,14 @@ export default async function JudgePage() {
               id="notes"
               name="notes"
               rows={5}
-              className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
+              className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
               placeholder={seat.checks}
             />
           </div>
 
           <button
             type="submit"
-            className="t-button mt-5 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-white transition-colors hover:bg-accent-hover"
+            className="t-button mt-5 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
           >
             File review
           </button>

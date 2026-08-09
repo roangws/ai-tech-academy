@@ -46,3 +46,7 @@ next-env.d.ts
 # research/QA screenshots (not part of the shipped app)
 /references/
 /mockups/uploads/
+
+# Course media pushed to Supabase Storage by scripts/push-media.mjs.
+# Audio does not belong in git; a repo that grows 40MB an episode stops being clonable.
+/media/

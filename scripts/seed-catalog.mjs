@@ -13,7 +13,7 @@
  *
  * So it is derived, and re-derived. Run this after any curriculum change.
  *
- * --------------------------------------------------- why position is the key
+ * ------------------------------------------------------- why the slug is the key
  *
  * The interesting problem here is that lessons have no natural key. They have a
  * name, and a name is what an author edits.
@@ -26,17 +26,27 @@
  * afterwards, which worked and was a lot of machinery to undo damage it had just
  * caused itself.
  *
- * The slot was the key the whole time. `lessons` already carries
- * UNIQUE (module_id, position), so upserting on that conflict target updates the
- * lesson in slot 3 in place: the row keeps its id, every completion pointing at
- * it stays valid, and a rename is an UPDATE rather than a delete and an insert.
- * Nothing has to be preserved because nothing is destroyed.
+ * The second version upserted on UNIQUE (module_id, position) and argued that
+ * the slot had been the key the whole time. It is not, and the argument only
+ * held because no lesson had yet been inserted anywhere but the end. A slot is a
+ * position in a list, and every row below an insert moves. Upserting on the slot
+ * after adding a lesson at index 1 writes lesson 2's content into lesson 1's
+ * row, keeps that row's uuid, and hands every completion of the old lesson 1 to
+ * whatever now sits there. It is silent, the counts stay plausible, and it is
+ * unrecoverable after the fact because nothing recorded what the slots used to
+ * mean.
  *
- * The one case that still needs a delete is a module that lost lessons, which
- * leaves rows stranded past the new end. That is the `position >= count` sweep
- * at the bottom of pushLessons, and it is the only place this script removes
- * anything. A learner who had completed a lesson that no longer exists loses
- * that completion, which is the correct outcome.
+ * So lessons now carry an authored `slug`, unique within their module, and that
+ * is the conflict target. It does not move when the list is reordered, which
+ * makes `position` presentation and nothing more. A rename is still an UPDATE;
+ * reordering is now free; inserting in the middle is now safe.
+ *
+ * The one case that still needs a delete is a lesson removed from content.ts.
+ * That is the sweep at the bottom — `slug NOT IN (the module's slugs)` — and it
+ * is the only place this script removes anything. A learner who had completed a
+ * lesson that no longer exists loses that completion, which is the correct
+ * outcome, and changing a slug is how an author says "this is a different
+ * lesson now".
  *
  * ------------------------------------------------------------------- access
  *
@@ -152,10 +162,17 @@ const moduleId = new Map(modules.map((m) => [`${m.course_id}/${m.n}`, m.id]));
  * Marked as such at the end of every body, because a learner deserves to know
  * which parts of a course are written and which are scaffolding.
  */
-function lessonBody(course, m, lesson, i) {
-  const n = i + 1;
+function lessonBody(course, m, lesson) {
   const shape = {
-    lesson: "Watch, then write down where this applies to your own process.",
+    /*
+      "Watch, then write down..." until 10 Aug, on all 81 lesson-kind rows, with
+      no video anywhere in the product and a renderer that structurally cannot
+      emit one. A learner read it, hunted for a player, found none, and concluded
+      the page was broken rather than unwritten. Copy may not promise media that
+      does not exist; when a lesson has a video block it will say "watch" because
+      it will be true.
+    */
+    lesson: "Read this, then write down where it applies to your own process.",
     lab: "Do this one in your own environment, on your own data.",
     template: "Copy this, fill it in, and keep it — it goes into your artifact.",
   }[lesson.kind];
@@ -178,9 +195,17 @@ function lessonBody(course, m, lesson, i) {
     ],
   }[lesson.kind];
 
+  /*
+    No position line at the top any more.
+
+    It used to open `**Course A · Module 01 · Lesson 1 of 4**`, which the page
+    chrome already states twice above it — once in the breadcrumb and once in the
+    meta row — so the first 145px of every lesson said where you were three
+    times and what the module was about zero times. Worse, it baked chrome into
+    content: every authored lesson would have had to remember not to repeat it.
+    Position belongs to the page, prose belongs to the body.
+  */
   return [
-    `**${course.badge} · Module ${m.n} · Lesson ${n} of ${m.lessons.length}**`,
-    "",
     m.summary ?? "",
     "",
     `## What this covers`,
@@ -195,11 +220,25 @@ function lessonBody(course, m, lesson, i) {
     "",
     `## Before you move on`,
     "",
-    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, go back to the ${lesson.kind === "lab" ? "lab" : "example"} above — the point is not to finish it, it is to have run it on something real.`,
-    "",
-    "---",
-    "",
-    "_Course scaffolding: the structure of this lesson is final, the prose is being written. The labs, the template and the artifact it feeds are real and are what the module is assessed on._",
+    /*
+      "go back to the example above" pointed at an example that was never
+      generated, on every lesson-kind row. It now names the thing that is
+      actually there.
+    */
+    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, work through ${lesson.kind === "lab" ? "the lab" : "the points"} above again — the point is not to finish it, it is to have run it on something real.`,
+    /*
+      The scaffolding note used to be appended here, in italics, at the foot of
+      every one of the 173 bodies: "the structure of this lesson is final, the
+      prose is being written". Signing 600 words of generated prose with a
+      confession at the bottom is the worst place for it — the reader has already
+      spent the time before they learn it was a placeholder.
+
+      It is a banner at the TOP of the lesson page now, rendered from a fact
+      about the row rather than baked into the text: a lesson with no authored
+      blocks is scaffolding, and says so before it is read. That also means it
+      disappears by itself the moment real content is attached, instead of
+      needing a re-seed to remove a sentence.
+    */
   ].join("\n");
 }
 
@@ -207,13 +246,14 @@ const lessonRows = courses.flatMap((c) =>
   c.curriculum.flatMap((m) =>
     m.lessons.map((l, i) => ({
       module_id: moduleId.get(`${c.id}/${m.n}`),
+      slug: l.slug,
       name: l.name,
       kind: l.kind,
       /* Optional on purpose, matching content.ts: exactly one lesson site-wide
          carries a duration, and inventing the other 172 would be a lie stored in
          a column. */
       minutes: l.minutes ?? null,
-      body: lessonBody(c, m, l, i),
+      body: lessonBody(c, m, l),
       position: i,
     })),
   ),
@@ -221,20 +261,36 @@ const lessonRows = courses.flatMap((c) =>
 
 await run(
   `lessons (${lessonRows.length})`,
-  db.from("lessons").upsert(lessonRows, { onConflict: "module_id,position" }),
+  /* Keyed on the slug, not the slot.
+     `(module_id, position)` looked like a key and was not one. Inserting a
+     lesson in the middle of a module shifted every lesson below it up a slot, so
+     the upsert wrote lesson 3's content over lesson 2's row — and because
+     `lesson_progress` points at the uuid, every learner who had completed the
+     old lesson 2 now owned a completion of what is really lesson 3. Nothing
+     surfaced it; the counts stayed plausible. */
+  db.from("lessons").upsert(lessonRows, { onConflict: "module_id,slug" }),
 );
 
-/* The sweep described in the header: rows stranded past the new end of a module
-   that lost lessons. Nothing else in this script deletes. */
+/* The sweep: lessons that no longer exist in content.ts. Nothing else in this
+   script deletes.
+
+   This used to sweep `position >= m.lessons.length`, which only caught rows
+   stranded past the new end. Removing a lesson from the *middle* left the last
+   row orphaned at a position that had just been rewritten by the upsert, so the
+   module kept a duplicate. Sweeping by slug removes exactly the lessons that
+   were removed, wherever they sat. */
 let swept = 0;
 for (const c of courses) {
   for (const m of c.curriculum) {
     const id = moduleId.get(`${c.id}/${m.n}`);
+    const keep = m.lessons.map((l) => l.slug);
     const { data, error } = await db
       .from("lessons")
       .delete()
       .eq("module_id", id)
-      .gte("position", m.lessons.length)
+      /* PostgREST `not.in` wants a parenthesised list. Slugs are
+         [a-z0-9-] by construction, so none of them needs quoting. */
+      .not("slug", "in", `(${keep.join(",")})`)
       .select("id");
     if (error) {
       console.error(`✗ sweep ${c.id}/${m.n}\n  ${error.message}`);

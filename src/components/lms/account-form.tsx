@@ -58,7 +58,7 @@ export function AccountForm({
         <div>
           <label
             htmlFor="avatar"
-            className="t-button inline-flex h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-line px-4 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+            className="t-button inline-flex h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-line-control px-4 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
           >
             {avatarUrl || preview ? "Change photo" : "Upload a photo"}
           </label>
@@ -177,4 +177,4 @@ export function AccountForm({
 }
 
 const FIELD =
-  "t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25";
+  "t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25";

@@ -3,6 +3,9 @@ import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { getViewer } from "@/lib/auth";
+import { getTheme } from "@/lib/theme";
+import { ThemeToggle } from "@/components/lms/theme-toggle";
+import { HeaderLink } from "@/components/lms/header-link";
 import { signOut } from "@/app/actions/auth";
 
 /**
@@ -34,15 +37,28 @@ import { signOut } from "@/app/actions/auth";
 export async function AppHeader() {
   const viewer = await getViewer();
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/courses", label: "Catalog" },
-    { href: "/account", label: "Account" },
-    ...(viewer?.is("instructor") || viewer?.is("admin")
-      ? [{ href: "/instructor", label: "Instructor" }]
-      : []),
-    ...(viewer?.is("judge") || viewer?.is("admin") ? [{ href: "/judge", label: "Judge" }] : []),
-  ];
+  const theme = await getTheme();
+
+  /*
+    Signed out, this offered "Dashboard" and "Account" — two links whose only
+    behaviour is to bounce the reader to /sign-in. Module 1 of every course is
+    open with no account and this header sits on top of it, so the first screen
+    of the entire funnel handed a prospect two dead clicks before they had read a
+    word. Instructor and Judge were already gated on the viewer; the other two
+    simply were not.
+  */
+  const links = viewer
+    ? [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/courses", label: "Catalog" },
+        { href: "/account", label: "Account" },
+        ...(viewer.is("instructor") || viewer.is("admin")
+          ? [{ href: "/instructor", label: "Instructor" }]
+          : []),
+        ...(viewer.is("judge") || viewer.is("admin") ? [{ href: "/judge", label: "Judge" }] : []),
+        ...(viewer.is("admin") ? [{ href: "/admin", label: "Admin" }] : []),
+      ]
+    : [{ href: "/courses", label: "Courses" }];
 
   return (
     /*
@@ -69,7 +85,7 @@ export async function AppHeader() {
             primary navigation announced as a course list, on a page whose h1 is
             about courses.
           */}
-          <nav aria-label="Main" className="hidden items-center gap-6 sm:flex">
+          <nav aria-label="Main" className="hidden items-center gap-1 sm:flex">
             {links.map((l) => (
               <HeaderLink key={l.href} href={l.href}>
                 {l.label}
@@ -80,6 +96,9 @@ export async function AppHeader() {
 
         {viewer ? (
           <div className="flex items-center gap-3">
+            {/* Hidden under sm so the 72px bar stays one row on a phone; the
+                mobile nav row below carries it instead. */}
+            <ThemeToggle theme={theme} className="hidden sm:inline-flex" />
             {/* The portrait is the account control, and it carries the email as
                 its title: on this control a reader is checking which account
                 they are in, and two people called Sam are told apart by the
@@ -106,7 +125,7 @@ export async function AppHeader() {
             <form action={signOut}>
               <button
                 type="submit"
-                className="t-button rounded-[var(--radius-control)] border border-line px-3.5 py-2 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+                className="t-button rounded-[var(--radius-control)] border border-line-control px-3.5 py-2 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
               >
                 Sign out
               </button>
@@ -117,7 +136,7 @@ export async function AppHeader() {
             <HeaderLink href="/sign-in">Sign in</HeaderLink>
             <Link
               href="/sign-up"
-              className="t-button rounded-[var(--radius-control)] bg-accent px-4 py-2.5 text-white no-underline transition-colors hover:bg-accent-hover"
+              className="t-button rounded-[var(--radius-control)] bg-accent px-4 py-2.5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
             >
               Create account
             </Link>
@@ -142,25 +161,23 @@ export async function AppHeader() {
         aria-label="Main"
         className="relative border-t border-line bg-surface-subtle sm:hidden"
       >
-        <Container className="flex flex-wrap items-center gap-x-5 gap-y-1 py-2.5">
+        <Container className="flex flex-wrap items-center gap-x-1 gap-y-0 py-1.5">
           {links.map((l) => (
             <HeaderLink key={l.href} href={l.href}>
               {l.label}
             </HeaderLink>
           ))}
+          {viewer ? <ThemeToggle theme={theme} className="ml-auto" /> : null}
         </Container>
       </nav>
     </header>
   );
 }
 
-function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="t-nav text-ink-secondary no-underline transition-colors hover:text-ink"
-    >
-      {children}
-    </Link>
-  );
-}
+/*
+  `HeaderLink` moved to its own file and became a client component. It needs
+  `usePathname` to mark the current section, which this server component cannot
+  give it, and the alternative — threading the pathname down from every server
+  parent that renders a header — is worse than a few hundred bytes of client
+  JavaScript for a link.
+*/

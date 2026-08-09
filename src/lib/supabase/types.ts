@@ -30,6 +30,15 @@ export type ArtifactStatus = "draft" | "submitted" | "reviewed";
 export type SheetStatus = "draft" | "submitted" | "verified";
 export type ReviewVerdict = "pass" | "concerns" | "fail";
 export type AssignmentKind = "lead" | "specialist";
+export type LessonBlockKind =
+  | "prose"
+  | "video"
+  | "audio"
+  | "doc"
+  | "quiz"
+  | "embed"
+  | "exercise"
+  | "checklist";
 
 /* ------------------------------------------------------------------- catalog
    Seeded from content.ts by scripts/seed-catalog.mjs. Read-only to everyone but
@@ -65,12 +74,99 @@ export type ModuleRow = {
 export type LessonRow = {
   id: string;
   module_id: string;
+  /**
+   * Stable identity within the module, and the URL segment.
+   *
+   * The upsert key the seed script writes on, and therefore the thing that
+   * decides which uuid a lesson keeps across a re-seed. It used to be
+   * `position`, which meant inserting a lesson mid-module handed every uuid
+   * below it to a different lesson and silently reassigned every completion in
+   * `lesson_progress`. Authored in content.ts; see the note on `Lesson.slug`.
+   */
+  slug: string;
   name: string;
   kind: LessonKind;
   minutes: number | null;
   /** The lesson itself. Seeded by scripts/seed-catalog.mjs. */
   body: string | null;
+  /** Presentation order only. Identity is `slug`. */
   position: number;
+};
+
+/* -------------------------------------------------------------- lesson blocks
+   What a lesson is made of, in the order an author chose.
+
+   A discriminated union rather than one optional-everything payload type, so
+   reading `block.payload.youtube_id` only compiles after `block.kind` has been
+   narrowed to "video". Postgres enforces the same shapes with a CHECK keyed on
+   `kind` (see the lesson_blocks migration), which is what stops a malformed
+   block reaching this type in the first place. */
+
+/** Where a media file lives in Storage. A path, never a URL — see lib/lms/media. */
+type StoragePath = string;
+
+export type BlockPayload = {
+  prose: { md: string };
+  video: {
+    youtube_id: string;
+    /** Poster served from our own bucket, so no request reaches Google before play. */
+    poster?: StoragePath;
+    duration?: number;
+  };
+  audio: {
+    path: StoragePath;
+    duration?: number;
+    /** Seek points, offered as buttons under the transport. */
+    chapters?: readonly { t: number; title: string }[];
+    transcript?: StoragePath;
+  };
+  doc: { path: StoragePath; title?: string; bytes?: number };
+  quiz: {
+    questions: readonly {
+      id: string;
+      q: string;
+      choices: readonly string[];
+      /**
+       * Readable by anyone who opens the network tab, and that is accepted: this
+       * is a self-check that grades nothing and gates nothing. The day a quiz
+       * gates completion it needs its own table with this column revoked and
+       * grading behind a SECURITY DEFINER function.
+       */
+      answer: string;
+      why?: string;
+    }[];
+  };
+  embed: { src: string; height?: number };
+  exercise: { prompt: string; placeholder?: string };
+  checklist: {
+    steps: readonly { id: string; text: string }[];
+    template?: StoragePath;
+  };
+};
+
+export type LessonBlock = {
+  [K in LessonBlockKind]: {
+    id: string;
+    lesson_id: string;
+    /** Identity within the lesson. Never the slot — see LessonRow.slug. */
+    key: string;
+    /** Presentation order only. */
+    position: number;
+    kind: K;
+    title: string | null;
+    payload: BlockPayload[K];
+    created_at: string;
+    updated_at: string;
+  };
+}[LessonBlockKind];
+
+/** A learner's answers to an `exercise` or `checklist` block. */
+export type BlockResponse = {
+  user_id: string;
+  block_id: string;
+  body: Record<string, unknown>;
+  status: ArtifactStatus;
+  updated_at: string;
 };
 
 /* ------------------------------------------------------------------ identity */
@@ -104,6 +200,10 @@ export type Enrollment = {
   enrolled_at: string;
   completed_at: string | null;
   last_module_id: string | null;
+  /** The exact lesson to resume. See the enrollment_resume_pointer migration. */
+  last_lesson_id: string | null;
+  /** When they last did anything in this course. Orders the dashboard. */
+  last_seen_at: string | null;
 };
 
 export type LessonProgress = {

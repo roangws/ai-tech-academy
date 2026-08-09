@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowRightIcon,
+  ChatCircleTextIcon,
+  PencilSimpleLineIcon,
+  SealCheckIcon,
+  TableIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, StatusChip } from "@/components/ui";
 import { CourseGlyph } from "@/components/course/icons";
-import { Meter } from "@/components/lms/ui";
+import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
-import { getDashboard } from "@/lib/lms/queries";
+import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
 import { courses as catalog, totalLessons, moduleCount } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
@@ -18,112 +24,301 @@ export const metadata: Metadata = {
 /**
  * The signed-in home.
  *
- * ------------------------------------------------------- every course, always
+ * ----------------------------------------------------------- what it was
  *
- * This listed only the courses a learner had already started, so a new account
- * landed on an empty page with a link to the marketing catalog — bounced back
- * out of the product on their first screen. Every course is on it now: the ones
- * in progress first, with their progress, then the rest as something to start.
+ * Five identical cards in a two-column grid, under a 44px greeting that ate 191px
+ * of the first screen to say the reader's own name back to them. Nothing had
+ * priority: the course a learner was six lessons into was styled the same as the
+ * four they had never opened, distinguished only by a progress bar. "Continue"
+ * went to the course table of contents, three clicks from where they actually
+ * were, under a subtitle promising "Pick up where you left off".
  *
- * All five are free and open, so there is no reason for the dashboard to hide
- * four of them behind a second page. "Continue" and "Start" are the same control
- * in different states, which is what makes the list scannable rather than two
- * unrelated groups.
+ * And three things the database already knew were on no screen at all: whether
+ * an instructor had written back, whether a judge had scored the outcome sheet,
+ * and whether anything was waiting to be sent.
+ *
+ * ------------------------------------------------------------- what it is now
+ *
+ * Four bands, in the order a returning learner needs them.
+ *
+ *   1. Continue     one card, deep-linked to the exact lesson, named
+ *   2. Needs you    at most four imperatives, each a link that resolves itself
+ *   3. Results      judge scores — which existed in Postgres and were read by
+ *                   nothing, so a learner could be scored and never told
+ *   4. Your courses the old grid, demoted to what it is: a place to start another
+ *
+ * No streaks. On a self-paced course measured in weeks, a streak mostly reports
+ * failure, and the correct behaviour here includes spending two weeks waiting for
+ * data to accumulate. No invented due dates either: the only real deadline the
+ * product owns is `measured_after_days` on a submitted outcome sheet.
  */
+
+type Action = { key: string; href: string; label: string; detail: string; Icon: typeof ArrowRightIcon };
+
+/** The handful of things actually waiting on this learner, most useful first. */
+function nextActions(rows: DashboardCourse[]): Action[] {
+  const out: Action[] = [];
+
+  for (const row of rows) {
+    for (const a of row.feedback) {
+      out.push({
+        key: `fb-${a.id}`,
+        href: `/learn/${row.course.slug}/${a.modules.n}`,
+        label: `Your instructor replied on ${a.modules.name}`,
+        detail: row.course.title,
+        Icon: ChatCircleTextIcon,
+      });
+    }
+  }
+
+  for (const row of rows) {
+    for (const a of row.drafts) {
+      out.push({
+        key: `dr-${a.id}`,
+        href: `/learn/${row.course.slug}/${a.modules.n}`,
+        label: `Send your ${a.modules.name} artifact`,
+        detail: "Started, not submitted",
+        Icon: PencilSimpleLineIcon,
+      });
+    }
+  }
+
+  for (const row of rows) {
+    if (row.sheet?.status === "draft") {
+      out.push({
+        key: `sh-${row.sheet.id}`,
+        href: `/dashboard/outcome/${row.course.id}`,
+        label: "Finish your outcome sheet",
+        detail: `${row.course.title} — still a draft`,
+        Icon: TableIcon,
+      });
+    }
+  }
+
+  /* Four is the cap. A list of eight things you are behind on is a list nobody
+     reads, and the fifth item is never the one that matters. */
+  return out.slice(0, 4);
+}
+
 export default async function DashboardPage() {
   const viewer = await requireUser("/dashboard");
   const enrolled = await getDashboard(viewer.id);
-  const byId = new Map(enrolled.map((e) => [e.course.id, e]));
 
-  /* Started first, in the order they were enrolled; then the rest in catalog
-     order. One list, so the eye runs down it once. */
-  const started = enrolled.map((e) => e.course.id);
-  const ordered = [
-    ...enrolled.map((e) => e.course),
-    ...catalog.filter((c) => !started.includes(c.id)),
-  ];
+  const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
+  const started = enrolled.filter((e) => e.done > 0);
+  const current = started[0] ?? null;
+  const actions = nextActions(enrolled);
+  const scored = enrolled.filter((e) => e.judgements.length > 0);
 
-  const inProgress = enrolled.filter((e) => e.done > 0).length;
+  const rest = catalog.filter((c) => c.id !== current?.course.id);
 
   return (
-    <Container className="py-12 md:py-16">
-      <h1 className="t-display text-ink">Welcome back, {viewer.name}.</h1>
-      <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
-        {inProgress
-          ? "Pick up where you left off, or start another one."
-          : "Five courses, all open. Start with the one closest to the work you already do."}
-      </p>
+    <Container className="py-10 md:py-12">
+      {/*
+        `t-h2`, not `t-display`. The greeting was 44px and consumed a quarter of a
+        phone's first screen to say the reader's own name. It also said "Welcome
+        back" to accounts that had never been here — the first sentence of the
+        relationship, and factually wrong.
+      */}
+      <h1 className="t-h2 text-ink">
+        {started.length ? `Welcome back, ${viewer.name}.` : `You're in, ${viewer.name}.`}
+      </h1>
 
-      <ul className="mt-10 grid gap-5 lg:grid-cols-2">
-        {ordered.map((course) => {
-          const row = byId.get(course.id);
-          const total = row?.total || totalLessons(course);
-          const done = row?.done ?? 0;
-          const isStarted = done > 0;
-
-          return (
-            <li
-              key={course.id}
-              /* The course hue as a ground rather than a chip — the one use
-                 Amendment 2 allows. It reads as the card's spine. */
-              style={{ borderLeftColor: course.ground ?? undefined }}
-              className="flex flex-col rounded-[var(--radius-feature)] border border-line border-l-[3px] bg-surface p-6 transition-shadow hover:shadow-e1"
-            >
-              <div className="flex items-start gap-4">
-                <span
-                  aria-hidden="true"
-                  className="grid size-11 flex-none place-items-center rounded-[var(--radius-card)] border border-line bg-surface-subtle text-ink-secondary"
-                >
-                  <CourseGlyph id={course.id} size={22} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="t-label text-ink-muted">{course.badge}</p>
-                  <h2 className="t-card-title mt-0.5 text-ink">{course.title}</h2>
-                </div>
-                {row?.enrollment.status === "completed" ? <StatusChip>Complete</StatusChip> : null}
+      {/* ------------------------------------------------------------ continue */}
+      {current ? (
+        <section aria-labelledby="continue-heading" className="mt-6">
+          <h2 id="continue-heading" className="sr-only">
+            Continue where you left off
+          </h2>
+          <div
+            style={{ borderLeftColor: current.course.ground ?? undefined }}
+            className="rounded-[var(--radius-feature)] border border-line border-l-[3px] bg-surface p-6 shadow-e1"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="t-label text-ink-muted">{current.course.badge}</p>
+                <p className="t-card-title mt-0.5 text-ink">{current.course.title}</p>
               </div>
+              {current.enrollment.status === "completed" ? <StatusChip>Complete</StatusChip> : null}
+            </div>
 
-              <p className="t-body-sm mt-3 line-clamp-2 text-ink-secondary">{course.summary}</p>
+            <Meter className="mt-4 max-w-[420px]" done={current.done} total={current.total} />
 
-              {isStarted ? (
-                <Meter className="mt-5" done={done} total={total} />
-              ) : (
-                <FactsLine
-                  className="mt-5"
-                  items={[course.level, course.duration, moduleCount(course)]}
-                />
-              )}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+              {/*
+                Deep-linked and named. It pointed at the course board — the same
+                href as "Start module 1" on a course never opened — so the only
+                difference between a learner six lessons in and one who had never
+                arrived was the word on the link.
+              */}
+              <Link
+                href={current.resume?.href ?? `/learn/${current.course.slug}`}
+                className="t-button inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+              >
+                {current.resume ? "Continue" : "Open course"}
+                <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+              </Link>
+              {current.resume ? (
+                <p className="t-body-sm min-w-0 text-ink-secondary">
+                  <span className="text-ink">{current.resume.lessonName}</span>
+                  <span className="text-ink-muted"> · {current.resume.moduleName}</span>
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
+          Five courses, all open. Start with the one closest to the work you already do.
+        </p>
+      )}
 
-              <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line pt-5 [margin-top:1.5rem]">
+      {/* ---------------------------------------------------------- needs you */}
+      {actions.length ? (
+        <section aria-labelledby="actions-heading" className="mt-10">
+          <h2 id="actions-heading" className="t-h3 text-ink">
+            Waiting on you
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {actions.map((a) => (
+              <li key={a.key}>
                 <Link
-                  href={`/learn/${course.slug}`}
-                  className="t-button inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
+                  href={a.href}
+                  className="flex min-h-[56px] items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 no-underline transition-colors hover:border-line-strong"
                 >
-                  {isStarted ? "Continue" : "Start module 1"}
-                  <ArrowRightIcon size={14} weight="bold" aria-hidden="true" />
+                  <a.Icon size={18} aria-hidden="true" className="flex-none text-ink-muted" />
+                  <span className="min-w-0 flex-1">
+                    <span className="t-body-sm block text-ink">{a.label}</span>
+                    <span className="t-meta block text-ink-muted">{a.detail}</span>
+                  </span>
+                  <ArrowRightIcon
+                    size={14}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="flex-none text-ink-muted"
+                  />
                 </Link>
-                {/* The outcome sheet is only meaningful once there is work to
-                    measure, so it appears when a course has been started. */}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {/* ------------------------------------------------------------ results */}
+      {scored.length ? (
+        <section aria-labelledby="results-heading" className="mt-10">
+          <h2 id="results-heading" className="t-h3 text-ink">
+            What the review board said
+          </h2>
+          {scored.map((row) => (
+            <div
+              key={row.course.id}
+              className="mt-3 rounded-[var(--radius-feature)] border border-line bg-surface p-5"
+            >
+              <p className="t-label text-ink-muted">{row.course.title}</p>
+              <ul className="mt-3 flex flex-col gap-3">
+                {row.judgements.map((j) => (
+                  <li key={j.id} className="flex items-start gap-3">
+                    <span className="t-body-sm grid size-8 flex-none place-items-center rounded-full bg-accent-tint tabular-nums text-accent">
+                      {j.score}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="t-body-sm block text-ink">{j.rubric_criteria.label}</span>
+                      {j.notes ? (
+                        <span className="t-meta block text-ink-secondary">{j.notes}</span>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/dashboard/outcome/${row.course.id}`}
+                className="t-button mt-4 inline-flex min-h-[44px] items-center gap-1.5 text-accent no-underline hover:underline"
+              >
+                <SealCheckIcon size={15} aria-hidden="true" />
+                See the sheet they scored
+              </Link>
+            </div>
+          ))}
+        </section>
+      ) : null}
+
+      {/* ------------------------------------------------------- your courses */}
+      <section aria-labelledby="courses-heading" className="mt-10">
+        <h2 id="courses-heading" className="t-h3 text-ink">
+          {current ? "The other courses" : "Five courses, all free"}
+        </h2>
+
+        <ul className="mt-4 grid gap-4 lg:grid-cols-2">
+          {rest.map((course) => {
+            const row = byCourseId.get(course.id);
+            const total = row?.total || totalLessons(course);
+            const done = row?.done ?? 0;
+            const isStarted = done > 0;
+
+            return (
+              <li
+                key={course.id}
+                style={{ borderLeftColor: course.ground ?? undefined }}
+                className="flex flex-col rounded-[var(--radius-feature)] border border-line border-l-[3px] bg-surface p-5 transition-shadow hover:shadow-e1"
+              >
+                <div className="flex items-start gap-3.5">
+                  <span
+                    aria-hidden="true"
+                    className="grid size-10 flex-none place-items-center rounded-[var(--radius-card)] border border-line bg-surface-subtle text-ink-secondary"
+                  >
+                    <CourseGlyph id={course.id} size={20} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="t-label text-ink-muted">{course.badge}</p>
+                    <h3 className="t-card-title mt-0.5 text-ink">{course.title}</h3>
+                  </div>
+                </div>
+
+                <p className="t-body-sm mt-3 line-clamp-2 text-ink-secondary">{course.summary}</p>
+
                 {isStarted ? (
-                  <Link
-                    href={`/dashboard/outcome/${course.id}`}
-                    className="t-button text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
-                  >
-                    {row?.sheet ? `Outcome sheet · ${row.sheet.status}` : "Start an outcome sheet"}
-                  </Link>
+                  <Meter className="mt-4" done={done} total={total} />
                 ) : (
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="t-button text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
-                  >
-                    What it covers
-                  </Link>
+                  <FactsLine
+                    className="mt-4"
+                    items={[course.level, course.duration, moduleCount(course)]}
+                  />
                 )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+
+                <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4 [margin-top:1.25rem]">
+                  {/* 44px minimum below lg. These were 20px-tall bare text links —
+                      the most-used control in the product, at a size WCAG 2.5.8
+                      fails outright. */}
+                  <Link
+                    href={row?.resume?.href ?? `/learn/${course.slug}`}
+                    className="t-button inline-flex min-h-[44px] items-center gap-1.5 text-accent no-underline hover:underline lg:min-h-0"
+                  >
+                    {isStarted ? "Continue" : "Start module 1"}
+                    <ArrowRightIcon size={14} weight="bold" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href={isStarted ? `/dashboard/outcome/${course.id}` : `/courses/${course.slug}`}
+                    className="t-button inline-flex min-h-[44px] items-center text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline lg:min-h-0"
+                  >
+                    {isStarted
+                      ? row?.sheet
+                        ? "Outcome sheet"
+                        : "Start an outcome sheet"
+                      : "What it covers"}
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        {rest.length === 0 ? (
+          <Empty title="You are in all five.">
+            Every course is open and none of them expire. Finish one, then pick the next.
+          </Empty>
+        ) : null}
+      </section>
     </Container>
   );
 }

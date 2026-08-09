@@ -279,6 +279,10 @@ This is the site's central promise and it is stated on six surfaces.
   the third of the three artifacts `outcomes.leaveWith` promises does not exist
   yet, and the learner-facing view of `judgements` is not built either — a
   learner can be scored without being shown the score.
+- ~~[FILL: lesson bodies]~~ **Superseded 10 Aug.** `lesson_blocks` carries video,
+  audio, docs, quizzes, embeds, exercises and checklists, gated in Postgres. The
+  prose is still being written and a lesson with no blocks says so at the top of
+  the page. Original note follows.
 - **[FILL: lesson bodies]** — there is no lesson content in the repo: no video, no
   text, no storage bucket. A lesson is currently a name, a kind and a tick.
 - **[FILL: file uploads]** — artifacts are text only. Avatars are the one upload
@@ -307,6 +311,9 @@ This is the site's central promise and it is stated on six surfaces.
 - **The first admin must be created in SQL.** `handle_new_user` hardcodes
   `student` and `user_roles` is admin-write only, so there is no bootstrap path
   through the app. That is correct; do not "fix" it by loosening the policy.
+- ~~Lesson identity is positional.~~ **Fixed 10 Aug** — lessons carry an authored
+  `slug`, unique per module, and the seed script upserts on it. Original note
+  follows, because the failure it describes is worth keeping.
 - **Lesson identity is positional.** `lessons` is keyed `(module_id, position)`,
   and `content.ts` gives lessons no id. Renaming a lesson is safe; **inserting or
   removing one in the middle of a module shifts every completion below it onto

@@ -323,7 +323,9 @@ Real gaps, carried as placeholders rather than invented:
   Whether it renders as a page, a PDF or a verifiable URL is undecided.
 - **[FILL: teams]** — `content.ts:2421` describes groups with a shared launch
   date. Out of scope; individual enrolment only, which matches the current copy.
-- **[FILL: file uploads]** — artifacts are text. No storage bucket exists.
+- ~~[FILL: file uploads]~~ **Answered 10 Aug.** Two buckets exist — `course-media`
+  (public, audio and posters) and `course-docs` (private, signed per render).
+  `lesson_blocks.payload` stores a path and never a URL. See docs/LMS-REBUILD.md.
   Whether a learner needs to attach a diagram or a video is unanswered.
 
 ---

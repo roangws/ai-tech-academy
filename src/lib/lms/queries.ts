@@ -5,6 +5,8 @@ import type {
   CurriculumReview,
   Enrollment,
   JudgeSeat,
+  Judgement,
+  LessonBlock,
   LessonRow,
   ModuleRow,
   OutcomeRow,
@@ -187,10 +189,13 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
   };
 }
 
+/** A lesson in a list, carrying just enough about its blocks to pick an icon. */
+export type LessonWithKinds = LessonRow & { lesson_blocks?: { kind: string }[] };
+
 export type ModuleView = {
   course: Course;
   module: ModuleRow;
-  lessons: LessonRow[];
+  lessons: LessonWithKinds[];
   done: Set<string>;
   artifact: Artifact | null;
   prev: ModuleRow | null;
@@ -217,11 +222,16 @@ export async function getModuleView(
   /* Modules and their lessons in one select rather than two sequential round
      trips. `prev`/`next` need the whole ordered list anyway, and the lessons
      ride along on the module they belong to. */
-  const modules = await rows<ModuleRow & { lessons: LessonRow[] }>(
+  /* `lesson_blocks(kind)` rides along so the list can draw an icon that
+     describes what is actually in each lesson. It used to derive the icon from
+     `lessons.kind`, where "lesson" mapped to a play circle — 81 play buttons
+     over pages of text, on a product with no player. Only the kind column is
+     selected; the payloads are not needed here and are the expensive part. */
+  const modules = await rows<ModuleRow & { lessons: (LessonRow & { lesson_blocks: { kind: string }[] })[] }>(
     "module view",
     supabase
       .from("modules")
-      .select("*, lessons(*)")
+      .select("*, lessons(*, lesson_blocks(kind))")
       .eq("course_id", course.id)
       .order("position")
       .order("position", { referencedTable: "lessons" }),
@@ -272,12 +282,35 @@ export async function getModuleView(
   };
 }
 
+export type ArtifactWithModule = Artifact & {
+  modules: { n: string; name: string; course_id: string };
+};
+
+export type ScoredCriterion = Judgement & {
+  rubric_criteria: { label: string; description: string | null; weight: number };
+};
+
 export type DashboardCourse = {
   course: Course;
   enrollment: Enrollment;
   done: number;
   total: number;
   sheet: OutcomeSheet | null;
+  /** Artifacts an instructor has written back on. */
+  feedback: ArtifactWithModule[];
+  /** Started and never sent. */
+  drafts: ArtifactWithModule[];
+  /** Judge scores on this course's outcome sheet, if any have been filed. */
+  judgements: ScoredCriterion[];
+  /**
+   * The lesson to open when they press Continue, already resolved to a URL.
+   *
+   * Null when nothing has been opened yet, and the caller falls back to the
+   * course board. Resolved here rather than in the page so "Continue" can be
+   * labelled with the lesson's name — "Continue · Find the high-value use cases"
+   * tells a returning learner what they were doing; "Continue" does not.
+   */
+  resume: { href: string; lessonName: string; moduleName: string } | null;
 };
 
 /** The signed-in home: what they are enrolled in and how far through it they are. */
@@ -293,10 +326,19 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     knows statically and that cannot change without a deploy. `totalLessons(c)`
     is right there in the module this file already imports.
   */
-  const [enrollments, progress, sheets] = await Promise.all([
+  const [enrollments, progress, sheets, artifacts, judgements] = await Promise.all([
     rows<Enrollment>(
       "enrolments",
-      supabase.from("enrollments").select("*").eq("user_id", userId).order("enrolled_at"),
+      /* Most recently touched first. It ordered by `enrolled_at`, which answers
+         "which course did you sign up for first" — and the question a returning
+         learner is asking is "what was I doing". NULLS LAST so a course enrolled
+         in but never opened sits below one with real activity. */
+      supabase
+        .from("enrollments")
+        .select("*")
+        .eq("user_id", userId)
+        .order("last_seen_at", { ascending: false, nullsFirst: false })
+        .order("enrolled_at", { ascending: false }),
     ),
     /* The nested selects walk lesson → module → course, so completions can be
        bucketed by course without a query per enrolment. A to-one embed comes
@@ -310,6 +352,27 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         .eq("user_id", userId),
     ),
     rows<OutcomeSheet>("outcome sheets", supabase.from("outcome_sheets").select("*").eq("user_id", userId)),
+    /* Artifacts an instructor has written back on, and drafts still sitting
+       unsent. Both are things the dashboard should be telling the learner about
+       and neither had any surface: feedback arrived silently on a module page
+       nobody has a reason to revisit. */
+    rows<Artifact & { modules: { n: string; name: string; course_id: string } }>(
+      "dashboard artifacts",
+      supabase
+        .from("artifacts")
+        .select("*, modules!inner(n, name, course_id)")
+        .eq("user_id", userId),
+    ),
+    /* The scores. `judgements_read_by_learner` has existed since the schema was
+       written and nothing has ever read it — a learner could be scored by three
+       judges and never see a number. */
+    rows<Judgement & { rubric_criteria: { label: string; description: string | null; weight: number } }>(
+      "my judgements",
+      supabase
+        .from("judgements")
+        .select("*, rubric_criteria!inner(label, description, weight)")
+        .order("created_at"),
+    ),
   ]);
 
   const doneByCourse = new Map<string, number>();
@@ -319,17 +382,43 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
   }
 
   const sheetByCourse = new Map(sheets.map((s) => [s.course_id, s]));
+  const sheetIds = new Set(sheets.map((s) => s.id));
+
+  /* Resolve every resume pointer in one query rather than one per course. */
+  const lastIds = enrollments.map((e) => e.last_lesson_id).filter((id): id is string => Boolean(id));
+  const resumeRows = lastIds.length
+    ? await rows<{ id: string; slug: string; name: string; modules: { n: string; name: string; course_id: string } }>(
+        "resume targets",
+        supabase.from("lessons").select("id, slug, name, modules!inner(n, name, course_id)").in("id", lastIds),
+      )
+    : [];
+  const resumeById = new Map(resumeRows.map((r) => [r.id, r]));
 
   return enrollments
     .map((e) => {
       const course = byId.get(e.course_id);
       if (!course) return null;
+      const mine = artifacts.filter((a) => a.modules?.course_id === e.course_id);
+      const last = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
       return {
         course,
         enrollment: e,
         done: doneByCourse.get(e.course_id) ?? 0,
         total: totalLessons(course),
         sheet: sheetByCourse.get(e.course_id) ?? null,
+        /* Reviewed and unread by the learner is the thing worth surfacing; a
+           draft with something in it is the thing worth nudging. */
+        feedback: mine.filter((a) => a.status === "reviewed" && a.instructor_feedback),
+        drafts: mine.filter((a) => a.status === "draft" && a.body.trim().length > 0),
+        judgements: judgements.filter((j) => sheetIds.has(j.sheet_id)
+          && sheetByCourse.get(e.course_id)?.id === j.sheet_id),
+        resume: last
+          ? {
+              href: `/learn/${course.slug}/${last.modules.n}/${last.slug}`,
+              lessonName: last.name,
+              moduleName: last.modules.name,
+            }
+          : null,
       };
     })
     .filter((x): x is DashboardCourse => x !== null);
@@ -346,19 +435,40 @@ export type LessonView = {
   next: LessonRow | null;
   /** The first lesson of the following module, for the end of a module. */
   nextModule: ModuleRow | null;
+  /**
+   * What the lesson is made of, in author order.
+   *
+   * Empty means the lesson has not been authored yet — the seed script writes a
+   * prose scaffold into `lessons.body` and no blocks. The page uses that to say
+   * so at the top, rather than the scaffold signing itself at the bottom after
+   * the reader has already spent the time.
+   */
+  blocks: LessonBlock[];
+  /** Every lesson in this module, in order — the syllabus rail. */
+  siblings: LessonWithKinds[];
+  /** Which of those this reader has finished. Empty when signed out. */
+  doneIds: Set<string>;
 };
 
 /**
- * One lesson, by its position within a module.
+ * One lesson, by its slug within a module.
  *
- * Keyed on `position` rather than a lesson id in the URL, so a lesson address is
- * readable and stable — `/learn/<course>/04/02` is the second lesson of module
- * four, and it stays that even after a re-seed gives the row a new uuid.
+ * ------------------------------------------------- this used to key on position
+ *
+ * The address was `/learn/<course>/04/02` and the note here argued it was
+ * "readable and stable". Half right. It is readable, and it is the opposite of
+ * stable: `02` names whatever is currently second, so inserting a lesson higher
+ * up silently repoints the URL at a different lesson, and every link anyone
+ * saved now goes somewhere else. The slug names the lesson itself, which is what
+ * the reader meant.
+ *
+ * `position` survives as presentation — the order lessons are listed in, and
+ * nothing more.
  */
 export async function getLessonView(
   slug: string,
   n: string,
-  pos: number,
+  lessonSlug: string,
   userId: string | null,
 ): Promise<LessonView | null> {
   const course = bySlug.get(slug);
@@ -374,14 +484,40 @@ export async function getLessonView(
   if (mi === -1) return null;
   const current = modules[mi];
 
-  const lessons = await rows<LessonRow>(
+  /* `lesson_blocks(kind)` rides along for the rail's per-lesson icon. Only the
+     kind column: the payloads belong to the lesson being read, not to the eleven
+     rows listed beside it. */
+  const lessons = await rows<LessonWithKinds>(
     "lesson list",
-    supabase.from("lessons").select("*").eq("module_id", current.id).order("position"),
+    supabase
+      .from("lessons")
+      .select("*, lesson_blocks(kind)")
+      .eq("module_id", current.id)
+      .order("position"),
   );
-  const lesson = lessons.find((l) => l.position === pos);
-  if (!lesson) return null;
+  /* Neighbours come from the index in this ordered list, not from arithmetic on
+     `position`. The two used to be mixed — the lesson was found by matching
+     `position` and prev/next were `lessons[pos ± 1]` — which agree only while
+     positions are gapless and zero-based. A single gap made "next" skip a lesson
+     or point at itself. */
+  const li = lessons.findIndex((l) => l.slug === lessonSlug);
+  if (li === -1) return null;
+  const lesson = lessons[li];
 
-  let done = false;
+  /* The blocks are gated in Postgres by `catalog_blocks_read`, not here: a
+     locked module's blocks are simply not returned to a signed-out reader, so
+     this needs no branch and cannot be talked out of one by a forged parameter.
+     The rendering gate above is still the thing that stops the page being drawn;
+     this is the layer that stops the content existing to be drawn. */
+  const blocks = await rows<LessonBlock>(
+    "lesson blocks",
+    supabase.from("lesson_blocks").select("*").eq("lesson_id", lesson.id).order("position"),
+  );
+
+  /* Completion for the WHOLE module, not just this lesson — the rail draws a
+     tick per row and a meter over all of them, and one `.in()` costs the same
+     round trip the single-lesson lookup already cost. */
+  let doneIds = new Set<string>();
   if (userId) {
     const progress = await rows<{ lesson_id: string }>(
       "lesson done",
@@ -389,21 +525,24 @@ export async function getLessonView(
         .from("lesson_progress")
         .select("lesson_id")
         .eq("user_id", userId)
-        .eq("lesson_id", lesson.id),
+        .in("lesson_id", lessons.map((l) => l.id)),
     );
-    done = progress.length > 0;
+    doneIds = new Set(progress.map((p) => p.lesson_id));
   }
 
   return {
     course,
     module: current,
     lesson,
-    index: pos,
+    index: li,
     total: lessons.length,
-    done,
-    prev: lessons[pos - 1] ?? null,
-    next: lessons[pos + 1] ?? null,
+    done: doneIds.has(lesson.id),
+    prev: lessons[li - 1] ?? null,
+    next: lessons[li + 1] ?? null,
     nextModule: modules[mi + 1] ?? null,
+    blocks,
+    siblings: lessons,
+    doneIds,
   };
 }
 
