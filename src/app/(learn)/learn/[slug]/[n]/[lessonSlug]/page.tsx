@@ -15,6 +15,7 @@ import { Container, StatusChip } from "@/components/ui";
 import { LockedPanel } from "@/components/lms/ui";
 import { Prose } from "@/components/lms/prose";
 import { LessonBlocks } from "@/components/lms/blocks";
+import { CourseRail } from "@/components/lms/course-rail";
 import { getViewer } from "@/lib/auth";
 import { getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
@@ -82,7 +83,8 @@ export default async function LessonPage({
   const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { course, module, lesson, index, total, done, prev, next, nextModule, blocks } = view;
+  const { course, module, lesson, index, total, done, prev, next, nextModule, blocks, siblings, doneIds } =
+    view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}/${lessonSlug}`;
 
@@ -137,7 +139,27 @@ export default async function LessonPage({
         </Link>
       </nav>
 
-      <div className="mt-5 max-w-[720px]">
+      {/*
+        Two columns from lg. The content track was a bare 720px inside a 1280px
+        container, so a 1440 viewport carried roughly 500px of empty white beside
+        every lesson — simultaneously the worst shape for a 16:9 player and
+        exactly where the syllabus wanted to live. `minmax(0,1fr)` rather than
+        `1fr` because a grid child defaults to `min-width:auto` and a long
+        unbroken string in the prose would otherwise widen the track instead of
+        wrapping.
+      */}
+      <div className="mt-5 grid items-start gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <CourseRail
+          courseSlug={slug}
+          courseTitle={course.title}
+          moduleN={module.n}
+          moduleName={module.name}
+          lessons={siblings}
+          currentSlug={lesson.slug}
+          doneIds={doneIds}
+        />
+
+        <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-3">
           <span className="t-label inline-flex items-center gap-1.5 text-ink-muted">
             <Icon size={14} aria-hidden="true" />
@@ -168,7 +190,7 @@ export default async function LessonPage({
           real content is attached instead of needing a re-seed.
         */}
         {scaffolding ? (
-          <p className="t-body-sm mt-5 rounded-[var(--radius-card)] border border-dashed border-line-control bg-surface-subtle p-4 text-ink-secondary">
+          <p className="t-body-sm mt-5 max-w-[72ch] rounded-[var(--radius-card)] border border-dashed border-line-control bg-surface-subtle p-4 text-ink-secondary">
             <strong className="font-medium text-ink">This lesson is not written yet.</strong> What
             follows is the outline it will be built on. The lab, the template and the artifact this
             module produces are real, and they are what the module is assessed on.
@@ -178,7 +200,7 @@ export default async function LessonPage({
         {blocks.length > 0 ? (
           <LessonBlocks blocks={blocks} />
         ) : lesson.body ? (
-          <Prose body={lesson.body} className="mt-7" />
+          <Prose body={lesson.body} className="mt-7 max-w-[68ch]" />
         ) : (
           <p className="t-body mt-7 text-ink-secondary">This lesson has no written content yet.</p>
         )}
@@ -268,6 +290,7 @@ export default async function LessonPage({
             <span />
           )}
         </nav>
+        </div>
       </div>
     </Container>
   );

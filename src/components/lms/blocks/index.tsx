@@ -43,7 +43,11 @@ export async function LessonBlocks({ blocks }: { blocks: readonly LessonBlock[] 
       {blocks.map((block) => {
         switch (block.kind) {
           case "prose":
-            return <Prose key={block.id} body={block.payload.md} />;
+            /* A reading measure, not the track width. The column is now wide
+               enough for a 16:9 player, and prose set to that width is a 110ch
+               line nobody can follow back to the left margin. Media blocks below
+               deliberately do NOT get this cap. */
+            return <Prose key={block.id} body={block.payload.md} className="max-w-[68ch]" />;
 
           case "video":
             return (

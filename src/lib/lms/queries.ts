@@ -365,7 +365,9 @@ export type LessonView = {
    */
   blocks: LessonBlock[];
   /** Every lesson in this module, in order — the syllabus rail. */
-  siblings: LessonRow[];
+  siblings: LessonWithKinds[];
+  /** Which of those this reader has finished. Empty when signed out. */
+  doneIds: Set<string>;
 };
 
 /**
@@ -402,9 +404,16 @@ export async function getLessonView(
   if (mi === -1) return null;
   const current = modules[mi];
 
-  const lessons = await rows<LessonRow>(
+  /* `lesson_blocks(kind)` rides along for the rail's per-lesson icon. Only the
+     kind column: the payloads belong to the lesson being read, not to the eleven
+     rows listed beside it. */
+  const lessons = await rows<LessonWithKinds>(
     "lesson list",
-    supabase.from("lessons").select("*").eq("module_id", current.id).order("position"),
+    supabase
+      .from("lessons")
+      .select("*, lesson_blocks(kind)")
+      .eq("module_id", current.id)
+      .order("position"),
   );
   /* Neighbours come from the index in this ordered list, not from arithmetic on
      `position`. The two used to be mixed — the lesson was found by matching
@@ -425,7 +434,10 @@ export async function getLessonView(
     supabase.from("lesson_blocks").select("*").eq("lesson_id", lesson.id).order("position"),
   );
 
-  let done = false;
+  /* Completion for the WHOLE module, not just this lesson — the rail draws a
+     tick per row and a meter over all of them, and one `.in()` costs the same
+     round trip the single-lesson lookup already cost. */
+  let doneIds = new Set<string>();
   if (userId) {
     const progress = await rows<{ lesson_id: string }>(
       "lesson done",
@@ -433,9 +445,9 @@ export async function getLessonView(
         .from("lesson_progress")
         .select("lesson_id")
         .eq("user_id", userId)
-        .eq("lesson_id", lesson.id),
+        .in("lesson_id", lessons.map((l) => l.id)),
     );
-    done = progress.length > 0;
+    doneIds = new Set(progress.map((p) => p.lesson_id));
   }
 
   return {
@@ -444,12 +456,13 @@ export async function getLessonView(
     lesson,
     index: li,
     total: lessons.length,
-    done,
+    done: doneIds.has(lesson.id),
     prev: lessons[li - 1] ?? null,
     next: lessons[li + 1] ?? null,
     nextModule: modules[mi + 1] ?? null,
     blocks,
     siblings: lessons,
+    doneIds,
   };
 }
 
