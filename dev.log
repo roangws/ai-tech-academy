@@ -39,3 +39,87 @@ Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
  GET /learn/qa-smoke-course 200 in 157ms (next.js: 4ms, proxy.ts: 3ms, application-code: 150ms)
 [browser] Encountered two children with the same key, ``. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
  GET /learn/qa-smoke-course/01 200 in 510ms (next.js: 286ms, proxy.ts: 3ms, application-code: 220ms)
+ GET / 200 in 494ms (next.js: 1.2ms, proxy.ts: 1.3ms, application-code: 491ms)
+ GET /sign-in?next=%2Fadmin%2Fcourses 200 in 22ms (next.js: 1.5ms, proxy.ts: 1.7ms, application-code: 19ms)
+ GET /admin/courses 200 in 198ms (next.js: 4ms, proxy.ts: 3ms, application-code: 192ms)
+ POST /sign-in?next=%2Fadmin%2Fcourses 200 in 343ms (next.js: 0.9ms, proxy.ts: 1.4ms, application-code: 341ms)
+  └─ ƒ signIn(null, {}) in 137ms src/app/actions/auth.ts
+ GET /admin 200 in 404ms (next.js: 88ms, proxy.ts: 4ms, application-code: 312ms)
+ GET /admin/people 200 in 291ms (next.js: 83ms, proxy.ts: 3ms, application-code: 205ms)
+ GET /admin/seats 200 in 188ms (next.js: 80ms, proxy.ts: 3ms, application-code: 105ms)
+ GET /admin/learners 200 in 206ms (next.js: 87ms, proxy.ts: 4ms, application-code: 114ms)
+ GET /admin/courses 200 in 129ms (next.js: 1.6ms, proxy.ts: 3ms, application-code: 124ms)
+ GET /admin/courses 200 in 135ms (next.js: 2ms, proxy.ts: 6ms, application-code: 126ms)
+ GET /admin/courses/qa-final 200 in 112ms (next.js: 4ms, proxy.ts: 1.8ms, application-code: 106ms)
+ POST /admin/courses 200 in 316ms (next.js: 1.4ms, proxy.ts: 1.7ms, application-code: 313ms)
+  └─ ƒ createCourse(null, {}) in 197ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 245ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 241ms)
+  └─ ƒ saveCourse(null, {}) in 70ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 180ms (next.js: 7ms, proxy.ts: 2ms, application-code: 170ms)
+  └─ ƒ saveModule(null, {}) in 73ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 182ms (next.js: 4ms, proxy.ts: 4ms, application-code: 175ms)
+  └─ ƒ createLesson({}) in 75ms src/app/actions/catalog.ts
+ GET /admin/courses/qa-final/11e1b15d-7631-4a56-8c46-41a1a94b3f73 200 in 150ms (next.js: 8ms, proxy.ts: 3ms, application-code: 139ms)
+ POST /admin/courses/qa-final/11e1b15d-7631-4a56-8c46-41a1a94b3f73 200 in 262ms (next.js: 4ms, proxy.ts: 3ms, application-code: 255ms)
+  └─ ƒ saveBlock({}) in 98ms src/app/actions/admin.ts
+ GET /admin/courses/qa-final 200 in 246ms (next.js: 5ms, proxy.ts: 4ms, application-code: 237ms)
+ POST /admin/courses/qa-final 200 in 237ms (next.js: 3ms, proxy.ts: 3ms, application-code: 231ms)
+  └─ ƒ setCourseStatus(null, {}) in 131ms src/app/actions/catalog.ts
+ GET / 200 in 197ms (next.js: 4ms, proxy.ts: 4ms, application-code: 190ms)
+ GET /courses 200 in 139ms (next.js: 3ms, proxy.ts: 2ms, application-code: 134ms)
+[browser] Image with src "/images/paths/gtm.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /courses/applied-ai-for-finance-teams 200 in 174ms (next.js: 4ms, proxy.ts: 3ms, generate-params: 1.5ms, application-code: 166ms)
+ GET /dashboard 200 in 310ms (next.js: 145ms, proxy.ts: 2ms, application-code: 163ms)
+ GET / 200 in 248ms (next.js: 3ms, proxy.ts: 1.4ms, application-code: 244ms)
+ GET /sign-in?next=%2Fadmin%2Fcourses 200 in 28ms (next.js: 4ms, proxy.ts: 3ms, application-code: 21ms)
+ GET /admin/courses 200 in 184ms (next.js: 5ms, proxy.ts: 2ms, application-code: 177ms)
+ POST /sign-in?next=%2Fadmin%2Fcourses 200 in 407ms (next.js: 1.0ms, proxy.ts: 3ms, application-code: 403ms)
+  └─ ƒ signIn(null, {}) in 214ms src/app/actions/auth.ts
+ GET /admin 200 in 248ms (next.js: 2ms, proxy.ts: 3ms, application-code: 243ms)
+ GET /admin/people 200 in 228ms (next.js: 6ms, proxy.ts: 3ms, application-code: 220ms)
+ GET /admin/seats 200 in 148ms (next.js: 6ms, proxy.ts: 3ms, application-code: 139ms)
+ GET /admin/learners 200 in 281ms (next.js: 7ms, proxy.ts: 4ms, application-code: 271ms)
+ GET /admin/courses 200 in 144ms (next.js: 1.9ms, proxy.ts: 3ms, application-code: 139ms)
+ GET /admin/courses 200 in 138ms (next.js: 1.5ms, proxy.ts: 3ms, application-code: 133ms)
+ POST /admin/courses 200 in 124ms (next.js: 1.1ms, proxy.ts: 1.8ms, application-code: 121ms)
+  └─ ƒ createCourse(null, {}) in 118ms src/app/actions/catalog.ts
+ GET / 200 in 340ms (next.js: 1.8ms, proxy.ts: 1.7ms, application-code: 336ms)
+ GET /sign-in?next=%2Fadmin%2Fcourses 200 in 31ms (next.js: 2ms, proxy.ts: 3ms, application-code: 25ms)
+ GET /admin/courses 200 in 170ms (next.js: 1.4ms, proxy.ts: 1.9ms, application-code: 166ms)
+ POST /sign-in?next=%2Fadmin%2Fcourses 200 in 326ms (next.js: 1.1ms, proxy.ts: 1.4ms, application-code: 323ms)
+  └─ ƒ signIn(null, {}) in 150ms src/app/actions/auth.ts
+ GET /admin 200 in 493ms (next.js: 1.6ms, proxy.ts: 3ms, application-code: 488ms)
+ GET /admin/people 200 in 154ms (next.js: 1.1ms, proxy.ts: 1.5ms, application-code: 152ms)
+ GET /admin/seats 200 in 114ms (next.js: 1.5ms, proxy.ts: 2ms, application-code: 110ms)
+ GET /admin/learners 200 in 293ms (next.js: 1.6ms, proxy.ts: 3ms, application-code: 289ms)
+ GET /admin/courses 200 in 153ms (next.js: 1.8ms, proxy.ts: 3ms, application-code: 149ms)
+ GET /admin/courses 200 in 140ms (next.js: 3ms, proxy.ts: 4ms, application-code: 133ms)
+ GET /admin/courses/qa-final 200 in 121ms (next.js: 7ms, proxy.ts: 4ms, application-code: 110ms)
+ POST /admin/courses 200 in 415ms (next.js: 1.4ms, proxy.ts: 2ms, application-code: 411ms)
+  └─ ƒ createCourse(null, {}) in 285ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 242ms (next.js: 1.8ms, proxy.ts: 3ms, application-code: 237ms)
+  └─ ƒ saveCourse(null, {}) in 126ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 245ms (next.js: 3ms, proxy.ts: 2ms, application-code: 240ms)
+  └─ ƒ saveModule(null, {}) in 67ms src/app/actions/catalog.ts
+ POST /admin/courses/qa-final 200 in 202ms (next.js: 4ms, proxy.ts: 2ms, application-code: 196ms)
+  └─ ƒ createLesson({}) in 92ms src/app/actions/catalog.ts
+ GET /admin/courses/qa-final/1bf0f6c0-4a7b-4bac-a8a1-d6c1d60f6bba 200 in 139ms (next.js: 7ms, proxy.ts: 3ms, application-code: 129ms)
+ POST /admin/courses/qa-final/1bf0f6c0-4a7b-4bac-a8a1-d6c1d60f6bba 200 in 255ms (next.js: 5ms, proxy.ts: 3ms, application-code: 247ms)
+  └─ ƒ saveBlock({}) in 98ms src/app/actions/admin.ts
+ GET /admin/courses/qa-final 200 in 269ms (next.js: 4ms, proxy.ts: 3ms, application-code: 262ms)
+ POST /admin/courses/qa-final 200 in 288ms (next.js: 3ms, proxy.ts: 2ms, application-code: 283ms)
+  └─ ƒ setCourseStatus(null, {}) in 177ms src/app/actions/catalog.ts
+ GET / 200 in 183ms (next.js: 1.4ms, proxy.ts: 2ms, application-code: 180ms)
+ GET /courses 200 in 136ms (next.js: 1.9ms, proxy.ts: 2ms, application-code: 132ms)
+[browser] Image with src "/images/paths/gtm.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /courses/applied-ai-for-finance-teams 200 in 183ms (next.js: 3ms, proxy.ts: 3ms, generate-params: 1.3ms, application-code: 176ms)
+ GET /sign-in?next=%2Fdashboard 200 in 26ms (next.js: 1.6ms, proxy.ts: 3ms, application-code: 21ms)
+ GET /dashboard 200 in 227ms (next.js: 5ms, proxy.ts: 2ms, application-code: 219ms)
+ POST /sign-in?next=%2Fdashboard 200 in 414ms (next.js: 1.0ms, proxy.ts: 1.5ms, application-code: 411ms)
+  └─ ƒ signIn(null, {}) in 179ms src/app/actions/auth.ts
+ GET /learn/applied-ai-for-finance-teams/01/where-the-month-end-goes 200 in 590ms (next.js: 343ms, proxy.ts: 2ms, application-code: 244ms)
+ GET /learn/applied-ai-for-finance-teams/01?from=where-the-month-end-goes 200 in 157ms (next.js: 7ms, proxy.ts: 1.6ms, application-code: 148ms)
+ POST /learn/applied-ai-for-finance-teams/01/where-the-month-end-goes 200 in 261ms (next.js: 4ms, proxy.ts: 3ms, application-code: 254ms)
+  └─ ƒ toggleLesson(null, {}) in 94ms src/app/actions/lms.ts

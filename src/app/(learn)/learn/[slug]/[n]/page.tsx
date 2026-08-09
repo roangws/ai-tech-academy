@@ -224,8 +224,15 @@ export default async function ModulePage({
                 <p className="t-body-sm mb-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[var(--radius-card)] border border-line bg-surface-subtle px-3.5 py-2.5 text-ink-secondary">
                   <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
                   <span>
-                    <strong className="font-medium text-ink">{finished.name}</strong> is done. That is
-                    all {lessonCount({ lessons })} in module {module.n}.
+                    {/* The real count, not an assumption that this was the last
+                        one outstanding. A reader arrives here from the last
+                        lesson in ORDER, which is not the same as the last one
+                        they had left — skipping two and finishing the fourth
+                        was being congratulated on finishing the module. */}
+                    <strong className="font-medium text-ink">{finished.name}</strong> is done.{" "}
+                    {done.size === lessons.length
+                      ? `That is all ${lessonCount({ lessons })} in module ${module.n}.`
+                      : `${done.size} of ${lessons.length} in module ${module.n}.`}
                   </span>
                 </p>
               ) : null}

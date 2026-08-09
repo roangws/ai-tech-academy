@@ -194,28 +194,35 @@ function toCourse(row: CourseRow): AdminCourse {
  * URLs. Drafts are excluded by the caller, not by the policy, so
  * `getAdminCatalog` must never route through this.
  */
-async function requestOrAnonClient() {
-  try {
-    return await createClient();
-  } catch {
-    /* No request context. The only thing `createClient` does that can throw here
-       is `await cookies()`, and the fallback reads the same public rows. */
-    return createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
-    );
-  }
+function anonClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
 }
 
 async function read(includeDrafts: boolean): Promise<AdminCourse[]> {
   /*
-    Drafts are only ever readable by an admin, and only a request has one — so
-    the draft path always takes the request-scoped client and lets RLS decide.
-    The published path falls back to the anonymous client when there is no
-    request, which is what makes this callable from `generateStaticParams`.
+    The published catalogue is read with the anonymous key, ALWAYS, and that is
+    what keeps the marketing pages static.
+
+    Reading it as the caller means `cookies()` on the request path, and a route
+    that touches cookies cannot be prerendered — the homepage, the catalogue
+    index and all five course pages became server-rendered on demand, and the
+    `(site)` layout took /privacy, /terms and /instructors with it. Verified in
+    the build output, which is where this was caught.
+
+    It is also correct rather than merely convenient: the published catalogue is
+    the same rows for every visitor. `catalog_courses_read` restricts drafts to
+    admins in Postgres now, so this key sees exactly what a visitor should, and
+    the filter below is a second statement of the same rule rather than the only
+    one — which is what it used to be.
+
+    The admin path takes the request client, because that is the one carrying a
+    session for `is_admin()` to evaluate.
   */
-  const supabase = includeDrafts ? await createClient() : await requestOrAnonClient();
+  const supabase = includeDrafts ? await createClient() : anonClient();
   let query = supabase.from("courses").select(SELECT).order("position");
   if (!includeDrafts) query = query.eq("status", "published");
 
