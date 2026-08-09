@@ -7,7 +7,7 @@ import {
   CheckCircleIcon,
   CircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Container, FactsLine, TextAction } from "@/components/ui";
+import { Container, FactsLine } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, ModuleState } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
@@ -316,10 +316,6 @@ export default async function CourseBoardPage({
         })}
       </ol>
 
-      <p className="t-body-sm mt-8 text-ink-secondary">
-        Looking for the course description, the outcomes and the instructor?{" "}
-        <TextAction href={`/courses/${slug}`}>The course page has all of it</TextAction>.
-      </p>
     </Container>
   );
 }

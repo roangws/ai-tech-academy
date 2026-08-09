@@ -7,6 +7,7 @@ import {
   WhatYouLearn,
 } from "@/components/course/blocks";
 import { Curriculum } from "@/components/course/curriculum";
+import { CoursePreview } from "@/components/course/preview";
 import { EnrollRail } from "@/components/course/enroll-rail";
 import { CourseHero, StatBar } from "@/components/course/hero";
 import { Questions } from "@/components/course/questions";
@@ -286,6 +287,10 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
             */}
             <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
               <Curriculum modules={course.curriculum} totalLessons={totalLessons(course)} />
+              {/* The first lesson's video and the one control that starts the
+                  course, directly under the contents a reader has just scanned.
+                  Renders nothing when the course has no video yet. */}
+              <CoursePreview course={course} />
             </div>
           </div>
         </Container>

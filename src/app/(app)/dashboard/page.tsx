@@ -7,12 +7,12 @@ import {
   SealCheckIcon,
   TableIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { Container, FactsLine, StatusChip } from "@/components/ui";
+import { Container, StatusChip } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
-import { courses as catalog, totalLessons, moduleCount } from "@/lib/content";
+import { courses as catalog, totalLessons } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -130,50 +130,53 @@ export default async function DashboardPage() {
           <h2 id="continue-heading" className="sr-only">
             Continue where you left off
           </h2>
-          <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e1 sm:grid-cols-[240px_minmax(0,1fr)]">
-            {/* The photograph, not a glyph. It is the same frame the catalogue
-                card uses, so the course a learner clicked is the course they
-                recognise here. Hidden below sm, where 240px of picture would be
-                most of the first screen. */}
-            {/* An explicit ratio, because the photo is `absolute inset-0` and a grid
-                cell with no in-flow content has nothing else to take its height
-                from. The grid cards get theirs the same way. */}
-            <div className="relative hidden aspect-[4/3] sm:block">
-              <CoursePhoto course={current.course} sizes="240px" priority />
+          {/*
+            The course they are actually doing, at the size of a decision.
+
+            Five equal cards told a learner nothing about what to do next, and
+            people take one course at a time: the other four are a shelf, not a
+            choice they are making today. So this is the page, and the rest is a
+            list under it.
+          */}
+          <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[300px]">
+              <CoursePhoto course={current.course} sizes="(min-width: 1024px) 50vw, 100vw" priority />
             </div>
 
-            <div className="min-w-0 p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-0">
+            <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
+              <div className="flex flex-wrap items-center gap-3">
                 <p className="t-label text-ink-muted">{current.course.badge}</p>
-                <p className="t-card-title mt-0.5 text-ink">{current.course.title}</p>
+                {current.enrollment.status === "completed" ? (
+                  <StatusChip>Complete</StatusChip>
+                ) : null}
               </div>
-              {current.enrollment.status === "completed" ? <StatusChip>Complete</StatusChip> : null}
-            </div>
+              <h2 className="t-h2 mt-1 text-ink">{current.course.title}</h2>
 
-            <Meter className="mt-4 max-w-[420px]" done={current.done} total={current.total} />
+              <Meter className="mt-5" done={current.done} total={current.total} />
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-              {/*
-                Deep-linked and named. It pointed at the course board — the same
-                href as "Start module 1" on a course never opened — so the only
-                difference between a learner six lessons in and one who had never
-                arrived was the word on the link.
-              */}
-              <Link
-                href={current.resume?.href ?? `/learn/${current.course.slug}`}
-                className="t-button inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
-              >
-                {current.resume ? "Continue" : "Open course"}
-                <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-              </Link>
               {current.resume ? (
-                <p className="t-body-sm min-w-0 text-ink-secondary">
-                  <span className="text-ink">{current.resume.lessonName}</span>
-                  <span className="text-ink-muted"> · {current.resume.moduleName}</span>
+                <p className="t-body-sm mt-5 text-ink-secondary">
+                  Next up
+                  <span className="mt-0.5 block text-ink">{current.resume.lessonName}</span>
+                  <span className="t-meta block text-ink-muted">{current.resume.moduleName}</span>
                 </p>
               ) : null}
-            </div>
+
+              <div className="mt-5">
+                <Link
+                  href={current.resume?.href ?? `/learn/${current.course.slug}`}
+                  className="t-button inline-flex min-h-[48px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-6 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+                >
+                  {current.resume ? "Continue" : "Open course"}
+                  <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+                </Link>
+                <Link
+                  href={`/learn/${current.course.slug}`}
+                  className="t-button ml-5 inline-flex min-h-[48px] items-center text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
+                >
+                  All {current.course.curriculum.length} modules
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -259,62 +262,42 @@ export default async function DashboardPage() {
           {current ? "The other courses" : "Five courses, all free"}
         </h2>
 
-        <ul className="mt-4 grid gap-4 lg:grid-cols-2">
+        {/*
+            A shelf, not five more cards. Photographs at card size here competed
+            with the course above them for the same attention, which is the thing
+            this layout exists to stop.
+        */}
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {rest.map((course) => {
             const row = byCourseId.get(course.id);
-            const total = row?.total || totalLessons(course);
             const done = row?.done ?? 0;
+            const total = row?.total || totalLessons(course);
             const isStarted = done > 0;
 
             return (
-              <li
-                key={course.id}
-                className="flex flex-col overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface transition-shadow hover:shadow-e1"
-              >
-                <div className="relative aspect-[16/9]">
-                  <CoursePhoto course={course} sizes="(min-width: 1024px) 420px, 100vw" />
-                </div>
-
-                <div className="flex flex-1 flex-col p-5">
-                <div className="min-w-0">
-                  <p className="t-label text-ink-muted">{course.badge}</p>
-                  <h3 className="t-card-title mt-0.5 text-ink">{course.title}</h3>
-                </div>
-
-                <p className="t-body-sm mt-2.5 line-clamp-2 text-ink-secondary">{course.summary}</p>
-
-                {isStarted ? (
-                  <Meter className="mt-4" done={done} total={total} />
-                ) : (
-                  <FactsLine
-                    className="mt-4"
-                    items={[course.level, course.duration, moduleCount(course)]}
+              <li key={course.id}>
+                <Link
+                  href={row?.resume?.href ?? `/learn/${course.slug}`}
+                  className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
+                >
+                  <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">
+                    <CoursePhoto course={course} sizes="56px" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
+                    <span className="t-meta block text-ink-muted">
+                      {isStarted
+                        ? `${done} of ${total} lessons`
+                        : [course.level, course.duration].filter(Boolean).join(" · ")}
+                    </span>
+                  </span>
+                  <ArrowRightIcon
+                    size={14}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="flex-none text-ink-muted"
                   />
-                )}
-
-                <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4 [margin-top:1.25rem]">
-                  {/* 44px minimum below lg. These were 20px-tall bare text links —
-                      the most-used control in the product, at a size WCAG 2.5.8
-                      fails outright. */}
-                  <Link
-                    href={row?.resume?.href ?? `/learn/${course.slug}`}
-                    className="t-button inline-flex min-h-[44px] items-center gap-1.5 text-accent no-underline hover:underline lg:min-h-0"
-                  >
-                    {isStarted ? "Continue" : "Start module 1"}
-                    <ArrowRightIcon size={14} weight="bold" aria-hidden="true" />
-                  </Link>
-                  <Link
-                    href={isStarted ? `/dashboard/outcome/${course.id}` : `/courses/${course.slug}`}
-                    className="t-button inline-flex min-h-[44px] items-center text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline lg:min-h-0"
-                  >
-                    {isStarted
-                      ? row?.sheet
-                        ? "Outcome sheet"
-                        : "Start an outcome sheet"
-                      : "What it covers"}
-                  </Link>
-                </div>
-                </div>
+                </Link>
               </li>
             );
           })}

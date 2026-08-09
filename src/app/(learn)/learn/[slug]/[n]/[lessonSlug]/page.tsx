@@ -298,47 +298,88 @@ export default async function LessonPage({
           </div>
         ) : null}
 
-        {/* ----------------------------------------------------- pagination */}
-        <nav
-          aria-label="Lessons"
-          className="mt-10 flex flex-wrap justify-between gap-4 border-t border-line pt-6"
-        >
+        {/*
+          Where to go next, as two named cards.
+
+          It was a pair of 14px text links at the very bottom, an arrow and a
+          truncated title on each side, and it read as page furniture rather than
+          as the way through the course. On a lesson that is the last thing on the
+          page it is also the only forward control a reader has, so it has to look
+          like one.
+
+          Each card names the lesson AND says which direction it is, because
+          "The launch checklist" on its own tells you nothing about whether you
+          have read it.
+        */}
+        <nav aria-label="Lessons in this module" className="mt-10 grid gap-3 border-t border-line pt-6 sm:grid-cols-2">
           {prev ? (
             <Link
               href={`/learn/${slug}/${n}/${prev.slug}`}
-              className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-ink-secondary no-underline hover:text-ink"
+              className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 no-underline transition-colors hover:border-line-strong"
             >
-              <ArrowLeftIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
-              <span className="clamp-1">{prev.name}</span>
+              <ArrowLeftIcon
+                size={16}
+                weight="bold"
+                aria-hidden="true"
+                className="flex-none text-ink-muted transition-colors group-hover:text-accent"
+              />
+              <span className="min-w-0">
+                <span className="t-meta block text-ink-muted">Previous lesson</span>
+                <span className="t-body-sm block clamp-2 text-ink">{prev.name}</span>
+              </span>
             </Link>
           ) : (
             <Link
               href={`/learn/${slug}/${n}`}
-              className="t-button inline-flex items-center gap-1.5 text-ink-secondary no-underline hover:text-ink"
+              className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 no-underline transition-colors hover:border-line-strong"
             >
-              <ArrowLeftIcon size={14} weight="bold" aria-hidden="true" />
-              Module {module.n}
+              <ArrowLeftIcon
+                size={16}
+                weight="bold"
+                aria-hidden="true"
+                className="flex-none text-ink-muted transition-colors group-hover:text-accent"
+              />
+              <span className="min-w-0">
+                <span className="t-meta block text-ink-muted">Back to</span>
+                <span className="t-body-sm block clamp-2 text-ink">Module {module.n}</span>
+              </span>
             </Link>
           )}
 
           {next ? (
             <Link
               href={`/learn/${slug}/${n}/${next.slug}`}
-              className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-right text-accent no-underline hover:underline"
+              className="group flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-right no-underline transition-colors hover:border-line-strong sm:col-start-2"
             >
-              <span className="clamp-1">{next.name}</span>
-              <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
-            </Link>
-          ) : nextModule ? (
-            <Link
-              href={`/learn/${slug}/${nextModule.n}`}
-              className="t-button inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
-            >
-              Module {nextModule.n} · {nextModule.name}
-              <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
+              <span className="min-w-0 flex-1">
+                <span className="t-meta block text-ink-muted">Next lesson</span>
+                <span className="t-body-sm block clamp-2 text-ink">{next.name}</span>
+              </span>
+              <ArrowRightIcon
+                size={16}
+                weight="bold"
+                aria-hidden="true"
+                className="flex-none text-ink-muted transition-colors group-hover:text-accent"
+              />
             </Link>
           ) : (
-            <span />
+            <Link
+              href={`/learn/${slug}/${n}#artifact-heading`}
+              className="group flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-accent bg-accent-tint p-4 text-right no-underline transition-colors hover:bg-surface sm:col-start-2"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="t-meta block text-accent">Last lesson in this module</span>
+                <span className="t-body-sm block clamp-2 text-ink">
+                  {module.artifact ? `Write your ${module.artifact.toLowerCase()}` : "Finish the module"}
+                </span>
+              </span>
+              <ArrowRightIcon
+                size={16}
+                weight="bold"
+                aria-hidden="true"
+                className="flex-none text-accent"
+              />
+            </Link>
           )}
         </nav>
         </div>

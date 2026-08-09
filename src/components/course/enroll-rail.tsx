@@ -78,28 +78,12 @@ export function EnrollRail({ course }: { course: Course }) {
           </div>
 
           {/*
-            THE LINE THAT MAKES THE PROMISE REACHABLE.
-
-            "Module 1 opens with no account" is stated above, on the catalog, on
-            the homepage, in the FAQ and on the auth panel — and until this link
-            existed there was no way to act on it. Every CTA on the site pointed
-            at /sign-up; a grep for `/learn` outside the app group returned
-            nothing. A reader who wanted the free module could only get it by
-            typing the URL, which made the gate, the locked panel and the whole
-            access model unreachable copy.
-
-            A text action rather than a second button, deliberately. The argument
-            in EnrollButton — that one label has to mean one thing, and "Enroll
-            for free" starts the account everywhere — is right, and this does not
-            touch it. The primary control still opens an account; this is the
-            secondary path for somebody who wants to look first, which is exactly
-            what the free module is for.
+            "or start module 1 without one" was here and is gone on Roan's
+            instruction. The card asks one thing now. The free first module is
+            still reachable, from the curriculum's own call to action further
+            down the page, which is where a reader who wants to look first is
+            already heading.
           */}
-          <p className="t-meta mt-2.5 text-center">
-            <TextAction href={`/learn/${course.slug}`}>
-              or start module 1 without one
-            </TextAction>
-          </p>
 
           {/*
             "A free account keeps your work and opens modules 2 to 8" was here,

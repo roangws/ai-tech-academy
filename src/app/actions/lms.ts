@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, requireUser } from "@/lib/auth";
 import { byId, bySlug, getMySeat } from "@/lib/lms/queries";
-import { safeNext } from "@/lib/safe-next";
 
 /**
  * Throw on a failed write instead of pretending it succeeded.

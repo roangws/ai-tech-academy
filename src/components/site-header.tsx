@@ -11,7 +11,7 @@ import {
   useTransform,
   useVelocity,
 } from "motion/react";
-import { CaretDownIcon, ListIcon, XIcon } from "@phosphor-icons/react";
+import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
 import { CoursesMenu } from "@/components/lms/courses-menu";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
