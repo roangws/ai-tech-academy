@@ -10,7 +10,8 @@ import {
   StatusChip,
   TextAction,
 } from "@/components/ui";
-import { courseHref, courses, cta, moduleCount, type Course } from "@/lib/content";
+import { cta } from "@/lib/content";
+import { getCatalog, moduleCount, type Course } from "@/lib/catalog";
 
 /**
  * One catalog, one reading order.
@@ -57,8 +58,21 @@ import { courseHref, courses, cta, moduleCount, type Course } from "@/lib/conten
  * set by an ordinary card next to it and the cover has a number to fill rather
  * than one to invent.
  */
-export function Courses() {
-  const [featured, ...rest] = courses;
+export async function Courses() {
+  /*
+    Which course leads is a column now, not an array index.
+
+    This used to be `const [featured, ...rest] = courses` — the lead card was
+    whichever course happened to be written first in content.ts, so "what does
+    the homepage lead with" was a code change and an admin had no say in it.
+    `courses.featured` decides it, and the fallback is the first published course
+    so this section can never render an empty lead cell.
+  */
+  const catalog = await getCatalog();
+  if (!catalog.length) return null;
+
+  const featured = catalog.find((c) => c.featured) ?? catalog[0];
+  const rest = catalog.filter((c) => c.id !== featured.id);
 
   return (
     <Section id="courses" tint>
@@ -167,7 +181,7 @@ function FeaturedCard({ course }: { course: Course }) {
             title did not reach its course. */}
         <h3 className="t-h3 text-ink">
           <Link
-            href={courseHref(course.id)}
+            href={`/courses/${course.slug}`}
             className="text-ink no-underline hover:underline"
           >
             {course.title}
@@ -269,7 +283,7 @@ function FeaturedCard({ course }: { course: Course }) {
         */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
           <EnrollButton withDate size="md" />
-          <TextAction href={courseHref(course.id)}>
+          <TextAction href={`/courses/${course.slug}`}>
             {cta.view}
             <ArrowRightIcon size={14} weight="bold" />
           </TextAction>
@@ -338,7 +352,7 @@ export function CourseCard({ course }: { course: Course }) {
         */}
         <h3 className="t-card-title clamp-2 min-h-[44px] text-ink md:min-h-[50px]">
           <Link
-            href={courseHref(course.id)}
+            href={`/courses/${course.slug}`}
             className="text-ink no-underline hover:underline"
           >
             {course.title}
@@ -410,7 +424,7 @@ export function CourseCard({ course }: { course: Course }) {
             two can wrap onto separate lines and the lead's never do. */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2.5 border-t border-line pt-3.5">
           <EnrollButton withDate tone="secondary" size="md" />
-          <TextAction href={courseHref(course.id)}>
+          <TextAction href={`/courses/${course.slug}`}>
             {cta.view}
             <ArrowRightIcon
               size={13}

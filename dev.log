@@ -1,0 +1,33 @@
+
+> aitechedu@0.1.0 dev
+> next dev --port 3111 --hostname 127.0.0.1
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://127.0.0.1:3111
+- Network:       http://127.0.0.1:3111
+- Environments: .env.local
+✓ Ready in 171ms
+✓ Running next.config.ts took 12ms
+- Experiments (use with caution):
+  · optimizePackageImports
+
+ GET / 200 in 1440ms (next.js: 984ms, proxy.ts: 76ms, application-code: 380ms)
+⨯ Error: Slot failed to slot onto its `Slottable`. Expected `Slottable` to receive a single React element child.
+    at ignore-listed frames {
+  digest: '3716432188'
+}
+ GET /courses 500 in 419ms (next.js: 130ms, proxy.ts: 2ms, application-code: 287ms)
+⨯ Error: Slot failed to slot onto its `Slottable`. Expected `Slottable` to receive a single React element child.
+    at ignore-listed frames {
+  digest: '1144520623'
+}
+ GET /courses 500 in 488ms (next.js: 5ms, proxy.ts: 3ms, application-code: 480ms)
+ GET /courses 200 in 147ms (next.js: 4ms, proxy.ts: 2ms, application-code: 141ms)
+ GET /courses 200 in 230ms (next.js: 5ms, proxy.ts: 5ms, application-code: 220ms)
+ GET / 200 in 256ms (next.js: 6ms, proxy.ts: 7ms, application-code: 243ms)
+ GET /courses 200 in 140ms (next.js: 2.0ms, proxy.ts: 1.5ms, application-code: 137ms)
+ GET /courses/applied-ai-for-gtm-teams 200 in 731ms (next.js: 183ms, proxy.ts: 1.5ms, generate-params: 291ms, application-code: 256ms)
+ GET /sitemap.xml 200 in 335ms (next.js: 147ms, application-code: 188ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance 200 in 553ms (next.js: 354ms, proxy.ts: 3ms, application-code: 196ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01 200 in 431ms (next.js: 286ms, proxy.ts: 1.6ms, application-code: 143ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 599ms (next.js: 327ms, proxy.ts: 1.5ms, application-code: 271ms)

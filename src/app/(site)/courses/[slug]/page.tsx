@@ -13,7 +13,8 @@ import { CourseHero, StatBar } from "@/components/course/hero";
 import { Questions } from "@/components/course/questions";
 import { CourseTabs } from "@/components/course/tabs";
 import { Container } from "@/components/ui";
-import { brand, courses, totalLessons } from "@/lib/content";
+import { brand } from "@/lib/content";
+import { getCatalog, getCourseBySlug, totalLessons } from "@/lib/catalog";
 import { courseJsonLd } from "@/lib/seo";
 
 /**
@@ -70,10 +71,27 @@ export const revalidate = 3600;
  * to a lookup that knows about ids. It is a hard 404 unless the config rewrites
  * it first.
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return courses.map((c) => ({ slug: c.slug }));
+/**
+ * Prerender what exists at build; serve anything newer on demand.
+ *
+ * This was `dynamicParams = false`, which made an unrecognised slug a 404 at the
+ * routing layer. That was correct while the catalogue was a five-item array in
+ * content.ts — there was no case where a valid slug was unknown at build.
+ *
+ * There is now. A course created in the admin console has a slug that did not
+ * exist when this deployment was built, and with dynamic params off its page
+ * would 404 until somebody redeployed the site. That is the same "you have to be
+ * a programmer to run this" failure the catalogue move exists to end, wearing a
+ * different hat.
+ *
+ * So unknown slugs render on demand and are cached from then on. `notFound()` in
+ * the component is what answers a slug that genuinely does not exist, which is
+ * the check that was being done twice.
+ */
+export async function generateStaticParams() {
+  return (await getCatalog()).map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -82,7 +100,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const course = courses.find((c) => c.slug === slug);
+  const course = await getCourseBySlug(slug);
   if (!course) return {};
 
   const path = `/courses/${course.slug}`;
@@ -148,7 +166,7 @@ export async function generateMetadata({
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const course = courses.find((c) => c.slug === slug);
+  const course = await getCourseBySlug(slug);
   if (!course) notFound();
 
   return (

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CourseCard } from "@/components/sections/courses";
 import { EnrollButton, Panel, Section, SectionHeader } from "@/components/ui";
-import { brand, catalog, courses } from "@/lib/content";
+import { brand, catalog } from "@/lib/content";
+import { getCatalog } from "@/lib/catalog";
 import { catalogJsonLd } from "@/lib/seo";
 
 /**
@@ -48,44 +49,62 @@ import { catalogJsonLd } from "@/lib/seo";
  * cannot justify — the note in sections/courses.tsx makes the same argument
  * about why a lead card is not a claim that Course A is better.
  */
-export const metadata: Metadata = {
-  title: catalog.seoTitle,
-  description: catalog.seoDescription,
-  keywords: [...catalog.keywords],
-  alternates: { canonical: "/courses" },
-  openGraph: {
-    type: "website",
-    siteName: brand.name,
+export async function generateMetadata(): Promise<Metadata> {
+  /* The lead course's cover, resolved from the catalogue rather than from array
+     position zero. A static `metadata` object cannot do this now that the
+     catalogue is a query; the object below is otherwise unchanged. */
+  const catalogue = await getCatalog();
+  const lead = catalogue.find((c) => c.featured) ?? catalogue[0];
+
+  return {
     title: catalog.seoTitle,
     description: catalog.seoDescription,
-    url: "/courses",
-    /* The lead course's cover. A grid of five has no image of its own, and the
-       alternative is the site-wide poster frame, which is what every other
-       shared link already previews.
+    keywords: [...catalog.keywords],
+    alternates: { canonical: "/courses" },
+    openGraph: {
+      type: "website",
+      siteName: brand.name,
+      title: catalog.seoTitle,
+      description: catalog.seoDescription,
+      url: "/courses",
+      /* A grid of courses has no image of its own, and the alternative is the
+         site-wide poster frame, which is what every other shared link already
+         previews.
 
-       The dimensions come off the image now. They were `1600x900` against a
-       file that is 1127x1400, so this page declared a portrait as a landscape
-       card. content.ts carries the real numbers beside each `src`. */
-    images: courses[0]?.cover
-      ? [
-          {
-            url: courses[0].cover.src,
-            width: courses[0].cover.width,
-            height: courses[0].cover.height,
-            alt: courses[0].cover.alt,
-          },
-        ]
-      : undefined,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: catalog.seoTitle,
-    description: catalog.seoDescription,
-    images: courses[0]?.cover ? [courses[0].cover.src] : undefined,
-  },
-};
+         The dimensions come off the image. They were `1600x900` against a file
+         that is 1127x1400, so this page declared a portrait as a landscape
+         card. Those numbers are columns on the course now. */
+      images: lead?.cover
+        ? [{ url: lead.cover.src, width: lead.cover.width, height: lead.cover.height, alt: lead.cover.alt }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: catalog.seoTitle,
+      description: catalog.seoDescription,
+      images: lead?.cover ? [lead.cover.src] : undefined,
+    },
+  };
+}
 
+/**
+ * The page stays synchronous, and the two reads are child components.
+ *
+ * This is not a style preference. Making `CoursesPage` itself `async` breaks the
+ * page outright: the closing panel renders an `EnrollButton`, which is a
+ * `LiquidButton asChild`, which is a Radix `Slot`. Inside an async Server
+ * Component, React can hand `Slot` a thenable where it requires a single
+ * element, and it throws "Slot failed to slot onto its `Slottable`" — a 500 with
+ * a stack that names none of this. Verified by bisection: identical page, sole
+ * difference `async`.
+ *
+ * Pushing the awaits into `<CourseGrid />` and `<CatalogJsonLd />` fixes it and
+ * is what the Next 16 caching guide asks for anyway — the deeper the async work
+ * sits, the more of the page prerenders. Everything above stays in the static
+ * shell.
+ */
 export default function CoursesPage() {
+
   return (
     <>
       {/*
@@ -96,10 +115,7 @@ export default function CoursesPage() {
         and it is the piece that makes each course page's "Courses" breadcrumb
         resolve to something. lib/seo.ts has what is deliberately absent.
       */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: catalogJsonLd().replace(/</g, "\\u003c") }}
-      />
+      <CatalogJsonLd />
 
       {/*
         The masthead is a plain white band rather than the course pages' ink one.
@@ -155,15 +171,9 @@ export default function CoursesPage() {
             heading-by-heading navigation, which is the way this page is most
             useful to a screen reader: five h3s under one h2 is the outline the
             grid actually has. */}
-        <h2 className="sr-only">The five courses</h2>
+        <h2 className="sr-only">Every course</h2>
 
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          {courses.map((course) => (
-            <li key={course.id} className="flex">
-              <CourseCard course={course} />
-            </li>
-          ))}
-        </ul>
+        <CourseGrid />
       </Section>
 
       {/*
@@ -236,5 +246,30 @@ export default function CoursesPage() {
         </Panel>
       </Section>
     </>
+  );
+}
+
+/** Every published course. A child component so the page above stays sync. */
+async function CourseGrid() {
+  const published = await getCatalog();
+
+  return (
+    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+      {published.map((course) => (
+        <li key={course.id} className="flex">
+          <CourseCard course={course} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The `ItemList`, which now has to read the catalogue to know what is in it. */
+async function CatalogJsonLd() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: (await catalogJsonLd()).replace(/</g, "\\u003c") }}
+    />
   );
 }

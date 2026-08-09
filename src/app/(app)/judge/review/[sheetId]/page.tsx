@@ -72,7 +72,7 @@ export default async function ReviewSheetPage({
 
   const scored = new Map((existing ?? []).map((j) => [j.criterion_id as string, j as Judgement]));
   const cols = outcomes.sheet.columns;
-  const course = byId.get(sheet.course_id);
+  const course = await byId(sheet.course_id);
 
   return (
     <Container className="py-12 md:py-16">

@@ -3,7 +3,7 @@ import { Avatar } from "@/components/lms/avatar";
 import { Empty } from "@/components/lms/ui";
 import { listPeople } from "@/lib/lms/admin";
 import { grantRole, revokeRole, assignInstructor } from "@/app/actions/admin";
-import { courses as catalog } from "@/lib/content";
+import { getAdminCatalog as getCatalog } from "@/lib/catalog";
 import type { AppRole } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,9 @@ const GRANTABLE: readonly AppRole[] = ["instructor", "judge", "admin"];
 
 export default async function AdminPeople() {
   const people = await listPeople();
+  /* Drafts included: an instructor can be assigned to a course before it is
+     published, which is how a course gets built by somebody other than an admin. */
+  const catalog = await getCatalog();
 
   return (
     <>

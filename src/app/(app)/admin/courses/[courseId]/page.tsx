@@ -15,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ courseId: string }>;
 }): Promise<Metadata> {
   const { courseId } = await params;
-  return { title: byId.get(courseId)?.title ?? "Course", robots: { index: false, follow: false } };
+  return { title: (await byId(courseId))?.title ?? "Course", robots: { index: false, follow: false } };
 }
 
 /**
@@ -33,7 +33,7 @@ export async function generateMetadata({
  */
 export default async function AdminCourse({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const course = byId.get(courseId);
+  const course = await byId(courseId);
   if (!course) notFound();
 
   const supabase = await createClient();

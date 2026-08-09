@@ -2,6 +2,7 @@ import { SmoothAnchors } from "@/components/smooth-anchors";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getViewer } from "@/lib/auth";
+import { getCatalog } from "@/lib/catalog";
 
 /**
  * The page chrome, for every route that has chrome.
@@ -50,7 +51,7 @@ import { getViewer } from "@/lib/auth";
  * which is worse than the caching.
  */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const viewer = await getViewer();
+  const [viewer, courses] = await Promise.all([getViewer(), getCatalog()]);
   return (
     <>
       <a
@@ -65,6 +66,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             ? { name: viewer.name, email: viewer.email, avatarUrl: viewer.profile?.avatar_url ?? null }
             : null
         }
+        courses={courses.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          title: c.title,
+          badge: c.badge,
+          level: c.level,
+          duration: c.duration,
+        }))}
       />
       {/*
         `tabIndex={-1}` is what makes the skip link above actually skip.

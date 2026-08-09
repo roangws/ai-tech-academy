@@ -4,7 +4,8 @@ import { Container, FactsLine, StatusChip } from "@/components/ui";
 import { CourseGlyph } from "@/components/course/icons";
 import { Empty } from "@/components/lms/ui";
 import { requireRole } from "@/lib/auth";
-import { getTaughtCourses, getSubmittedWork, byId } from "@/lib/lms/queries";
+import { getTaughtCourses, getSubmittedWork } from "@/lib/lms/queries";
+import { getCatalog } from "@/lib/catalog";
 import { leaveFeedback } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,10 @@ export default async function InstructorPage() {
   const viewer = await requireRole("admin", "/instructor");
   const taught = await getTaughtCourses(viewer.id);
   const work = await getSubmittedWork(taught.map((c) => c.id));
+
+  /* Course badges, resolved once. The catalogue is a query now, so a lookup
+     inside the render loop would be a promise per row. */
+  const badges = new Map((await getCatalog()).map((c) => [c.id, c.badge]));
 
   const awaiting = work.filter((w) => w.status === "submitted");
   const reviewed = work.filter((w) => w.status === "reviewed");
@@ -109,7 +114,7 @@ export default async function InstructorPage() {
             <li key={item.id} className="rounded-[var(--radius-feature)] border border-line bg-surface p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <p className="t-card-title text-ink">
-                  {byId.get(item.courseId)?.badge ?? item.courseId} · Module {item.moduleNumber} ·{" "}
+                  {badges.get(item.courseId) ?? item.courseId} · Module {item.moduleNumber} ·{" "}
                   {item.moduleName}
                 </p>
                 <p className="t-meta text-ink-muted">

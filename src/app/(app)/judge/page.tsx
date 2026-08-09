@@ -10,7 +10,7 @@ import {
   byId,
 } from "@/lib/lms/queries";
 import { saveCurriculumReview } from "@/app/actions/lms";
-import { courses } from "@/lib/content";
+import { getCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +79,11 @@ export default async function JudgePage() {
   /* A null reviews_course_id is the learning-design seat, which reads assessment
      across all five rather than one course. getSheetsForReview treats it as
      "every course", and holds_seat() in Postgres agrees. */
-  const course = seat.reviews_course_id ? byId.get(seat.reviews_course_id) : null;
+  const course = seat.reviews_course_id ? await byId(seat.reviews_course_id) : null;
+  /* Badges for the queue below, resolved once rather than per sheet. */
+  const catalog = await getCatalog();
+  const badges = new Map(catalog.map((c) => [c.id, c.badge]));
+
   const [sheets, reviews] = await Promise.all([
     getSheetsForReview(seat.reviews_course_id, viewer.id),
     getCurriculumReviews(seat.id),
@@ -142,7 +146,7 @@ export default async function JudgePage() {
                 <option value="" disabled>
                   Pick the course this review is about
                 </option>
-                {courses.map((c) => (
+                {catalog.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.badge} · {c.title}
                   </option>
@@ -284,7 +288,7 @@ export default async function JudgePage() {
                         only bias that — which is why the profiles policy does not
                         extend to judges and why nothing here asks. */}
                     <span className="t-meta mt-1 block text-ink-muted">
-                      {sheet.reference} · {byId.get(sheet.course_id)?.badge ?? sheet.course_id} ·{" "}
+                      {sheet.reference} · {badges.get(sheet.course_id) ?? sheet.course_id} ·{" "}
                       {sheet.rows.length} measure{sheet.rows.length === 1 ? "" : "s"}
                       {sheet.measured_after_days ? ` · measured after ${sheet.measured_after_days} days` : ""}
                     </span>

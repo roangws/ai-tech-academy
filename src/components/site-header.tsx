@@ -17,6 +17,7 @@ import { CoursesMenu } from "@/components/lms/courses-menu";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { nav } from "@/lib/content";
+import type { Course } from "@/lib/catalog";
 
 /**
  * Single-tier product header, 72px.
@@ -86,7 +87,15 @@ export type HeaderViewer = {
   avatarUrl: string | null;
 };
 
-export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) {
+export function SiteHeader({
+  viewer = null,
+  /* The catalogue, resolved by the (site) layout. See the note on CoursesMenu:
+     this is a client component and can no longer import the course list. */
+  courses = [],
+}: {
+  viewer?: HeaderViewer | null;
+  courses?: readonly Pick<Course, "id" | "slug" | "title" | "badge" | "level" | "duration">[];
+}) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -479,6 +488,7 @@ export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) 
                   href={item.href}
                   label={item.label}
                   current={current || isLit}
+                  courses={courses}
                 />
               );
             }

@@ -1,11 +1,5 @@
-import {
-  brand,
-  catalog,
-  courses,
-  instructors,
-  site,
-  type Course,
-} from "@/lib/content";
+import { brand, catalog, instructors, site } from "@/lib/content";
+import { getCatalog, type Course } from "@/lib/catalog";
 
 /**
  * Structured data, and the rule it is written under is the same one that governs
@@ -288,7 +282,8 @@ export function organizationJsonLd(): string {
  * Absent, as everywhere else in this file: no rating, no enrolment count, no
  * `numberOfItems` inflated past five.
  */
-export function catalogJsonLd(): string {
+export async function catalogJsonLd(): Promise<string> {
+  const courses = await getCatalog();
   return JSON.stringify({
     "@context": "https://schema.org",
     "@graph": [

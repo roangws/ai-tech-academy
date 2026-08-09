@@ -27,7 +27,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; n: string }>;
 }): Promise<Metadata> {
   const { slug, n } = await params;
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   return {
     title: course ? `Module ${n} · ${course.title}` : "Module",
     robots: { index: false, follow: false },

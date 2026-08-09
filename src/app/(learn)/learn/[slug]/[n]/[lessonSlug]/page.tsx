@@ -29,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; n: string; lessonSlug: string }>;
 }): Promise<Metadata> {
   const { slug, n, lessonSlug } = await params;
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
 
   /* The title used to be the course name on every one of the 173 lessons, so a
      reader with six tabs open had six identical ones and browser history was a
@@ -72,9 +72,9 @@ export default async function LessonPage({
      permanently, to the lesson that was at that slot. It is three lines and it
      means no reader ever meets a 404 for a URL this app itself handed them. */
   if (/^\d+$/.test(lessonSlug)) {
-    const moved = bySlug
-      .get(slug)
-      ?.curriculum.find((m) => m.n === n)?.lessons[Number(lessonSlug)];
+    const moved = (await bySlug(slug))?.curriculum.find((m) => m.n === n)?.lessons[
+      Number(lessonSlug)
+    ];
     if (moved) permanentRedirect(`/learn/${slug}/${n}/${moved.slug}`);
     notFound();
   }

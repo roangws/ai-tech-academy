@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRightIcon, CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import { CourseGlyph } from "@/components/course/icons";
-import { courseHref, courses } from "@/lib/content";
+import type { Course } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 /**
@@ -48,11 +48,21 @@ export function CoursesMenu({
   label,
   current,
   className,
+  /*
+    The catalogue arrives as a prop rather than as an import.
+
+    This is a client component and the catalogue is a database query now, so it
+    cannot read it. The list is resolved in the (site) layout — a server
+    component — and threaded down through SiteHeader. That also means the menu
+    shows courses created in the console without this file knowing they exist.
+  */
+  courses,
 }: {
   href: string;
   label: string;
   current?: boolean;
   className?: string;
+  courses: readonly Pick<Course, "id" | "slug" | "title" | "badge" | "level" | "duration">[];
 }) {
   const [open, setOpen] = useState(false);
   const openedByHover = useRef(false);
@@ -140,7 +150,7 @@ export function CoursesMenu({
             {courses.map((course) => (
               <li key={course.id}>
                 <Link
-                  href={courseHref(course.id)}
+                  href={`/courses/${course.slug}`}
                   className="group flex items-center gap-3 rounded-[var(--radius-control)] px-2.5 py-2 no-underline transition-colors hover:bg-surface-subtle"
                 >
                   <span className="grid size-8 flex-none place-items-center rounded-[var(--radius-control)] bg-surface-subtle text-accent transition-colors group-hover:bg-surface">

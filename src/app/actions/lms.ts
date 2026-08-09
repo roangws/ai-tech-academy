@@ -51,7 +51,7 @@ function must(label: string, error: { message: string } | null): void {
 
 export async function enroll(formData: FormData): Promise<void> {
   const slug = formData.get("slug") as string;
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course) return;
 
   const viewer = await requireUser(`/learn/${slug}`);
@@ -143,7 +143,7 @@ export async function toggleLesson(formData: FormData): Promise<void> {
   const n = formData.get("n") as string;
   const done = formData.get("done") === "true";
 
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course || !lessonId) return;
 
   const viewer = await requireUser(`/learn/${slug}/${n}`);
@@ -208,7 +208,7 @@ export async function saveArtifact(formData: FormData): Promise<void> {
   const body = ((formData.get("body") as string | null) ?? "").slice(0, 20_000);
   const submitting = formData.get("intent") === "submit";
 
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course || !moduleId) return;
 
   const viewer = await requireUser(`/learn/${slug}/${n}`);
@@ -330,7 +330,7 @@ export async function leaveFeedback(formData: FormData): Promise<void> {
  */
 export async function saveOutcomeSheet(formData: FormData): Promise<void> {
   const courseId = formData.get("courseId") as string;
-  const course = byId.get(courseId);
+  const course = await byId(courseId);
   if (!course) return;
 
   const submitting = formData.get("intent") === "submit";
@@ -519,7 +519,7 @@ export async function saveCurriculumReview(formData: FormData): Promise<void> {
     : (seat.reviews_course_id ?? "");
 
   if (!term) throw new Error("A term is required.");
-  if (!byId.has(courseId)) throw new Error("Pick a course to review.");
+  if (!(await byId(courseId))) throw new Error("Pick a course to review.");
 
   const verdictRaw = (formData.get("verdict") as string | null) ?? "pass";
   /* Whitelisted rather than cast. An unrecognised value used to reach the

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { courses as catalog, totalLessons, type Course } from "@/lib/content";
+import { getAdminCatalog, totalLessons, type Course } from "@/lib/catalog";
 import type {
   AppRole,
   Artifact,
@@ -141,7 +141,7 @@ export async function listLearners(): Promise<AdminLearner[]> {
     ]);
 
   const profileBy = new Map((profiles ?? []).map((p) => [p.id, p]));
-  const byId = new Map(catalog.map((c) => [c.id, c]));
+  const byId = new Map((await getAdminCatalog()).map((c) => [c.id, c]));
 
   const key = (u: string, c: string) => `${u}/${c}`;
 
@@ -192,7 +192,7 @@ export async function listLearners(): Promise<AdminLearner[]> {
         completion: recordBy.get(k) ?? null,
       };
     })
-    .filter((x): x is AdminLearner => x !== null);
+    .filter((x): x is NonNullable<typeof x> => x !== null);
 }
 
 /* ---------------------------------------------------------------- insights */
@@ -230,7 +230,7 @@ export async function getInsights(): Promise<Insight[]> {
 
   const scoredSheetIds = new Set((judgements ?? []).map((j) => j.sheet_id));
 
-  return catalog.map((course) => {
+  return (await getAdminCatalog()).map((course) => {
     const mine = (enrolments ?? []).filter((e) => e.course_id === course.id);
 
     /* The drop-off curve: how many learners got at least one completion inside

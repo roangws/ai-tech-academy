@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { courses as catalog, totalLessons, type Course } from "@/lib/content";
+import { getCatalog, getCourseById, getCourseBySlug, totalLessons, type Course } from "@/lib/catalog";
 import type {
   Artifact,
   CurriculumReview,
@@ -18,21 +18,17 @@ import type {
 /**
  * Every read the LMS does.
  *
- * ------------------------------------------------------ two sources, one join
+ * ------------------------------------------------------------- one source now
  *
- * The catalog exists twice and that is the design, not an accident. content.ts
- * holds the prose — titles, summaries, the curriculum a reader browses before
- * signing up — and is what the statically generated marketing pages render.
- * Postgres holds the structure — ids, module numbers, lesson slots, the access
- * column — and is what progress, artifacts and judgements point at.
+ * The catalogue used to exist twice: content.ts held the prose and Postgres held
+ * the structure, and these functions were where the two met, joined on
+ * `course.id` and `module.n`. That was defensible and it is gone, because it is
+ * what made the catalogue uneditable — see the note at the top of
+ * `src/lib/catalog.ts`.
  *
- * These functions are where the two meet. They read structure and state from the
- * database and copy from content.ts, joined on `course.id` and `module.n`, which
- * are the two keys the seed script guarantees are the same on both sides.
- *
- * The alternative was storing prose in Postgres and rendering course pages from
- * queries, which would trade five prerendered pages for five uncached ones and
- * put a typo fix behind a migration.
+ * Prose and structure now both come from Postgres. `bySlug` and `byId` below
+ * read it through `getCatalog()`, which is request-deduped, so joining a course
+ * to its progress no longer means two sources that can disagree.
  *
  * -------------------------------------------------------------- no RLS bypass
  *
@@ -87,8 +83,20 @@ async function one<T>(label: string, query: PromiseLike<Result>): Promise<T | nu
 /** Console pages page their lists rather than rendering the whole table. */
 export const PAGE_SIZE = 50;
 
-export const byId = new Map(catalog.map((c) => [c.id, c]));
-export const bySlug = new Map(catalog.map((c) => [c.slug, c]));
+/**
+ * The catalogue lookups, now that the catalogue is in Postgres.
+ *
+ * These were `new Map(catalog.map(…))` built at module load from the array
+ * content.ts exported, and every caller used them synchronously. They are
+ * queries now, so every one of those call sites awaits. The names are kept
+ * because what they mean has not changed — "the course at this slug" — and
+ * renaming them would have made a mechanical change look like a semantic one.
+ *
+ * Both read `getCatalog()`, which is request-deduped, so a page that resolves a
+ * course three times still costs one query.
+ */
+export const bySlug = getCourseBySlug;
+export const byId = getCourseById;
 
 export type ModuleWithProgress = ModuleRow & {
   lessons: LessonRow[];
@@ -120,7 +128,7 @@ export type CourseBoard = {
  * find, and asking anyway costs two round trips to learn it.
  */
 export async function getCourseBoard(slug: string, userId: string | null): Promise<CourseBoard | null> {
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course) return null;
 
   const supabase = await createClient();
@@ -217,7 +225,7 @@ export async function getModuleView(
   n: string,
   userId: string | null,
 ): Promise<ModuleView | null> {
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course) return null;
 
   const supabase = await createClient();
@@ -397,9 +405,15 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     : [];
   const resumeById = new Map(resumeRows.map((r) => [r.id, r]));
 
+  /* The catalogue once, as a map, rather than a lookup per enrolment. Both are
+     one query — `getCatalog` is request-deduped — but awaiting inside `.map`
+     would build an array of promises and the filter below would keep all of
+     them. */
+  const courseById = new Map((await getCatalog()).map((c) => [c.id, c]));
+
   return enrollments
     .map((e) => {
-      const course = byId.get(e.course_id);
+      const course = courseById.get(e.course_id);
       if (!course) return null;
       const mine = artifacts.filter((a) => a.modules?.course_id === e.course_id);
       const last = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
@@ -424,7 +438,7 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
           : null,
       };
     })
-    .filter((x): x is DashboardCourse => x !== null);
+    .filter((x): x is NonNullable<typeof x> => x !== null);
 }
 
 export type LessonView = {
@@ -474,7 +488,7 @@ export async function getLessonView(
   lessonSlug: string,
   userId: string | null,
 ): Promise<LessonView | null> {
-  const course = bySlug.get(slug);
+  const course = await bySlug(slug);
   if (!course) return null;
 
   const supabase = await createClient();
@@ -585,7 +599,7 @@ export async function getTaughtCourses(userId: string): Promise<Course[]> {
   /* Ordered by the catalog rather than by whatever the database returns. The
      query had no ORDER BY at all, so the instructor console's course list
      reordered itself between renders. */
-  return catalog.filter((c) => ids.has(c.id));
+  return (await getCatalog()).filter((c) => ids.has(c.id));
 }
 
 export type SubmittedWork = Artifact & {

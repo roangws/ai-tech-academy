@@ -9,7 +9,8 @@ import {
   SkillChip,
   TextAction,
 } from "@/components/ui";
-import { courses, cta, type Course } from "@/lib/content";
+import { cta } from "@/lib/content";
+import { getCatalog, type Course } from "@/lib/catalog";
 
 /**
  * The four bands under the two-column body, plus the "What you'll learn" box that
@@ -130,8 +131,8 @@ export function About({ course }: { course: Course }) {
  * Its enrol control is `tone="secondary"`, which it already was, so this band adds
  * no filled accent and the page keeps one.
  */
-export function MoreCourses({ currentId }: { currentId: string }) {
-  const rest = courses.filter((c) => c.id !== currentId);
+export async function MoreCourses({ currentId }: { currentId: string }) {
+  const rest = (await getCatalog()).filter((c) => c.id !== currentId);
 
   return (
     <Section id="courses" tint>

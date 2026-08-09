@@ -55,7 +55,7 @@ export default async function OutcomeSheetPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const course = byId.get(courseId);
+  const course = await byId(courseId);
   if (!course) notFound();
 
   const viewer = await requireUser(`/dashboard/outcome/${courseId}`);

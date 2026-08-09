@@ -12,7 +12,7 @@ import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
-import { courses as catalog, totalLessons } from "@/lib/content";
+import { getCatalog, totalLessons } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
   const actions = nextActions(enrolled);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
-  const rest = catalog.filter((c) => c.id !== current?.course.id);
+  const rest = (await getCatalog()).filter((c) => c.id !== current?.course.id);
 
   return (
     <Container className="py-10 md:py-12">

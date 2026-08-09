@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { courses, site } from "@/lib/content";
+import { site } from "@/lib/content";
+import { getCatalog } from "@/lib/catalog";
 
 /**
  * Every indexable route, generated rather than listed.
@@ -37,7 +38,7 @@ import { courses, site } from "@/lib/content";
  */
 const lastModified = new Date("2026-08-08");
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: site.url,
@@ -66,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
-    ...courses.map((course) => ({
+    ...(await getCatalog()).map((course) => ({
       url: `${site.url}/courses/${course.slug}`,
       lastModified,
       changeFrequency: "monthly" as const,

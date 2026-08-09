@@ -3,6 +3,7 @@ import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
 import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
 import { cta, hero, instructors } from "@/lib/content";
+import { getCatalog } from "@/lib/catalog";
 
 /**
  * Two columns, white, with no gradient and no background image.
@@ -34,7 +35,18 @@ const glyphs: Record<string, Icon> = {
   open: ClockIcon,
 };
 
-export function Hero() {
+export async function Hero() {
+  /*
+    The collage links into the lead course's curriculum. It used to call
+    `courseHref("gtm")`, which hardcoded one course id in a client component and
+    threw if that course was ever renamed or unpublished. The lead course is a
+    column now, so the href is resolved here — on the server, where the catalogue
+    is — and handed down.
+  */
+  const catalog = await getCatalog();
+  const lead = catalog.find((c) => c.featured) ?? catalog[0];
+  const curriculumHref = lead ? `/courses/${lead.slug}#curriculum` : "/courses";
+
   return (
     /* `overflow-hidden` because the collage's shapes are offset outside their
        own box by design, and at 390px that put 12px of decoration past the
@@ -192,7 +204,7 @@ export function Hero() {
           </div>
         </div>
 
-        <HeroCollage />
+        <HeroCollage curriculumHref={curriculumHref} />
       </Container>
     </section>
   );

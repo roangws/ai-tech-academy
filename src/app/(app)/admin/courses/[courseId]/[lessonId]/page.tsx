@@ -62,7 +62,7 @@ export default async function AdminLesson({
   params: Promise<{ courseId: string; lessonId: string }>;
 }) {
   const { courseId, lessonId } = await params;
-  const course = byId.get(courseId);
+  const course = await byId(courseId);
   if (!course) notFound();
 
   const supabase = await createClient();

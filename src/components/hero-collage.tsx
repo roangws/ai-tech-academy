@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { ArrowRightIcon, PlayIcon } from "@phosphor-icons/react";
 import { Photo, PosterChip, StatusChip } from "@/components/ui";
-import { courseHref, hero } from "@/lib/content";
+import { hero } from "@/lib/content";
 
 /**
  * The fold's image collage: overlapping frames, a floating lesson card and two
@@ -58,7 +58,7 @@ const still: Variants = { hidden: { opacity: 1 }, visible: { opacity: 1 } };
 const frame =
   "overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface p-1.5 shadow-e2";
 
-export function HeroCollage() {
+export function HeroCollage({ curriculumHref }: { curriculumHref: string }) {
   const reduced = useReducedMotion();
   const item = reduced ? still : rise;
 
@@ -117,7 +117,7 @@ export function HeroCollage() {
             for and no shapes to sit inside of. */}
         <motion.div variants={item} className="absolute left-0 top-0 z-10 w-full sm:left-[7%] sm:w-[81%]">
           <Link
-            href={courseHref("gtm", "curriculum")}
+            href={curriculumHref}
             aria-label={`Watch ${hero.lesson.label}: ${hero.lesson.title}`}
             className={`group relative block no-underline ${frame}`}
           >
@@ -189,7 +189,7 @@ export function HeroCollage() {
           <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-line pt-2.5">
             <span className="t-meta text-ink-muted">{hero.lesson.access}</span>
             <Link
-              href={courseHref("gtm", "curriculum")}
+              href={curriculumHref}
               className="t-button inline-flex items-center gap-1.5 text-accent no-underline transition-colors hover:text-accent-hover hover:underline"
             >
               {hero.lesson.action}
