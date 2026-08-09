@@ -50,12 +50,17 @@ export async function AppHeader() {
   const links = viewer
     ? [
         { href: "/dashboard", label: "Dashboard" },
-        { href: "/courses", label: "Catalog" },
-        ...(viewer.is("instructor") || viewer.is("admin")
-          ? [{ href: "/instructor", label: "Instructor" }]
+/* Admin only, for now. Both consoles read other people's work, and
+           until there are real instructors and seated judges the safest default
+           is that only the owner can open them. RLS is still the boundary
+           underneath; this is the door. */
+        ...(viewer.is("admin")
+          ? [
+              { href: "/admin", label: "Admin" },
+              { href: "/instructor", label: "Instructor" },
+              { href: "/judge", label: "Judge" },
+            ]
           : []),
-        ...(viewer.is("judge") || viewer.is("admin") ? [{ href: "/judge", label: "Judge" }] : []),
-        ...(viewer.is("admin") ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [{ href: "/courses", label: "Courses" }];
 

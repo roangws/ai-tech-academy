@@ -182,17 +182,14 @@ export async function toggleLesson(formData: FormData): Promise<void> {
   revalidatePath("/dashboard");
 
   /*
-    "Complete and continue" — the lesson page sends where to go next.
+    No redirect on completion.
 
-    Only honoured when the lesson was just COMPLETED, never when it was unticked:
-    pressing "Mark as not done" and being carried forward to the next lesson
-    would be the control doing something nobody asked for. `safeNext` because
-    this arrives in a form field like any other.
+    This used to honour a `then` field and carry the reader to the next lesson in
+    the same press. The write always landed, and it read as the button doing
+    nothing: you arrive on a page that says nothing about the lesson you just
+    finished. Completing and moving on are two decisions and they are two
+    controls now — see the note on the lesson page.
   */
-  const then = formData.get("then");
-  if (!done && typeof then === "string" && then) {
-    redirect(safeNext(then, `/learn/${slug}/${n}`));
-  }
 }
 
 /* -------------------------------------------------------------- artifacts */

@@ -5,6 +5,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArticleIcon,
+  CheckCircleIcon,
   CheckIcon,
   FlaskIcon,
   FileTextIcon,
@@ -213,14 +214,21 @@ export default async function LessonPage({
               <input type="hidden" name="slug" value={slug} />
               <input type="hidden" name="n" value={n} />
               <input type="hidden" name="done" value={String(done)} />
-              {/* The `next` hint tells the action where to send them, so finishing
-                  a lesson moves forward instead of leaving them on a page they
-                  have just finished reading. */}
-              <input
-                type="hidden"
-                name="then"
-                value={next ? `/learn/${slug}/${n}/${next.slug}` : `/learn/${slug}/${n}`}
-              />
+              {/*
+                No `then`, and no auto-advance.
+
+                It used to be "Complete and continue", which marked the lesson
+                done and redirected to the next one in a single press. The write
+                landed every time — verified in Postgres — and it read as broken,
+                because the page you arrive on says nothing about the lesson you
+                just finished. Roan reported it as the button not working.
+
+                One control, one job. This marks the lesson done and stays put, so
+                the tick, the rail and the meter all visibly change. Moving on is
+                the control below, which is where a reader already looks for it
+                and which they press when they are ready rather than as a side
+                effect of finishing.
+              */}
               <button
                 type="submit"
                 className={`t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] px-5 transition-colors ${
@@ -230,10 +238,14 @@ export default async function LessonPage({
                 }`}
               >
                 <CheckIcon size={15} weight="bold" aria-hidden="true" />
-                {done ? "Mark as not done" : next ? "Complete and continue" : "Complete lesson"}
+                {done ? "Mark as not done" : "Complete lesson"}
               </button>
+
               {done ? (
-                <span className="t-meta text-ink-muted">You finished this one.</span>
+                <span className="t-body-sm inline-flex items-center gap-1.5 text-[var(--state-open)]">
+                  <CheckCircleIcon size={16} weight="fill" aria-hidden="true" />
+                  Done. It is saved to your account.
+                </span>
               ) : null}
             </form>
           ) : (
@@ -246,6 +258,21 @@ export default async function LessonPage({
             </p>
           )}
         </div>
+
+        {/* The next step, promoted once there is one to take. A text link at the
+            foot of the page is the right weight for "go back"; it is the wrong
+            weight for the thing a learner does after finishing every lesson. */}
+        {done && next ? (
+          <div className="mt-6">
+            <Link
+              href={`/learn/${slug}/${n}/${next.slug}`}
+              className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+            >
+              Next lesson: {next.name}
+              <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+            </Link>
+          </div>
+        ) : null}
 
         {/* ----------------------------------------------------- pagination */}
         <nav

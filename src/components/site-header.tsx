@@ -13,10 +13,9 @@ import {
 } from "motion/react";
 import { CaretDownIcon, ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
-import { CourseGlyph, allCoursesGlyph as AllCoursesGlyph } from "@/components/course/icons";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
-import { courseHref, courses, moduleCount, nav } from "@/lib/content";
+import { nav } from "@/lib/content";
 
 /**
  * Single-tier product header, 72px.
@@ -469,35 +468,6 @@ export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) 
               : pathname === item.href;
             const isLit = lit === item.href;
 
-            /*
-              The one item with a menu under it.
-
-              It is a LINK WITH A SEPARATE CARET rather than a button that opens
-              a panel, and that is the whole accessibility argument for this
-              control. `/courses` is a real page a reader may well want, so
-              making the label open a menu instead of going there would take a
-              destination away to add a shortcut. The caret is its own button
-              with its own `aria-expanded`, so a keyboard user reaches the page
-              on the first tab and the menu on the second, and neither is behind
-              the other.
-
-              Hover opens it, because on a pointer that is what a nav menu does
-              and requiring a click to see five links is a click nobody expects.
-              Hover is additive: everything works without it.
-            */
-            if (item.menu === "courses") {
-              return (
-                <CoursesMenu
-                  key={item.href + item.label}
-                  item={item}
-                  current={current}
-                  isLit={isLit}
-                  onHover={() => setHovered(item.href)}
-                  onUnhover={() => setHovered(null)}
-                />
-              );
-            }
-
             return (
               <Link
                 key={item.href + item.label}
@@ -658,41 +628,7 @@ export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) 
                     {item.label}
                   </Link>
 
-                  {/*
-                    THE FIVE COURSES ARE ALWAYS OPEN DOWN HERE, not behind a
-                    second disclosure, and that is the one place this panel
-                    deliberately differs from the desktop menu.
-
-                    A phone panel is already a vertical list with room to spare,
-                    so a collapsed group would be a tap that buys nothing and a
-                    second piece of state to get wrong. The desktop menu is
-                    collapsed because a 72px bar has nowhere to put five rows,
-                    which is a constraint that does not exist here.
-
-                    Indented and at `t-body-sm`, so they read as belonging to the
-                    item above rather than as five more top-level destinations.
-                  */}
-                  {item.menu === "courses" ? (
-                    <ul className="pb-2">
-                      {courses.map((course) => (
-                        <li key={course.id}>
-                          <Link
-                            href={courseHref(course.id)}
-                            onClick={closeMenu}
-                            className="flex items-center gap-2.5 py-2.5 pl-3 no-underline"
-                          >
-                            <CourseGlyph
-                              id={course.id}
-                              size={17}
-                              className="flex-none text-accent"
-                            />
-                            <span className="t-body-sm text-ink-secondary">{course.title}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+                                  </div>
               ))}
             </nav>
             {/* The label alone, like the bar it belongs to. This panel is the main
@@ -731,267 +667,20 @@ export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) 
   );
 }
 
-/**
- * The Courses item, with the catalog under it.
- *
- * ------------------------------------------------------ A LINK AND A CARET, NOT A BUTTON
- *
- * The label is a `<Link>` to `/courses` and the caret beside it is a
- * `<button aria-expanded aria-controls>`. Two controls, two jobs, and both
- * reachable in sequence by keyboard. A single button that opened the menu would
- * have removed a real destination to add a convenience; a single link with a
- * hover-only panel would have made the five courses unreachable without a
- * pointer.
- *
- * ------------------------------------------------------------------ HOW IT CLOSES
- *
- * Three ways, and the third is the one that is usually missing.
- *
- *   - Escape, which also returns focus to the caret. Closing a menu and leaving
- *     focus on a removed node drops the caret to the top of the document, which
- *     is the classic keyboard trap in a header menu.
- *   - Pointer leaving the whole group. The panel is a DOM child of this
- *     wrapper, so moving from the caret down into the panel is not a leave —
- *     `mouseleave` does not fire on entering a descendant — and no timer is
- *     needed to bridge the gap between them.
- *   - Focus leaving the group, via `onBlur` with `relatedTarget`. Tabbing off
- *     the last link in the panel closes it. `currentTarget.contains` is what
- *     distinguishes "focus moved inside the group" from "focus left it";
- *     without that test the menu closes as soon as the first item takes focus.
- *
- * A route change closes it too. Next's client transitions do not unmount this
- * component, so without the `pathname` effect the panel would still be hanging
- * open over the page it just navigated to.
- *
- * ------------------------------------------------------------- WHY NOT role="menu"
- *
- * The same argument course/tabs.tsx makes about not marking anchors as a
- * tablist. `role="menu"` promises the ARIA menu keyboard model — arrow keys
- * move between items, Home and End jump, typing selects — and this is a list of
- * ordinary links that Tab moves through. Claiming the role would tell a screen
- * reader to expect behaviour that is not implemented, which is worse than the
- * plain disclosure it actually is. It is a `<nav>` of links behind a button that
- * says whether it is open.
- */
-function CoursesMenu({
-  item,
-  current,
-  isLit,
-  onHover,
-  onUnhover,
-}: {
-  item: { label: string; href: string };
-  current: boolean;
-  isLit: boolean;
-  onHover: () => void;
-  onUnhover: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const caretRef = useRef<HTMLButtonElement | null>(null);
-  /** Whether the panel currently on screen was opened by the pointer entering
-      the group. The `onMouseEnter` note has why. */
-  const openedByHover = useRef(false);
-  const pathname = usePathname();
+/*
+  THE COURSES DROPDOWN IS GONE, removed 9 Aug.
 
-  /*
-    Close on navigation, adjusted during render rather than in an effect.
+  Two reasons, and the second is the one that mattered.
 
-    Next's client transitions do not unmount this component, so without this the
-    panel stays open over the page it just navigated to. The obvious spelling is
-    `useEffect(() => setOpen(false), [pathname])`, and it is the one the lint
-    rule in this repo rejects by name: a set-state directly in an effect body is
-    a guaranteed second render on every navigation. The `onHome` note at the top
-    of this file records the same rule catching the same shape.
+  It was unusable. The panel was `absolute top-full mt-2`, so its 8px gap sat
+  OUTSIDE the wrapper that owned `onMouseLeave` — moving the pointer from the
+  caret down toward the panel left the wrapper, which closed the menu before it
+  could be reached. On a pointer device the items could not be clicked at all.
+  Every keyboard and touch path worked, which is why it survived review.
 
-    Storing the path the panel belongs to and comparing it on render is React's
-    documented alternative. The extra render happens too, but it happens before
-    the browser paints rather than after, so nothing flashes open and shut.
-  */
-  const [openedAt, setOpenedAt] = useState(pathname);
-  if (openedAt !== pathname) {
-    setOpenedAt(pathname);
-    setOpen(false);
-  }
+  And Roan did not want it: a nav dropdown listing five courses with their level
+  and duration is the catalog page rendered into a 300px panel, and /courses is
+  one click away carrying the same five with room to actually read them.
 
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key !== "Escape") return;
-      setOpen(false);
-      caretRef.current?.focus();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => {
-        onHover();
-        setOpen(true);
-        /*
-          THE CARET USED TO CLOSE THE MENU IT HAD JUST OPENED, and this ref is
-          the fix. Caught in a browser pass rather than by reading the code.
-
-          With a mouse, reaching the caret means hovering the group, so the
-          panel is already open by the time the pointer arrives. A plain toggle
-          then reads the open state and closes it — so a click on the control
-          whose entire job is "show me the courses" hid them, every time, and
-          only on the input device most people use.
-
-          Recording *how* it opened separates the two cases. Opened by hover, the
-          first click is a no-op that adopts the panel — it stays open, and now
-          it belongs to the click, so a second click closes it. Opened by
-          keyboard or touch, where there was no hover, the first click closes it
-          as it always did. A ref rather than state because nothing renders from
-          it and a re-render on pointer entry is a re-render for nothing.
-        */
-        openedByHover.current = true;
-      }}
-      onMouseLeave={() => {
-        onUnhover();
-        setOpen(false);
-        openedByHover.current = false;
-      }}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
-      }}
-    >
-      <span className="flex items-center">
-        <Link
-          href={item.href}
-          data-nav={item.href}
-          aria-current={current ? "true" : undefined}
-          onFocus={onHover}
-          className={`t-nav relative whitespace-nowrap rounded-full py-2 pl-2 pr-1 no-underline transition-colors duration-200 xl:pl-3.5 ${
-            isLit ? "text-accent" : "text-ink-secondary"
-          }`}
-        >
-          {item.label}
-        </Link>
-        <button
-          ref={caretRef}
-          type="button"
-          aria-expanded={open}
-          aria-controls="courses-menu"
-          /* The label has to say what opens, not just "expand": a screen reader
-             reaching this hears "Courses, link" then this, and "Show courses
-             menu" is what disambiguates the pair. */
-          aria-label={open ? "Hide courses menu" : "Show courses menu"}
-          onClick={() => {
-            if (open && openedByHover.current) {
-              /* Hover opened it; this click adopts it rather than undoing it. */
-              openedByHover.current = false;
-              return;
-            }
-            setOpen((v) => !v);
-          }}
-          className={`mr-1 flex h-8 w-6 items-center justify-center rounded-full transition-colors duration-200 xl:mr-2 ${
-            isLit ? "text-accent" : "text-ink-muted hover:text-ink-secondary"
-          }`}
-        >
-          <CaretDownIcon
-            size={12}
-            weight="bold"
-            aria-hidden="true"
-            className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
-        </button>
-      </span>
-
-      {/*
-        ALWAYS RENDERED, hidden rather than unmounted, and that is an
-        accessibility fix rather than a preference.
-
-        The caret carries `aria-controls="courses-menu"`. With the panel
-        conditionally mounted, that attribute pointed at an element that did not
-        exist for the entire time the menu was closed — which is most of the
-        time — so the relationship it declares was unresolvable exactly when a
-        screen-reader user would first meet the button. Assistive tech treats a
-        dangling `aria-controls` as no relationship at all.
-
-        `hidden` takes it out of the layout, the tab order and the accessibility
-        tree in one attribute, while leaving the node in the document for the id
-        reference to land on. The wizard in auth/sign-up-steps.tsx uses the same
-        attribute for the same reason.
-
-        A `display` utility on this element would silently defeat it — `[hidden]`
-        is a UA rule and any `block`/`flex`/`grid` class outranks it — so there
-        is deliberately none here.
-
-        `left-0 top-full` with an 8px offset, so the panel hangs off the item
-        rather than off the header. `mt-2` leaves the gap the pointer crosses,
-        and because the panel is a descendant of the hover target that gap costs
-        nothing — there is no dead zone to bridge with a timer.
-
-        `shadow-e3` is the one place on this site that elevation is allowed:
-        DESIGN-SPEC.md forbids it on a *card*, and this is a floating overlay
-        rather than a card in the flow. The stat bar's note records an hour spent
-        introducing it against that prohibition for two components; this is the
-        shape the token exists for.
-      */}
-      {/* "Courses menu", not "Courses". The footer renders one `<nav>` per
-          column labelled by its heading, and its first column is "Courses" — so
-          with this panel open a screen reader's landmark list held two
-          navigation regions with the same name and no way to tell which was the
-          six-link footer column and which the dropdown. The caret button that
-          opens this already says "Show courses menu", so the wording matches
-          the control a reader used to get here. */}
-      <nav
-        id="courses-menu"
-        aria-label="Courses menu"
-        hidden={!open}
-        className="absolute left-0 top-full z-50 mt-2 w-[300px] overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e3"
-      >
-          <ul className="p-1.5">
-            {courses.map((course) => (
-              <li key={course.id}>
-                <Link
-                  href={courseHref(course.id)}
-                  className="flex items-start gap-3 rounded-[var(--radius-control)] px-2.5 py-2 no-underline transition-colors hover:bg-surface-subtle"
-                >
-                  <CourseGlyph
-                    id={course.id}
-                    size={18}
-                    className="mt-0.5 flex-none text-accent"
-                  />
-                  <span className="min-w-0">
-                    <span className="t-button block text-ink">{course.title}</span>
-                    {/*
-                      FACTS, NOT A SENTENCE.
-
-                      This printed `course.summary`, and five summaries stacked
-                      in a 320px panel is five wrapped sentences — roughly 60
-                      words of prose in a menu, which is a page rather than a
-                      list. A reader opening a nav dropdown is choosing between
-                      five things, and what separates them is level and length.
-
-                      The summary still exists and is still the right copy on the
-                      catalog card, where there is a column to read it in.
-                    */}
-                    <span className="t-meta mt-0.5 block text-ink-muted">
-                      {course.level} · {course.duration} · {moduleCount(course)}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {/* The route the label already points at, repeated at the foot of the
-              panel. A reader who opened the menu to see the options and then
-              wants all of them should not have to close it and find the label
-              again. */}
-          <div className="border-t border-line p-1.5">
-            <Link
-              href="/courses"
-              className="flex items-center gap-3 rounded-[var(--radius-control)] px-2.5 py-2 no-underline transition-colors hover:bg-surface-subtle"
-            >
-              <AllCoursesGlyph size={18} aria-hidden="true" className="flex-none text-ink-muted" />
-              <span className="t-button text-ink-secondary">Compare all five courses</span>
-            </Link>
-          </div>
-      </nav>
-    </div>
-  );
-}
+  So "Courses" is an ordinary nav link now, like every other item in the bar.
+*/

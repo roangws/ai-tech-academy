@@ -43,7 +43,7 @@ export default async function ReviewSheetPage({
   params: Promise<{ sheetId: string }>;
 }) {
   const { sheetId } = await params;
-  const viewer = await requireRole("judge", `/judge/review/${sheetId}`);
+  const viewer = await requireRole("admin", `/judge/review/${sheetId}`);
 
   const seat = await getMySeat();
   if (!seat) notFound();

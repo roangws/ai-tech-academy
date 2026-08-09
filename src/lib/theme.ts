@@ -37,12 +37,19 @@ export function isTheme(value: string | undefined): value is Theme {
 /**
  * The theme for this request.
  *
- * Defaults to "system", which is the honest default: it is what somebody who has
- * never touched the control has actually expressed a preference for, via their
- * operating system.
+ * Defaults to LIGHT, not "system".
+ *
+ * "System" is the more principled default and it was the wrong one here. The
+ * product is a white product — the tokens were derived for it, the marketing
+ * site is white, and the five course photographs were chosen against it. A
+ * learner whose laptop is on dark at 6pm was getting a dark dashboard they never
+ * asked for, on their first visit, and reading it as the app being broken rather
+ * than as their own OS preference being honoured.
+ *
+ * Dark is still one press away and still remembered. It is opt-in now.
  */
 export async function getTheme(): Promise<Theme> {
   const store = await cookies();
   const value = store.get(THEME_COOKIE)?.value;
-  return isTheme(value) ? value : "system";
+  return isTheme(value) ? value : "light";
 }

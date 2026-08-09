@@ -261,3 +261,83 @@ export async function getInsights(): Promise<Insight[]> {
     };
   });
 }
+
+/* ------------------------------------------------------------------ signups */
+
+export type Week = { start: string; label: string; signups: number; enrolments: number; active: number };
+
+/**
+ * Twelve weeks of arrivals.
+ *
+ * Roan asked to see new students on the dashboard, and nothing tracked them:
+ * `profiles.created_at` has recorded every account since the trigger was
+ * written and no screen has ever read it.
+ *
+ * Bucketed in TypeScript rather than SQL because it is three columns over a
+ * table that will hold thousands, not millions, and a `date_trunc` group-by
+ * behind PostgREST needs an RPC for what a loop does in one pass.
+ *
+ * "Active" is a learner who completed at least one lesson that week. It is the
+ * only honest activity signal the schema has: there is no session table, no page
+ * views, and `lessons.minutes` is an editorial estimate, so any "time on site"
+ * figure would be a number with nothing behind it.
+ */
+export async function getWeeks(count = 12): Promise<Week[]> {
+  const supabase = await createClient();
+
+  const [{ data: profiles }, { data: enrolments }, { data: progress }] = await Promise.all([
+    supabase.from("profiles").select("created_at"),
+    supabase.from("enrollments").select("enrolled_at"),
+    supabase.from("lesson_progress").select("user_id, completed_at"),
+  ]);
+
+  /* Monday-start weeks, most recent last, so the row reads left to right the way
+     a person reads a date. */
+  const now = new Date();
+  const day = (now.getUTCDay() + 6) % 7;
+  const thisMonday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day);
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+
+  const weeks: Week[] = [];
+  for (let i = count - 1; i >= 0; i -= 1) {
+    const start = new Date(thisMonday - i * WEEK);
+    weeks.push({
+      start: start.toISOString(),
+      label: `${start.getUTCDate()} ${start.toLocaleString("en-GB", { month: "short", timeZone: "UTC" })}`,
+      signups: 0,
+      enrolments: 0,
+      active: 0,
+    });
+  }
+
+  const bucket = (iso: string | null) => {
+    if (!iso) return -1;
+    const t = Date.parse(iso);
+    if (Number.isNaN(t)) return -1;
+    const i = Math.floor((thisMonday - t) / WEEK);
+    return i >= 0 && i < count ? count - 1 - i : t > thisMonday ? count - 1 : -1;
+  };
+
+  for (const row of profiles ?? []) {
+    const i = bucket(row.created_at);
+    if (i >= 0) weeks[i].signups += 1;
+  }
+  for (const row of enrolments ?? []) {
+    const i = bucket(row.enrolled_at);
+    if (i >= 0) weeks[i].enrolments += 1;
+  }
+
+  /* One per learner per week, not one per lesson: the question is how many
+     people showed up, and somebody ticking nine lessons on a Tuesday is one. */
+  const seen = new Set<string>();
+  for (const row of (progress ?? []) as { user_id: string; completed_at: string }[]) {
+    const i = bucket(row.completed_at);
+    if (i < 0) continue;
+    const k = `${i}/${row.user_id}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    weeks[i].active += 1;
+  }
+
+  return weeks;
+}

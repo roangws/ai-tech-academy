@@ -220,8 +220,9 @@ export default async function ModulePage({
                 {module.artifact}
               </h2>
               <p className="t-body-sm mt-2 max-w-[60ch] text-ink-secondary">
-                Every module leaves one thing behind. This is the one for module {module.n}, and it
-                is yours. It stays in your account, and it is what your outcome sheet is built from.
+                Do this in whatever tool you already use, then paste it here. It saves to your
+                account, only you and your instructor can read it, and it is what your outcome
+                sheet at the end of the course is built from.
               </p>
 
               {signedIn ? (

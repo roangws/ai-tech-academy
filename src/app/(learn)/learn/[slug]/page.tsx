@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowRightIcon,
+  CaretDownIcon,
+  CheckCircleIcon,
+  CircleIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, TextAction } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, ModuleState } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
 import { getCourseBoard, bySlug } from "@/lib/lms/queries";
-import { isLocked } from "@/lib/lms/access";
+import { isLocked, unlockHref } from "@/lib/lms/access";
 import { enroll } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
@@ -190,43 +195,122 @@ export default async function CourseBoardPage({
       <ol className="mt-5 divide-y divide-line border-y border-line">
         {modules.map((m) => {
           const locked = isLocked(m.access, signedIn);
+
+          /*
+            A module opens in place.
+
+            The three levels — course, module, lesson — read as three pages that
+            each list the next set of things, and the middle one was the part
+            people reported as confusing: /learn/<course>/03 and
+            /learn/<course>/03/<lesson> look like the same screen, and the module
+            page's real job (the artifact) was buried under a second table of
+            contents.
+
+            So the lessons expand here and a learner goes course -> lesson in one
+            click. `<details>` rather than a disclosure component: it needs no
+            JavaScript, it is keyboard-operable for free, and the whole state is
+            one attribute. The module currently in progress starts open, so the
+            page arrives showing the thing to do next.
+          */
+          const inProgress = !locked && m.done > 0 && m.done < m.lessons.length;
+
           return (
             <li key={m.id}>
-              <Link
-                href={`/learn/${slug}/${m.n}`}
-                className="group flex items-start gap-4 py-5 no-underline transition-colors hover:bg-surface-subtle"
-              >
-                {/* `t-meta`, not `t-stat`. The 44px display size is released for
-                    exactly one element on this site — the before-and-after
-                    figure in the outcomes section — and DESIGN-SPEC.md says no
-                    second element may take the exception. It also did not fit:
-                    56px numerals in a 36px `flex-none` column overflowed into
-                    the title beside them. */}
-                <span className="t-meta w-7 flex-none pt-1 tabular-nums text-ink-muted">{m.n}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="t-card-title block text-ink group-hover:text-accent">
-                    {m.name}
+              <details open={inProgress} className="group">
+                <summary className="flex cursor-pointer list-none items-start gap-4 py-5 transition-colors hover:bg-surface-subtle">
+                  <span className="t-meta w-7 flex-none pt-1 tabular-nums text-ink-muted">
+                    {m.n}
                   </span>
-                  {m.summary ? (
-                    <span className="t-body-sm mt-1 block text-ink-secondary">{m.summary}</span>
-                  ) : null}
-                  <span className="t-meta mt-2 block text-ink-muted">
-                    {m.lessons.length} lessons
-                    {m.artifact ? ` · ${m.artifact}` : ""}
-                    {m.artifact_status && m.artifact_status !== "draft"
-                      ? ` · ${m.artifact_status}`
-                      : ""}
+                  <span className="min-w-0 flex-1">
+                    <span className="t-card-title block text-ink">{m.name}</span>
+                    {m.summary ? (
+                      <span className="t-body-sm mt-1 block text-ink-secondary">{m.summary}</span>
+                    ) : null}
+                    <span className="t-meta mt-2 block text-ink-muted">
+                      {m.lessons.length} lessons
+                      {m.artifact ? ` · ends with your ${m.artifact.toLowerCase()}` : ""}
+                    </span>
                   </span>
-                </span>
-                <span className="flex-none pt-0.5">
-                  <ModuleState
-                    locked={locked}
-                    done={m.done}
-                    total={m.lessons.length}
-                    open={m.access === "open"}
-                  />
-                </span>
-              </Link>
+                  <span className="flex flex-none items-center gap-3 pt-0.5">
+                    <ModuleState
+                      locked={locked}
+                      done={m.done}
+                      total={m.lessons.length}
+                      open={m.access === "open"}
+                    />
+                    <CaretDownIcon
+                      size={14}
+                      weight="bold"
+                      aria-hidden="true"
+                      className="text-ink-muted transition-transform group-open:rotate-180"
+                    />
+                  </span>
+                </summary>
+
+                {locked ? (
+                  <p className="t-body-sm pb-5 pl-11 text-ink-secondary">
+                    <Link
+                      href={unlockHref(`/learn/${slug}/${m.n}`)}
+                      className="text-accent no-underline hover:underline"
+                    >
+                      A free account
+                    </Link>{" "}
+                    opens this module and every other one.
+                  </p>
+                ) : (
+                  <div className="pb-5 pl-11">
+                    <ul className="flex flex-col">
+                      {m.lessons.map((lesson) => {
+                        const isDone = m.doneIds.has(lesson.id);
+                        return (
+                          <li key={lesson.id}>
+                            <Link
+                              href={`/learn/${slug}/${m.n}/${lesson.slug}`}
+                              className="flex min-h-[44px] items-center gap-2.5 rounded-[var(--radius-control)] px-2 no-underline transition-colors hover:bg-surface-subtle"
+                            >
+                              {isDone ? (
+                                <CheckCircleIcon
+                                  size={16}
+                                  weight="fill"
+                                  aria-hidden="true"
+                                  className="flex-none text-accent"
+                                />
+                              ) : (
+                                <CircleIcon
+                                  size={16}
+                                  aria-hidden="true"
+                                  className="flex-none text-ink-muted"
+                                />
+                              )}
+                              <span className="t-body-sm min-w-0 flex-1 text-ink">
+                                {lesson.name}
+                              </span>
+                              <span className="sr-only">
+                                {isDone ? "Completed" : "Not completed"}
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+
+                    {/* The module page still exists and this says what it is for.
+                        It is the artifact surface, not a second contents list. */}
+                    {m.artifact ? (
+                      <Link
+                        href={`/learn/${slug}/${m.n}`}
+                        className="t-meta mt-2 inline-flex min-h-[44px] items-center gap-1.5 px-2 text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
+                      >
+                        Write your {m.artifact.toLowerCase()}
+                        {m.artifact_status && m.artifact_status !== "draft"
+                          ? ` · ${m.artifact_status}`
+                          : ""}
+                        <ArrowRightIcon size={12} weight="bold" aria-hidden="true" />
+                      </Link>
+                    ) : null}
+                  </div>
+                )}
+              </details>
             </li>
           );
         })}

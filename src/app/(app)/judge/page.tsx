@@ -50,7 +50,7 @@ export const metadata: Metadata = {
  * every seat on the site is unbound today.
  */
 export default async function JudgePage() {
-  const viewer = await requireRole("judge", "/judge");
+  const viewer = await requireRole("admin", "/judge");
   const seat = await getMySeat();
 
   if (!seat) {

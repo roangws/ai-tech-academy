@@ -121,7 +121,12 @@ export function Banner({
       role="status"
       style={{ height, ["--banner-height" as string]: height }}
       className={cn(
-        "sticky top-0 z-50 flex items-center justify-center gap-3 px-12 text-center",
+        /* NOT sticky by default. The first version was `sticky top-0 z-50`, which on
+           the admin overview floated it over the 72px site header (z-40) and covered
+           the wordmark and the nav. A banner rendered inside a page body belongs in
+           the flow of that page; only a banner mounted in a layout, above the
+           header, has any business being sticky. */
+        "relative flex items-center justify-center gap-3 px-12 text-center",
         tone === "accent"
           ? "bg-accent text-on-accent"
           : "border-b border-line bg-surface-subtle text-ink-secondary",

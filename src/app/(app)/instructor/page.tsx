@@ -35,7 +35,7 @@ export const metadata: Metadata = {
  * wonder whether it is broken.
  */
 export default async function InstructorPage() {
-  const viewer = await requireRole("instructor", "/instructor");
+  const viewer = await requireRole("admin", "/instructor");
   const taught = await getTaughtCourses(viewer.id);
   const work = await getSubmittedWork(taught.map((c) => c.id));
 

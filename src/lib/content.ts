@@ -307,7 +307,7 @@ export function startsOn(date: Date): string {
  * element type says once that a nav item may have a menu, which is the fact,
  * and costs the literal-type narrowing nothing here depends on.
  */
-export type NavItem = { label: string; href: string; menu?: "courses" };
+export type NavItem = { label: string; href: string };
 
 export const nav: readonly NavItem[] = [
   /*
@@ -334,7 +334,7 @@ export const nav: readonly NavItem[] = [
     is still the tightest item in the chrome and the next thing added to it has
     to be measured before it is written, exactly as before.
   */
-  { label: "Courses", href: "/courses", menu: "courses" },
+  { label: "Courses", href: "/courses" },
   { label: "Method", href: "/#method" },
   { label: "Outcomes", href: "/#outcomes" },
   /*

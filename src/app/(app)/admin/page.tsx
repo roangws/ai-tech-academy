@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Empty } from "@/components/lms/ui";
-import { Banner } from "@/components/ui/banner";
-import { getInsights, listLearners, listSeats, listPeople } from "@/lib/lms/admin";
+import { getInsights, getWeeks, listLearners, listSeats, listPeople } from "@/lib/lms/admin";
+import { BarChart, Funnel } from "@/components/lms/chart";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
@@ -21,12 +21,15 @@ export const metadata: Metadata = { title: "Admin", robots: { index: false, foll
  * you have to go and find.
  */
 export default async function AdminOverview() {
-  const [people, seats, learners, insights] = await Promise.all([
+  const [people, seats, learners, insights, weeks] = await Promise.all([
     listPeople(),
     listSeats(),
     listLearners(),
     getInsights(),
+    getWeeks(),
   ]);
+
+  const newThisWeek = weeks.at(-1)?.signups ?? 0;
 
   const awaitingReview = learners.reduce((n, l) => n + l.artifacts.submitted, 0);
   const unboundSeats = seats.filter((s) => !s.user_id).length;
@@ -37,7 +40,12 @@ export default async function AdminOverview() {
   const sheetsAwaiting = insights.reduce((n, i) => n + (i.submittedSheets - i.scoredSheets), 0);
 
   const tiles = [
-    { label: "People", value: people.length, href: "/admin/people", note: `${instructors} instructors` },
+    {
+      label: "People",
+      value: people.length,
+      href: "/admin/people",
+      note: newThisWeek ? `${newThisWeek} new this week` : "none new this week",
+    },
     {
       label: "Artifacts awaiting review",
       value: awaitingReview,
@@ -83,18 +91,6 @@ export default async function AdminOverview() {
 
   return (
     <>
-      {/*
-        The banner earns its place by being conditional. A strip that is always
-        there is chrome a reader stops seeing by the second visit, and this one
-        appears only when something is actually blocked.
-      */}
-      {blocking.length ? (
-        <Banner tone="accent" height="auto" className="-mt-8 mb-8 min-h-12 py-2 md:-mt-10">
-          {blocking[0]}
-          {blocking.length > 1 ? ` · and ${blocking.length - 1} more below` : ""}
-        </Banner>
-      ) : null}
-
       <h1 className="t-h2 text-ink">Overview</h1>
 
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -116,8 +112,11 @@ export default async function AdminOverview() {
       {blocking.length ? (
         <section aria-labelledby="blocking" className="mt-8">
           <h2 id="blocking" className="t-h3 text-ink">
-            Waiting on you
+            Needs a decision
           </h2>
+          <p className="t-body-sm mt-1.5 max-w-[62ch] text-ink-secondary">
+            Each of these stops part of the product working until somebody acts.
+          </p>
           <ul className="mt-3 flex flex-col gap-2">
             {blocking.map((line) => (
               <li
@@ -131,31 +130,43 @@ export default async function AdminOverview() {
         </section>
       ) : null}
 
-      {/* ------------------------------------------------------------ drop-off */}
-      <section aria-labelledby="dropoff" className="mt-10">
-        <h2 id="dropoff" className="t-h3 text-ink">
-          Where people stop
-        </h2>
-        <p className="t-body-sm mt-1 max-w-[62ch] text-ink-secondary">
-          Learners with at least one completed lesson in each module. Read across a row and the
-          shape of the drop is the most useful thing this console can show you.
-        </p>
+      {/* ------------------------------------------------------------- charts */}
+      <div className="mt-8 grid gap-4 xl:grid-cols-2">
+        <BarChart
+          caption="Who arrived, and who came back"
+          bars={weeks.map((w) => ({ label: w.label, value: w.signups, sub: w.active }))}
+          unit=" signups"
+        />
+        <Funnel
+          caption="Where people stop"
+          steps={(insights.find((i) => i.enrolled > 0) ?? insights[0]).reachedModule.map((n, k) => ({
+            label: `Module ${String(k + 1).padStart(2, "0")}`,
+            value: n,
+          }))}
+        />
+      </div>
 
+      <p className="t-meta mt-2 max-w-[70ch] text-ink-muted">
+        The solid bar is accounts created; the pale one behind it is people who completed at least
+        one lesson that week. There is no session table and no page views, so those two are the
+        only honest activity signals the schema has — and `lessons.minutes` is an editorial
+        estimate, so any &ldquo;time spent&rdquo; figure would be a number with nothing behind it.
+      </p>
+
+      {/* ---------------------------------------------------------- per course */}
+      <section aria-labelledby="per-course" className="mt-10">
+        <h2 id="per-course" className="t-h3 text-ink">
+          Each course
+        </h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse">
             <thead>
               <tr className="border-b border-line-strong">
-                <th scope="col" className="t-label py-2 text-left text-ink-muted">
-                  Course
-                </th>
-                {Array.from({ length: 8 }, (_, i) => (
-                  <th key={i} scope="col" className="t-label py-2 text-right text-ink-muted">
-                    {String(i + 1).padStart(2, "0")}
-                  </th>
-                ))}
-                <th scope="col" className="t-label py-2 text-right text-ink-muted">
-                  Sheets
-                </th>
+                <th scope="col" className="t-label py-2 text-left text-ink-muted">Course</th>
+                <th scope="col" className="t-label py-2 text-right text-ink-muted">Enrolled</th>
+                <th scope="col" className="t-label py-2 text-right text-ink-muted">Reached 08</th>
+                <th scope="col" className="t-label py-2 text-right text-ink-muted">Sheets scored</th>
+                <th scope="col" className="t-label py-2 text-right text-ink-muted">Completed</th>
               </tr>
             </thead>
             <tbody>
@@ -163,24 +174,15 @@ export default async function AdminOverview() {
                 <tr key={row.course.id} className="border-b border-line">
                   <th scope="row" className="t-body-sm py-2.5 pr-4 text-left font-normal text-ink">
                     {row.course.title}
-                    <span className="t-meta block text-ink-muted">{row.enrolled} enrolled</span>
                   </th>
-                  {Array.from({ length: 8 }, (_, i) => {
-                    const n = row.reachedModule[i] ?? 0;
-                    return (
-                      <td
-                        key={i}
-                        className={`t-body-sm py-2.5 text-right tabular-nums ${
-                          n === 0 ? "text-ink-muted" : "text-ink"
-                        }`}
-                      >
-                        {n}
-                      </td>
-                    );
-                  })}
-                  <td className="t-body-sm py-2.5 text-right tabular-nums text-ink">
+                  <td className="t-body-sm py-2.5 text-right tabular-nums text-ink">{row.enrolled}</td>
+                  <td className="t-body-sm py-2.5 text-right tabular-nums text-ink-secondary">
+                    {row.reachedModule.at(-1) ?? 0}
+                  </td>
+                  <td className="t-body-sm py-2.5 text-right tabular-nums text-ink-secondary">
                     {row.scoredSheets}/{row.submittedSheets}
                   </td>
+                  <td className="t-body-sm py-2.5 text-right tabular-nums text-ink">{row.completions}</td>
                 </tr>
               ))}
             </tbody>

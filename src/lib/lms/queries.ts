@@ -92,6 +92,8 @@ export const bySlug = new Map(catalog.map((c) => [c.slug, c]));
 
 export type ModuleWithProgress = ModuleRow & {
   lessons: LessonRow[];
+  /** Which of this module's lessons the reader has finished. Empty when signed out. */
+  doneIds: Set<string>;
   /** Lessons this reader has completed. Always 0 when signed out. */
   done: number;
   artifact_status: Artifact["status"] | null;
@@ -174,6 +176,7 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
     return {
       ...m,
       lessons,
+      doneIds: new Set(lessons.filter((l) => doneIds.has(l.id)).map((l) => l.id)),
       done: lessons.filter((l) => doneIds.has(l.id)).length,
       artifact_status: artifacts.get(m.id) ?? null,
     };
