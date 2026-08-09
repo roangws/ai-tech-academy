@@ -203,7 +203,7 @@ export default async function JudgePage() {
                     />
                     <label
                       htmlFor={`verdict-${v}`}
-                      className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line-control bg-surface px-3.5 capitalize text-ink-secondary transition-colors hover:border-line-control-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
+                      className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line-control bg-surface px-3.5 capitalize text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
                     >
                       {v}
                     </label>

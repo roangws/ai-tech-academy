@@ -56,6 +56,7 @@ export async function AppHeader() {
           ? [{ href: "/instructor", label: "Instructor" }]
           : []),
         ...(viewer.is("judge") || viewer.is("admin") ? [{ href: "/judge", label: "Judge" }] : []),
+        ...(viewer.is("admin") ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [{ href: "/courses", label: "Courses" }];
 
@@ -124,7 +125,7 @@ export async function AppHeader() {
             <form action={signOut}>
               <button
                 type="submit"
-                className="t-button rounded-[var(--radius-control)] border border-line-control px-3.5 py-2 text-ink-secondary transition-colors hover:border-line-control-strong hover:text-ink"
+                className="t-button rounded-[var(--radius-control)] border border-line-control px-3.5 py-2 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
               >
                 Sign out
               </button>

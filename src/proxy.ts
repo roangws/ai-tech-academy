@@ -56,7 +56,7 @@ import { safeNext } from "@/lib/safe-next";
   have. The gate is per-module instead, in lms/access.ts, which is the only place
   that can tell module 01 from module 04.
 */
-const PROTECTED = ["/dashboard", "/instructor", "/judge"];
+const PROTECTED = ["/dashboard", "/instructor", "/judge", "/admin"];
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

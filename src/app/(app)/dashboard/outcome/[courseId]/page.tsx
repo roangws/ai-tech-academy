@@ -265,7 +265,7 @@ export default async function OutcomeSheetPage({
               type="submit"
               name="intent"
               value="save"
-              className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-control-strong hover:text-ink"
+              className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
             >
               Save draft
             </button>

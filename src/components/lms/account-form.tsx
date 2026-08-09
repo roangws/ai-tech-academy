@@ -58,7 +58,7 @@ export function AccountForm({
         <div>
           <label
             htmlFor="avatar"
-            className="t-button inline-flex h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-line-control px-4 text-ink-secondary transition-colors hover:border-line-control-strong hover:text-ink"
+            className="t-button inline-flex h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-line-control px-4 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
           >
             {avatarUrl || preview ? "Change photo" : "Upload a photo"}
           </label>

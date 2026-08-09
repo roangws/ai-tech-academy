@@ -200,7 +200,7 @@ export default async function ReviewSheetPage({
                               />
                               <label
                                 htmlFor={`${c.id}-${score}`}
-                                className="t-body-sm grid size-10 cursor-pointer place-items-center rounded-[var(--radius-control)] border border-line-control bg-surface text-ink-secondary transition-colors hover:border-line-control-strong peer-checked:border-accent peer-checked:bg-accent peer-checked:text-on-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
+                                className="t-body-sm grid size-10 cursor-pointer place-items-center rounded-[var(--radius-control)] border border-line-control bg-surface text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent peer-checked:text-on-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
                               >
                                 {score}
                                 <span className="sr-only"> out of 5</span>
