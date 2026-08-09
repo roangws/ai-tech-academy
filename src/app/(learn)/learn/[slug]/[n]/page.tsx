@@ -6,6 +6,7 @@ import {
   ArrowRightIcon,
   ArticleIcon,
   CheckCircleIcon,
+  CheckIcon,
   CircleIcon,
   FlaskIcon,
   FileTextIcon,
@@ -78,10 +79,13 @@ function lessonIcon(lesson: LessonWithKinds) {
  */
 export default async function ModulePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; n: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { slug, n } = await params;
+  const { from } = await searchParams;
   const viewer = await getViewer();
   const view = await getModuleView(slug, n, viewer?.id ?? null);
 
@@ -90,6 +94,14 @@ export default async function ModulePage({
   const { course, module, lessons, done, artifact, prev, next } = view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}`;
+
+  /* The last lesson of a module hands the reader here rather than to the next
+     module, because the artifact is what the module exists to produce. Arriving
+     cold on "What to hand in" with no mention of the lesson just finished is the
+     same defect the lesson page's `?from=` fixes, so it is fixed the same way —
+     and resolved against the reader's real progress, never trusted from the URL. */
+  const claimed = from ? lessons.find((l) => l.slug === from) : undefined;
+  const finished = claimed && done.has(claimed.id) ? claimed : null;
 
   /* ------------------------------------------------------------------ locked */
   if (isLocked(module.access, signedIn)) {
@@ -201,6 +213,19 @@ export default async function ModulePage({
           {/* --------------------------------------------------------- artifact */}
           {module.artifact ? (
             <section aria-labelledby="artifact-heading" className="mt-12">
+              {/* What was just finished, named — see the same block on the
+                  lesson page. This is the arrival point for the last lesson of
+                  the module, so without it the hand-in opens cold. */}
+              {finished ? (
+                <p className="t-body-sm mb-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[var(--radius-card)] border border-line bg-surface-subtle px-3.5 py-2.5 text-ink-secondary">
+                  <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
+                  <span>
+                    <strong className="font-medium text-ink">{finished.name}</strong> is done. That is
+                    all {lessons.length} lessons in module {module.n}.
+                  </span>
+                </p>
+              ) : null}
+
               {/*
                 The heading names the TASK, not the noun.
 

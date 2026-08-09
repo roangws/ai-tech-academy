@@ -98,6 +98,28 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   };
 });
 
+/**
+ * Just the caller's id, with no round trip at all.
+ *
+ * `getClaims()` verifies the JWT locally — the project signs with ES256 and the
+ * JWKS is cached module-global — so this is pure CPU. `getViewer()` then spends
+ * a round trip fetching `user_roles` and `profiles`, which is right for a page
+ * that renders a name and a role and wrong for a write that needs only `id`.
+ *
+ * `toggleLesson` was paying for that on every press: 85ms on production, for a
+ * profile it never read. Actions that address a row by `user_id` and nothing
+ * else should use this.
+ */
+export async function requireUserId(next?: string): Promise<string> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const sub = data?.claims?.sub;
+  if (!sub) {
+    redirect(next ? `/sign-in?next=${encodeURIComponent(next)}` : "/sign-in");
+  }
+  return sub;
+}
+
 /** Redirects to sign-in, preserving where they were going. */
 export async function requireUser(next?: string): Promise<Viewer> {
   const viewer = await getViewer();

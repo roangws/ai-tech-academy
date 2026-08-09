@@ -31,3 +31,46 @@
  GET /learn/ai-literacy-ethics-and-data-compliance 200 in 553ms (next.js: 354ms, proxy.ts: 3ms, application-code: 196ms)
  GET /learn/ai-literacy-ethics-and-data-compliance/01 200 in 431ms (next.js: 286ms, proxy.ts: 1.6ms, application-code: 143ms)
  GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 599ms (next.js: 327ms, proxy.ts: 1.5ms, application-code: 271ms)
+ GET / 200 in 273ms (next.js: 3ms, proxy.ts: 1.7ms, application-code: 269ms)
+ GET /sign-in?next=%2Fdashboard 200 in 189ms (next.js: 156ms, proxy.ts: 1.8ms, application-code: 31ms)
+ POST /sign-in?next=%2Fdashboard 200 in 629ms (next.js: 1.2ms, proxy.ts: 2ms, application-code: 625ms)
+  └─ ƒ signIn(null, {}) in 138ms src/app/actions/auth.ts
+ GET /dashboard 200 in 516ms (next.js: 118ms, proxy.ts: 95ms, application-code: 303ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 333ms (next.js: 12ms, proxy.ts: 5ms, application-code: 317ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01?from=where-human-reliance-belongs 200 in 163ms (next.js: 5ms, proxy.ts: 3ms, application-code: 155ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 270ms (next.js: 3ms, proxy.ts: 3ms, application-code: 264ms)
+  └─ ƒ toggleLesson(null, {}) in 97ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs?from=this-lesson-does-not-exist 200 in 233ms (next.js: 4ms, proxy.ts: 4ms, application-code: 225ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01 200 in 179ms (next.js: 3ms, proxy.ts: 3ms, application-code: 173ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 226ms (next.js: 5ms, proxy.ts: 3ms, application-code: 217ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 360ms (next.js: 3ms, proxy.ts: 2ms, application-code: 354ms)
+  └─ ƒ toggleLesson(null, {}) in 85ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01 200 in 239ms (next.js: 5ms, proxy.ts: 4ms, application-code: 230ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 285ms (next.js: 4ms, proxy.ts: 5ms, application-code: 275ms)
+ GET / 200 in 259ms (next.js: 1.1ms, proxy.ts: 2.0ms, application-code: 256ms)
+ GET /sign-in?next=%2Fdashboard 200 in 21ms (next.js: 1.4ms, proxy.ts: 1.5ms, application-code: 19ms)
+ POST /sign-in?next=%2Fdashboard 200 in 476ms (next.js: 1.0ms, proxy.ts: 1.5ms, application-code: 473ms)
+  └─ ƒ signIn(null, {}) in 140ms src/app/actions/auth.ts
+ GET /dashboard 200 in 356ms (next.js: 1.5ms, proxy.ts: 2ms, application-code: 352ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do 200 in 303ms (next.js: 5ms, proxy.ts: 3ms, application-code: 295ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/probabilistic-output-and-hallucination?from=what-the-systems-do-and-do-not-do 200 in 181ms (next.js: 1.5ms, proxy.ts: 1.6ms, application-code: 178ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do 200 in 269ms (next.js: 4ms, proxy.ts: 2ms, application-code: 263ms)
+  └─ ƒ toggleLesson(null, {}) in 78ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do?from=this-lesson-does-not-exist 200 in 206ms (next.js: 3ms, proxy.ts: 2ms, application-code: 201ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/probabilistic-output-and-hallucination 200 in 213ms (next.js: 3ms, proxy.ts: 5ms, application-code: 205ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/probabilistic-output-and-hallucination 200 in 322ms (next.js: 5ms, proxy.ts: 3ms, application-code: 314ms)
+  └─ ƒ toggleLesson(null, {}) in 75ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 207ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 202ms)
+ GET /learn/ai-literacy-ethics-and-data-compliance/01?from=where-human-reliance-belongs 200 in 156ms (next.js: 4ms, proxy.ts: 1.9ms, application-code: 150ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 239ms (next.js: 3ms, proxy.ts: 3ms, application-code: 234ms)
+  └─ ƒ toggleLesson(null, {}) in 74ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do 200 in 276ms (next.js: 6ms, proxy.ts: 4ms, application-code: 266ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do 200 in 395ms (next.js: 3ms, proxy.ts: 2ms, application-code: 390ms)
+  └─ ƒ toggleLesson(null, {}) in 193ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/probabilistic-output-and-hallucination 200 in 195ms (next.js: 4ms, proxy.ts: 3ms, application-code: 188ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/probabilistic-output-and-hallucination 200 in 276ms (next.js: 3ms, proxy.ts: 3ms, application-code: 270ms)
+  └─ ƒ toggleLesson(null, {}) in 102ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 191ms (next.js: 3ms, proxy.ts: 3ms, application-code: 185ms)
+ POST /learn/ai-literacy-ethics-and-data-compliance/01/where-human-reliance-belongs 200 in 304ms (next.js: 3ms, proxy.ts: 2ms, application-code: 299ms)
+  └─ ƒ toggleLesson(null, {}) in 74ms src/app/actions/lms.ts
+ GET /learn/ai-literacy-ethics-and-data-compliance/01/what-the-systems-do-and-do-not-do 200 in 272ms (next.js: 4ms, proxy.ts: 3ms, application-code: 264ms)

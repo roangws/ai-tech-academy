@@ -5,7 +5,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArticleIcon,
-  CheckCircleIcon,
   CheckIcon,
   FlaskIcon,
   FileTextIcon,
@@ -19,7 +18,7 @@ import { CourseRail } from "@/components/lms/course-rail";
 import { getViewer } from "@/lib/auth";
 import { getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
-import { toggleLesson } from "@/app/actions/lms";
+import { LessonAdvance } from "@/components/lms/lesson-advance";
 
 export const dynamic = "force-dynamic";
 
@@ -62,10 +61,13 @@ export async function generateMetadata({
  */
 export default async function LessonPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; n: string; lessonSlug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { slug, n, lessonSlug } = await params;
+  const { from } = await searchParams;
 
   /* Lessons were addressed by array index until the slug landed, so links saved
      or shared before then look like `/learn/<course>/04/02`. Those resolve once,
@@ -83,10 +85,16 @@ export default async function LessonPage({
   const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { course, module, lesson, index, total, done, prev, next, nextModule, blocks, siblings, doneIds } =
+  const { course, module, lesson, index, total, done, prev, next, blocks, siblings, doneIds } =
     view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}/${lessonSlug}`;
+
+  /* The lesson `?from=` claims was just completed, if that claim holds. Both
+     halves matter: it must be a lesson of this module, and it must actually be
+     ticked for this reader. */
+  const claimed = from ? siblings.find((l) => l.slug === from) : undefined;
+  const finished = claimed && doneIds.has(claimed.id) ? claimed : null;
 
   if (isLocked(module.access, signedIn)) {
     return (
@@ -163,6 +171,40 @@ export default async function LessonPage({
         />
 
         <div className="min-w-0">
+        {/*
+          What just happened, named.
+
+          This is the piece both earlier versions of the complete control were
+          missing, and its absence is why the first one was reported as broken:
+          you pressed a button, the page changed, and nothing anywhere said the
+          lesson you had just finished was finished. A tick moving in the rail
+          300px away — collapsed inside a `<details>` below `lg` — is not an
+          acknowledgement.
+
+          Resolved rather than trusted. `?from=` is a query string and anybody
+          can type one, so it renders only when it names a lesson that is
+          genuinely in this module AND is genuinely marked done for this reader.
+          A hand-edited URL cannot forge a completion.
+
+          No `aria-live`. This is a fresh navigation and a screen reader reads the
+          page on arrival; a live region here would announce it twice.
+        */}
+        {finished ? (
+          <p className="t-body-sm mb-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[var(--radius-card)] border border-line bg-surface-subtle px-3.5 py-2.5 text-ink-secondary">
+            <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
+            <span>
+              <strong className="font-medium text-ink">{finished.name}</strong> is done. {doneIds.size}{" "}
+              of {siblings.length} in module {module.n}.
+            </span>
+            <Link
+              href={`/learn/${slug}/${n}/${finished.slug}`}
+              className="text-accent no-underline hover:underline"
+            >
+              Open it again
+            </Link>
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-3">
           <span className="t-label inline-flex items-center gap-1.5 text-ink-muted">
             <Icon size={14} aria-hidden="true" />
@@ -207,96 +249,56 @@ export default async function LessonPage({
         )}
 
         {/* ------------------------------------------------------- complete */}
-        <div className="mt-10 border-t border-line pt-6">
-          {signedIn ? (
-            <form action={toggleLesson} className="flex flex-wrap items-center gap-4">
-              <input type="hidden" name="lessonId" value={lesson.id} />
-              <input type="hidden" name="slug" value={slug} />
-              <input type="hidden" name="n" value={n} />
-              <input type="hidden" name="done" value={String(done)} />
-              {/*
-                No `then`, and no auto-advance.
+        {/*
+          One region, and it always contains a primary forward control.
 
-                It used to be "Complete and continue", which marked the lesson
-                done and redirected to the next one in a single press. The write
-                landed every time — verified in Postgres — and it read as broken,
-                because the page you arrive on says nothing about the lesson you
-                just finished. Roan reported it as the button not working.
+          There used to be two: a tick here, and — rendered only once `done` was
+          true — a promoted "Next lesson" below it. That second block was a
+          duplicate of the pagination card at the foot of the page, appeared ten
+          seconds after the press, and did not exist at all for a reader who had
+          not ticked or was not signed in. Every visitor to the free module 1 met
+          a lesson whose only forward controls were two grey pagination cards.
 
-                One control, one job. This marks the lesson done and stays put, so
-                the tick, the rail and the meter all visibly change. Moving on is
-                the control below, which is where a reader already looks for it
-                and which they press when they are ready rather than as a side
-                effect of finishing.
-              */}
-              <button
-                type="submit"
-                className={`t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] px-5 transition-colors ${
-                  done
-                    ? "border border-line-control text-ink-secondary hover:border-line-strong hover:text-ink"
-                    : "bg-accent text-on-accent hover:bg-accent-hover"
-                }`}
-              >
-                <CheckIcon size={15} weight="bold" aria-hidden="true" />
-                {done ? "Mark as not done" : "Complete lesson"}
-              </button>
-
-              {done ? (
-                <span className="t-body-sm inline-flex items-center gap-1.5 text-[var(--state-open)]">
-                  <CheckCircleIcon size={16} weight="fill" aria-hidden="true" />
-                  Done. It is saved to your account.
-                </span>
-              ) : null}
-            </form>
-          ) : (
-            <p className="t-body-sm text-ink-secondary">
+          The signed-out branch keeps its sentence about accounts and gains the
+          same accent forward control, because being signed out is a reason not
+          to SAVE progress and not a reason to be denied the next lesson.
+        */}
+        {signedIn ? (
+          <LessonAdvance
+            lessonId={lesson.id}
+            slug={slug}
+            n={n}
+            lessonSlug={lessonSlug}
+            done={done}
+            next={next ? { slug: next.slug, name: next.name } : null}
+            artifact={module.artifact ?? ""}
+          />
+        ) : (
+          <div className="mt-10 border-t border-line pt-6">
+            <Link
+              href={
+                next
+                  ? `/learn/${slug}/${n}/${next.slug}`
+                  : `/learn/${slug}/${n}#artifact-heading`
+              }
+              className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+            >
+              {next
+                ? `Next lesson: ${next.name}`
+                : module.artifact
+                  ? `Write your ${module.artifact.toLowerCase()}`
+                  : "Finish the module"}
+              <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+            </Link>
+            <p className="t-body-sm mt-3 text-ink-secondary">
               Module 1 is open with no account, and saving your progress is not.{" "}
               <Link href={unlockHref(path)} className="text-accent no-underline hover:underline">
                 A free account
               </Link>{" "}
               keeps track of what you have finished.
             </p>
-          )}
-        </div>
-
-        {/* The next step, promoted once there is one to take. A text link at the
-            foot of the page is the right weight for "go back"; it is the wrong
-            weight for the thing a learner does after finishing every lesson. */}
-        {/*
-          What to do next, once this lesson is done.
-
-          The last lesson of a module used to hand the reader straight to the
-          next module, which skips the one thing the module exists to produce.
-          Every module ends in an artifact, and a learner who never writes one
-          reaches the end of the course with nothing for the outcome sheet to be
-          built from. So on the last lesson the forward control is the hand-in.
-        */}
-        {done ? (
-          <div className="mt-6">
-            {next ? (
-              <Link
-                href={`/learn/${slug}/${n}/${next.slug}`}
-                className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
-              >
-                Next lesson: {next.name}
-                <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-              </Link>
-            ) : (
-              <div>
-                <p className="t-body-sm text-ink-secondary">
-                  That is every lesson in this module.
-                </p>
-                <Link
-                  href={`/learn/${slug}/${n}#artifact-heading`}
-                  className="t-button mt-2 inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
-                >
-                  {module.artifact ? `Write your ${module.artifact.toLowerCase()}` : "Finish the module"}
-                  <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-                </Link>
-              </div>
-            )}
           </div>
-        ) : null}
+        )}
 
         {/*
           Where to go next, as two named cards.
@@ -370,10 +372,16 @@ export default async function LessonPage({
           ) : (
             <Link
               href={`/learn/${slug}/${n}#artifact-heading`}
-              className="group flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-accent bg-accent-tint p-4 text-right no-underline transition-colors hover:bg-surface sm:col-start-2"
+              /* Neutral, like its sibling. This card used to carry the accent
+                 and a tint because it was the only forward control a reader had
+                 once they had ticked the lesson. The primary control above owns
+                 that job now, and two accented forward controls on one page is
+                 the duplication that made this page read as two prompts to
+                 finish one lesson. */
+              className="group flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-right no-underline transition-colors hover:border-line-strong sm:col-start-2"
             >
               <span className="min-w-0 flex-1">
-                <span className="t-meta block text-accent">Last lesson in this module</span>
+                <span className="t-meta block text-ink-muted">Last lesson in this module</span>
                 <span className="t-body-sm block clamp-2 text-ink">
                   {module.artifact ? `Write your ${module.artifact.toLowerCase()}` : "Finish the module"}
                 </span>
@@ -382,7 +390,7 @@ export default async function LessonPage({
                 size={16}
                 weight="bold"
                 aria-hidden="true"
-                className="flex-none text-accent"
+                className="flex-none text-ink-muted transition-colors group-hover:text-accent"
               />
             </Link>
           )}
