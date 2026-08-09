@@ -252,6 +252,23 @@ export async function saveBlock(formData: FormData) {
       ...(title ? { title } : {}),
       ...(bytes > 0 ? { bytes } : {}),
     };
+  } else if (kind === "prose") {
+    /*
+      Prose is written as prose.
+
+      This used to take `{"md":"…"}` in a JSON textarea like the structured kinds,
+      and it is the single most-authored block on the site — 174 of them. That
+      meant every paragraph an author wrote had to survive being a JSON string
+      literal: every newline typed as `\n`, every quotation mark escaped, and one
+      missed backslash losing the whole save to "payload is not valid JSON".
+      Roan asked for "a text-based area that I can add or remove text" and this
+      is the block he meant.
+
+      The JSON shape in the column is unchanged, so `blocks/index.tsx` renders it
+      exactly as before. What changed is that a person types Markdown into a
+      textarea and this wraps it.
+    */
+    payload = { md: String(formData.get("md") ?? "") };
   } else {
     try {
       payload = JSON.parse(String(formData.get("payload") ?? "{}"));

@@ -1,5 +1,6 @@
 /**
- * Push the catalog from content.ts into Postgres.
+ * Push the reference data from content.ts into Postgres: judge seats and the
+ * rubric. The COURSE catalogue is no longer among them — see the note below.
  *
  *   node --env-file=.env.local scripts/seed-catalog.mjs
  *
@@ -58,7 +59,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { courses, board, instructors } from "../src/lib/content.ts";
+import { board, instructors } from "../src/lib/content.ts";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
 const key =
@@ -96,251 +97,18 @@ async function run(label, promise) {
   return data;
 }
 
-/* ------------------------------------------------------------------ courses */
-await run(
-  `courses (${courses.length})`,
-  db.from("courses").upsert(
-    courses.map((c, i) => ({
-      id: c.id,
-      slug: c.slug,
-      badge: c.badge,
-      title: c.title,
-      level: c.level,
-      duration: c.duration,
-      workload_hours: c.workloadHours,
-      ground: c.ground,
-      summary: c.summary,
-      position: i,
-    })),
-    { onConflict: "id" },
-  ),
-);
+/* --------------------------------------------------- courses live in Postgres
+   Courses, modules, lessons and their scaffold blocks used to be pushed from
+   here, because content.ts was the source of truth for the catalogue and the
+   database held a mirror of it. That is the wrong way round for a product an
+   instructor is meant to run, and it is no longer true: the catalogue IS the
+   database, and the admin console is how it is edited.
 
-/* ------------------------------------------------------------------ modules */
-const moduleRows = courses.flatMap((c) =>
-  c.curriculum.map((m, i) => ({
-    course_id: c.id,
-    n: m.n,
-    name: m.name,
-    summary: m.summary,
-    step: m.step,
-    artifact: m.artifact,
-    /* The free-first-module gate, and the only column that carries it. Module 01
-       of every course is 'open'; 02 through 08 are 'account'. */
-    access: m.access,
-    position: i,
-  })),
-);
-
-await run(`modules (${moduleRows.length})`, db.from("modules").upsert(moduleRows, { onConflict: "course_id,n" }));
-
-/* Lessons key on module_id, which is generated, so the ids have to come back
-   from the database before the lessons can be built. */
-const modules = await run(
-  "read back module ids",
-  db.from("modules").select("id, course_id, n"),
-);
-const moduleId = new Map(modules.map((m) => [`${m.course_id}/${m.n}`, m.id]));
-
-/* ------------------------------------------------------------------ lessons */
-/**
- * The body of one lesson.
- *
- * ------------------------------------------------------------ why generated
- *
- * A lesson used to be a title and a tick, so there were 173 things a learner
- * could see and none they could open. Writing 173 lessons by hand is the real
- * answer and it is not a thing a seed script can do — so this produces the
- * scaffold each one needs: what it covers, what to do, and what it feeds into.
- *
- * Everything in it is derived from facts that already exist in content.ts — the
- * course, the module, the lesson's own name and kind, and the artifact the
- * module produces — so no lesson claims anything the curriculum does not already
- * say. It is placeholder in the sense that an author will replace the prose, not
- * in the sense that it is filler: the structure is the one every lesson needs.
- *
- * Marked as such at the end of every body, because a learner deserves to know
- * which parts of a course are written and which are scaffolding.
- */
-function lessonBody(course, m, lesson) {
-  const shape = {
-    /*
-      "Watch, then write down..." until 10 Aug, on all 81 lesson-kind rows, with
-      no video anywhere in the product and a renderer that structurally cannot
-      emit one. A learner read it, hunted for a player, found none, and concluded
-      the page was broken rather than unwritten. Copy may not promise media that
-      does not exist; when a lesson has a video block it will say "watch" because
-      it will be true.
-    */
-    lesson: "Read this, then write down where it applies to your own process.",
-    lab: "Do this one in your own environment, on your own data.",
-    template: "Copy this, fill it in, and keep it. It goes into your artifact.",
-  }[lesson.kind];
-
-  const steps = {
-    lesson: [
-      `Where "${lesson.name.toLowerCase()}" fits in ${m.name.toLowerCase()}.`,
-      "The two failure modes teams hit here, and how to spot them early.",
-      "A worked example on a process the size of yours.",
-    ],
-    lab: [
-      "Open the tool you actually use for this. Not a sandbox.",
-      `Run the smallest version of "${lesson.name.toLowerCase()}" end to end.`,
-      "Write down what broke. That list is the useful output, not the happy path.",
-    ],
-    template: [
-      "Copy the template into wherever your team keeps working documents.",
-      "Fill in only the rows you have evidence for. Leave the rest blank.",
-      "Blank rows are the questions to answer next. Leave them blank until you have a value.",
-    ],
-  }[lesson.kind];
-
-  /*
-    No position line at the top any more.
-
-    It used to open `**Course A · Module 01 · Lesson 1 of 4**`, which the page
-    chrome already states twice above it — once in the breadcrumb and once in the
-    meta row — so the first 145px of every lesson said where you were three
-    times and what the module was about zero times. Worse, it baked chrome into
-    content: every authored lesson would have had to remember not to repeat it.
-    Position belongs to the page, prose belongs to the body.
-  */
-  return [
-    m.summary ?? "",
-    "",
-    `## What this covers`,
-    "",
-    shape,
-    "",
-    ...steps.map((s) => `- ${s}`),
-    "",
-    `## Why it is here`,
-    "",
-    `Module ${m.n} of ${course.title} ends with one thing you keep: **${m.artifact ?? "the module artifact"}**. This lesson is one of the ${m.lessons.length} pieces that produce it. If you only have time for part of this module, the parts that feed that artifact are the ones to do.`,
-    "",
-    `## Before you move on`,
-    "",
-    /*
-      "go back to the example above" pointed at an example that was never
-      generated, on every lesson-kind row. It now names the thing that is
-      actually there.
-    */
-    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, work through ${lesson.kind === "lab" ? "the lab" : "the points"} above again. The point is to have run this on something real, not to have finished it.`,
-    /*
-      The scaffolding note used to be appended here, in italics, at the foot of
-      every one of the 173 bodies: "the structure of this lesson is final, the
-      prose is being written". Signing 600 words of generated prose with a
-      confession at the bottom is the worst place for it — the reader has already
-      spent the time before they learn it was a placeholder.
-
-      It is a banner at the TOP of the lesson page now, rendered from a fact
-      about the row rather than baked into the text: a lesson with no authored
-      blocks is scaffolding, and says so before it is read. That also means it
-      disappears by itself the moment real content is attached, instead of
-      needing a re-seed to remove a sentence.
-    */
-  ].join("\n");
-}
-
-const lessonRows = courses.flatMap((c) =>
-  c.curriculum.flatMap((m) =>
-    m.lessons.map((l, i) => ({
-      module_id: moduleId.get(`${c.id}/${m.n}`),
-      slug: l.slug,
-      name: l.name,
-      kind: l.kind,
-      /* Optional on purpose, matching content.ts: exactly one lesson site-wide
-         carries a duration, and inventing the other 172 would be a lie stored in
-         a column. */
-      minutes: l.minutes ?? null,
-      position: i,
-    })),
-  ),
-);
-
-await run(
-  `lessons (${lessonRows.length})`,
-  /* Keyed on the slug, not the slot.
-     `(module_id, position)` looked like a key and was not one. Inserting a
-     lesson in the middle of a module shifted every lesson below it up a slot, so
-     the upsert wrote lesson 3's content over lesson 2's row — and because
-     `lesson_progress` points at the uuid, every learner who had completed the
-     old lesson 2 now owned a completion of what is really lesson 3. Nothing
-     surfaced it; the counts stayed plausible. */
-  db.from("lessons").upsert(lessonRows, { onConflict: "module_id,slug" }),
-);
-
-/* The sweep: lessons that no longer exist in content.ts. Nothing else in this
-   script deletes.
-
-   This used to sweep `position >= m.lessons.length`, which only caught rows
-   stranded past the new end. Removing a lesson from the *middle* left the last
-   row orphaned at a position that had just been rewritten by the upsert, so the
-   module kept a duplicate. Sweeping by slug removes exactly the lessons that
-   were removed, wherever they sat. */
-let swept = 0;
-for (const c of courses) {
-  for (const m of c.curriculum) {
-    const id = moduleId.get(`${c.id}/${m.n}`);
-    const keep = m.lessons.map((l) => l.slug);
-    const { data, error } = await db
-      .from("lessons")
-      .delete()
-      .eq("module_id", id)
-      /* PostgREST `not.in` wants a parenthesised list. Slugs are
-         [a-z0-9-] by construction, so none of them needs quoting. */
-      .not("slug", "in", `(${keep.join(",")})`)
-      .select("id");
-    if (error) {
-      console.error(`✗ sweep ${c.id}/${m.n}\n  ${error.message}`);
-      process.exit(1);
-    }
-    swept += data?.length ?? 0;
-  }
-}
-console.log(`✓ swept ${swept} stranded lesson${swept === 1 ? "" : "s"}`);
-
-/* ------------------------------------------------------------ scaffold blocks */
-/*
-  One prose block per lesson, keyed `scaffold`.
-
-  Lesson content used to live in `lessons.body`, and `catalog_lessons_read` is
-  `using (true)` — so every locked lesson's prose was readable over PostgREST by
-  anyone holding the publishable key that ships in the browser bundle. `lessons`
-  cannot be gated as a whole, because lesson names are public copy on the
-  marketing pages. So content moved to `lesson_blocks`, behind
-  `catalog_blocks_read`, and `lessons.body` was dropped.
-
-  The key matters. A lesson whose only block is `scaffold` has not been authored
-  and the page says so at the top; the banner disappears the moment anything else
-  is added. Seeding these as plain `prose` would have marked all 173 lessons
-  authored overnight.
-
-  This never overwrites authored blocks: it upserts on (lesson_id, key) and
-  touches no other key.
-*/
-const lessonIds = await run(
-  "read back lesson ids",
-  db.from("lessons").select("id, slug, module_id"),
-);
-const lessonId = new Map(lessonIds.map((l) => [`${l.module_id}/${l.slug}`, l.id]));
-
-const scaffoldRows = courses.flatMap((c) =>
-  c.curriculum.flatMap((m) =>
-    m.lessons.map((l) => ({
-      lesson_id: lessonId.get(`${moduleId.get(`${c.id}/${m.n}`)}/${l.slug}`),
-      key: "scaffold",
-      position: 0,
-      kind: "prose",
-      payload: { md: lessonBody(c, m, l) },
-    })),
-  ),
-).filter((r) => r.lesson_id);
-
-await run(
-  `scaffold blocks (${scaffoldRows.length})`,
-  db.from("lesson_blocks").upsert(scaffoldRows, { onConflict: "lesson_id,key" }),
-);
+   Re-adding a course seeder would recreate the exact problem this file's own
+   header describes at length — two copies of the same facts, and nothing
+   keeping them in step — only with the authoritative copy now being the one in
+   code. What remains below is the reference data that genuinely still ships
+   with the site: the judge seats and the rubric. */
 
 /* -------------------------------------------------------------- judge seats */
 /*
@@ -356,7 +124,10 @@ await run(
   person to a seat is an admin action, and leaving the column out of the upsert
   is what stops a re-seed from unbinding one that has been filled.
 */
-const byBadge = new Map(courses.map((c) => [c.badge, c.id]));
+/* The seats name the course they read by its BADGE ("Course A"), which is a
+   column now rather than a literal, so this reads the live catalogue. */
+const catalog = await run("read catalogue", db.from("courses").select("id, badge"));
+const byBadge = new Map(catalog.map((c) => [c.badge, c.id]));
 
 await run(
   `judge seats (${board.members.length})`,
@@ -395,7 +166,7 @@ const rubric = [
 
 const existing = await run("read back rubric", db.from("rubric_criteria").select("course_id, label"));
 const have = new Set(existing.map((r) => `${r.course_id}/${r.label}`));
-const missing = courses.flatMap((c) =>
+const missing = catalog.flatMap((c) =>
   rubric
     .map(([label, description, weight], i) => ({
       course_id: c.id, label, description, weight, position: i,

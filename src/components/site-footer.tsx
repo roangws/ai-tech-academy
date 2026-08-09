@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui";
 import { brand, footer } from "@/lib/content";
+import { getCatalog } from "@/lib/catalog";
 
 /**
  * Dense sitemap footer, after Coursera. White, hairline top, 28px rows.
@@ -30,7 +31,29 @@ import { brand, footer } from "@/lib/content";
  * The inner rule above the legal row stays. That one separates two blocks on one
  * ground, which is the case a bare hairline is for.
  */
-export function SiteFooter() {
+export async function SiteFooter() {
+  /*
+    The Courses column is built from the catalogue, not written down.
+
+    It used to list all five by name through `courseHref(id)`, which was a
+    hand-maintained copy of something the database already knows — so a course
+    created in the console appeared on the homepage and in the nav and was
+    missing from here. content.ts keeps the index link; the courses come from
+    Postgres and follow whatever is published.
+  */
+  const catalog = await getCatalog();
+  const columns = footer.columns.map((col) =>
+    col.title === "Courses"
+      ? {
+          ...col,
+          links: [
+            ...col.links,
+            ...catalog.map((c) => ({ label: c.title, href: `/courses/${c.slug}` })),
+          ],
+        }
+      : col,
+  );
+
   return (
     <footer className="border-t border-line bg-surface-subtle">
       {/*
@@ -49,7 +72,7 @@ export function SiteFooter() {
           <p className="t-body-sm mt-3 max-w-[280px] text-ink-secondary">{footer.blurb}</p>
         </div>
 
-        {footer.columns.map((col) => (
+        {columns.map((col) => (
           <nav key={col.title} aria-label={col.title}>
             <p className="t-label text-ink-muted">{col.title}</p>
             <ul className="mt-2 md:mt-3">

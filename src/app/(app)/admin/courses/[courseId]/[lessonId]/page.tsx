@@ -46,7 +46,6 @@ const KINDS = [
 ] as const;
 
 const EXAMPLES: Record<string, string> = {
-  prose: '{"md":"## A heading\\n\\nA paragraph.\\n\\n- a point\\n- another"}',
   quiz: '{"questions":[{"id":"q1","q":"The question?","choices":["a","b"],"answer":"b","why":"Because."}]}',
   embed: '{"src":"https://www.figma.com/…","height":520}',
   exercise: '{"prompt":"Paste your process below…","placeholder":"What came back"}',
@@ -117,14 +116,61 @@ export default async function AdminLesson({
             className="rounded-[var(--radius-card)] border border-line bg-surface p-4"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="t-label text-ink-muted">
                   {block.kind} · <code>{block.key}</code>
                 </p>
                 {block.title ? <p className="t-body-sm text-ink">{block.title}</p> : null}
-                <pre className="t-meta mt-1.5 max-w-full overflow-x-auto whitespace-pre-wrap break-all text-ink-muted">
-                  {JSON.stringify(block.payload)}
-                </pre>
+
+                {/*
+                  Edit in place.
+
+                  Every block used to be read-only here, printed as a line of
+                  JSON, and changing one meant scrolling to the form at the
+                  bottom and retyping its key and its whole payload from memory.
+                  For the most-edited object in the product that is not an
+                  editor, it is a viewer with a re-entry form beside it.
+
+                  Prose gets a plain Markdown textarea; the structured kinds keep
+                  JSON, which their CHECK constraints validate with a message
+                  naming the field. The `key` travels as a hidden field, so
+                  saving updates this row in place and every learner answer and
+                  playback position attached to it survives.
+                */}
+                <form action={saveBlock} className="mt-2">
+                  <input type="hidden" name="lessonId" value={lessonId} />
+                  <input type="hidden" name="key" value={block.key} />
+                  <input type="hidden" name="kind" value={block.kind} />
+                  <input type="hidden" name="position" value={block.position} />
+                  <input type="hidden" name="title" value={block.title ?? ""} />
+
+                  {block.kind === "prose" ? (
+                    <textarea
+                      name="md"
+                      rows={10}
+                      defaultValue={
+                        typeof (block.payload as { md?: unknown })?.md === "string"
+                          ? ((block.payload as { md: string }).md)
+                          : ""
+                      }
+                      className="t-body-sm w-full rounded-[var(--radius-control)] border border-line-control bg-surface p-3 font-normal text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    />
+                  ) : (
+                    <textarea
+                      name="payload"
+                      rows={4}
+                      defaultValue={JSON.stringify(block.payload, null, 2)}
+                      className="t-meta w-full rounded-[var(--radius-control)] border border-line-control bg-surface p-3 font-mono text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    />
+                  )}
+
+                  <button
+                    type="submit"
+                    className="t-meta mt-2 inline-flex min-h-[36px] items-center rounded-[var(--radius-control)] bg-accent px-3 text-on-accent transition-colors hover:bg-accent-hover"
+                  >
+                    Save this block
+                  </button>
+                </form>
               </div>
 
               <div className="flex flex-none items-center gap-1">
@@ -231,9 +277,25 @@ export default async function AdminLesson({
             <input name="path" placeholder="audio/gtm/01-episode.mp3" className={field} />
           </label>
 
+          {/* Prose first, and in its own field, because it is what an author
+              reaches for. 174 of the 174 blocks on this site are prose, and
+              asking for them as a JSON string literal meant escaping every
+              newline and quotation mark by hand. */}
           <label className="sm:col-span-2">
             <span className="t-field block text-ink-secondary">
-              Payload JSON <span className="text-ink-muted">every other kind</span>
+              Text <span className="text-ink-muted">prose — write Markdown, no JSON</span>
+            </span>
+            <textarea
+              name="md"
+              rows={8}
+              placeholder={"## A heading\n\nA paragraph.\n\n- a point\n- another"}
+              className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+            />
+          </label>
+
+          <label className="sm:col-span-2">
+            <span className="t-field block text-ink-secondary">
+              Payload JSON <span className="text-ink-muted">quiz, embed, exercise, checklist</span>
             </span>
             <textarea
               name="payload"

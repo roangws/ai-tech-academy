@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
-import { createClient } from "@/lib/supabase/server";
-import { courses as catalog, totalLessons } from "@/lib/content";
+import { ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, PlusIcon, StarIcon } from "@phosphor-icons/react/dist/ssr";
+import { StatusChip } from "@/components/ui";
+import { ActionForm, Field, Save, Quiet, Text } from "@/components/lms/admin-form";
+import { getAdminCatalog, totalLessons } from "@/lib/catalog";
+import { createCourse, moveCourse, setFeatured } from "@/app/actions/catalog";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Courses", robots: { index: false, follow: false } };
@@ -10,79 +12,141 @@ export const metadata: Metadata = { title: "Courses", robots: { index: false, fo
 /**
  * The catalogue, from the authoring side.
  *
- * ------------------------------------------------- what is editable and what is not
+ * ------------------------------------------------------------------ what changed
  *
- * Course and module titles, summaries and lesson names are NOT editable here,
- * and that is a deliberate split rather than a missing feature.
+ * This page used to open with a paragraph explaining that course titles, module
+ * names and lesson names were not editable here — that they lived in
+ * `content.ts` and shipped with the site — and it was true. The only control on
+ * the whole console was a module access toggle.
  *
- * `src/lib/content.ts` is the source of truth for catalogue prose, and the five
- * marketing pages import it directly. If an admin renamed a module in the
- * database, `/courses/[slug]` would keep showing the old name forever, because
- * nothing on the marketing side reads Postgres. Making the database
- * authoritative means editing those pages, and they are frozen.
+ * The reasoning behind that split was sound for a five-course catalogue written
+ * by one person, and it made the product impossible to hand to anybody else:
+ * creating a course meant editing TypeScript and deploying. The catalogue lives
+ * in Postgres now, so the words on this screen are the words on the site.
  *
- * So authority splits by column, not by table:
+ * ------------------------------------------------------------ draft and lead
  *
- *   content.ts owns  course + module + lesson prose, deployed with the site
- *   the database owns module access, ordering, and every lesson block
+ * Two states, and they answer different questions.
  *
- * Which is the line the product already draws: marketing renders prose, the LMS
- * renders structure and media. Nothing that appears in two places is editable in
- * two places, so nothing can diverge.
+ * `status` is whether the course exists for a visitor at all. A draft is absent
+ * from the homepage, from /courses, from the sitemap and from the player, which
+ * is what makes it safe to build one on the live site. Publishing checks the
+ * course is actually openable first — see `setCourseStatus`.
  *
- * The cost, stated plainly: renaming a module is a code change and a deploy. For
- * a five-course catalogue authored by one person that is correct. At fifty
- * courses and ten authors it is not, and the fix is to unfreeze the marketing
- * pages and move them onto `use cache` + `cacheTag("catalog")` with `updateTag`
- * on save.
+ * `featured` is which published course leads the homepage grid as the wide card.
+ * Exactly one, so setting it clears the others.
  */
 export default async function AdminCourses() {
-  const supabase = await createClient();
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("id, course_id, n, access, lessons(id, lesson_blocks(id))")
-    .order("position");
+  const catalog = await getAdminCatalog();
 
   return (
     <>
       <h1 className="t-h2 text-ink">Courses</h1>
       <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
-        Titles and lesson names live in <code className="t-meta">content.ts</code> and ship with the
-        site. What you set here is what each module opens to, and what each lesson is made of.
+        Everything here is what the site shows. A new course starts as a draft — invisible to
+        visitors and to the player — with one open module and one lesson, so it can be opened from
+        the moment it exists.
       </p>
 
+      {/* ------------------------------------------------------------- new */}
+      <ActionForm
+        action={createCourse}
+        className="mt-6 rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-4"
+      >
+        <p className="t-card-title text-ink">Create a course</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_200px_auto] sm:items-end">
+          <Field label="Title" hint="What it is called everywhere. Everything else is editable next.">
+            <Text name="title" placeholder="Applied AI for finance teams" />
+          </Field>
+          <Field label="Id (optional)" hint="Built from the title when blank.">
+            <Text name="id" placeholder="finance" />
+          </Field>
+          <Save>
+            <PlusIcon size={15} weight="bold" aria-hidden="true" />
+            Create draft
+          </Save>
+        </div>
+      </ActionForm>
+
       <ul className="mt-6 flex flex-col gap-3">
-        {catalog.map((course) => {
-          const mine = (modules ?? []).filter((m) => m.course_id === course.id);
-          const open = mine.filter((m) => m.access === "open").length;
-          const authored = mine.reduce(
-            (n, m) =>
-              n + (m.lessons ?? []).filter((l) => (l.lesson_blocks ?? []).length > 0).length,
-            0,
-          );
+        {catalog.map((course, i) => {
           const lessons = totalLessons(course);
+          const open = course.curriculum.filter((m) => m.access === "open").length;
 
           return (
-            <li key={course.id}>
-              <Link
-                href={`/admin/courses/${course.id}`}
-                style={{ borderLeftColor: course.ground ?? undefined }}
-                className="flex flex-wrap items-center gap-4 rounded-[var(--radius-card)] border border-line border-l-[3px] bg-surface p-4 no-underline transition-colors hover:border-line-strong"
-              >
-                <span className="min-w-0 flex-1">
+            <li
+              key={course.id}
+              style={{ borderLeftColor: course.ground ?? undefined }}
+              className="rounded-[var(--radius-card)] border border-line border-l-[3px] bg-surface p-4"
+            >
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href={`/admin/courses/${course.id}`}
+                  className="min-w-0 flex-1 no-underline"
+                >
                   <span className="t-label block text-ink-muted">{course.badge}</span>
                   <span className="t-card-title block text-ink">{course.title}</span>
-                </span>
-                <span className="t-meta text-right text-ink-secondary">
-                  <span className="block">
-                    {authored} of {lessons} lessons authored
+                  <span className="t-meta mt-0.5 block text-ink-muted">
+                    {course.curriculum.length} modules · {lessons} lessons · {open} open · /
+                    {course.slug}
                   </span>
-                  <span className="block text-ink-muted">
-                    {mine.length} modules · {open} open
-                  </span>
-                </span>
-                <ArrowRightIcon size={15} aria-hidden="true" className="flex-none text-ink-muted" />
-              </Link>
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {course.status === "published" ? (
+                    <StatusChip open>Published</StatusChip>
+                  ) : (
+                    <StatusChip>Draft</StatusChip>
+                  )}
+
+                  {/* The lead card, and only a published course can be one —
+                      featuring a draft would name a course the homepage cannot
+                      render. */}
+                  {course.status === "published" ? (
+                    course.featured ? (
+                      <span className="t-meta inline-flex min-h-[36px] items-center gap-1.5 rounded-[var(--radius-control)] border border-accent px-2.5 text-accent">
+                        <StarIcon size={13} weight="fill" aria-hidden="true" />
+                        Leads the homepage
+                      </span>
+                    ) : (
+                      <form action={setFeatured}>
+                        <input type="hidden" name="courseId" value={course.id} />
+                        <Quiet title="Make this the wide lead card on the homepage">
+                          <StarIcon size={13} aria-hidden="true" />
+                          Lead the homepage
+                        </Quiet>
+                      </form>
+                    )
+                  ) : null}
+
+                  <form action={moveCourse} className="flex gap-1">
+                    <input type="hidden" name="courseId" value={course.id} />
+                    <input type="hidden" name="direction" value="up" />
+                    {i > 0 ? (
+                      <Quiet ariaLabel={`Move ${course.title} up`}>
+                        <ArrowUpIcon size={13} aria-hidden="true" />
+                      </Quiet>
+                    ) : null}
+                  </form>
+                  <form action={moveCourse} className="flex gap-1">
+                    <input type="hidden" name="courseId" value={course.id} />
+                    <input type="hidden" name="direction" value="down" />
+                    {i < catalog.length - 1 ? (
+                      <Quiet ariaLabel={`Move ${course.title} down`}>
+                        <ArrowDownIcon size={13} aria-hidden="true" />
+                      </Quiet>
+                    ) : null}
+                  </form>
+
+                  <Link
+                    href={`/admin/courses/${course.id}`}
+                    className="t-meta inline-flex min-h-[36px] items-center gap-1.5 rounded-[var(--radius-control)] border border-line-control px-2.5 text-ink-secondary no-underline transition-colors hover:border-accent hover:text-accent"
+                  >
+                    Edit
+                    <ArrowRightIcon size={13} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
             </li>
           );
         })}
