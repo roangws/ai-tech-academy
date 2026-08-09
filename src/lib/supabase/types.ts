@@ -87,8 +87,13 @@ export type LessonRow = {
   name: string;
   kind: LessonKind;
   minutes: number | null;
-  /** The lesson itself. Seeded by scripts/seed-catalog.mjs. */
-  body: string | null;
+  /*
+    `body` was here and is gone. It held the lesson's prose, and
+    `catalog_lessons_read` is `using (true)` — so every locked lesson's content
+    was readable over PostgREST by anyone holding the publishable key. `lessons`
+    cannot be gated as a whole, because lesson NAMES are public copy. Content
+    lives in `lesson_blocks` now, behind `catalog_blocks_read`.
+  */
   /** Presentation order only. Identity is `slug`. */
   position: number;
 };

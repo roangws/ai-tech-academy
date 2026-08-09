@@ -253,7 +253,6 @@ const lessonRows = courses.flatMap((c) =>
          carries a duration, and inventing the other 172 would be a lie stored in
          a column. */
       minutes: l.minutes ?? null,
-      body: lessonBody(c, m, l),
       position: i,
     })),
   ),
@@ -300,6 +299,48 @@ for (const c of courses) {
   }
 }
 console.log(`✓ swept ${swept} stranded lesson${swept === 1 ? "" : "s"}`);
+
+/* ------------------------------------------------------------ scaffold blocks */
+/*
+  One prose block per lesson, keyed `scaffold`.
+
+  Lesson content used to live in `lessons.body`, and `catalog_lessons_read` is
+  `using (true)` — so every locked lesson's prose was readable over PostgREST by
+  anyone holding the publishable key that ships in the browser bundle. `lessons`
+  cannot be gated as a whole, because lesson names are public copy on the
+  marketing pages. So content moved to `lesson_blocks`, behind
+  `catalog_blocks_read`, and `lessons.body` was dropped.
+
+  The key matters. A lesson whose only block is `scaffold` has not been authored
+  and the page says so at the top; the banner disappears the moment anything else
+  is added. Seeding these as plain `prose` would have marked all 173 lessons
+  authored overnight.
+
+  This never overwrites authored blocks: it upserts on (lesson_id, key) and
+  touches no other key.
+*/
+const lessonIds = await run(
+  "read back lesson ids",
+  db.from("lessons").select("id, slug, module_id"),
+);
+const lessonId = new Map(lessonIds.map((l) => [`${l.module_id}/${l.slug}`, l.id]));
+
+const scaffoldRows = courses.flatMap((c) =>
+  c.curriculum.flatMap((m) =>
+    m.lessons.map((l) => ({
+      lesson_id: lessonId.get(`${moduleId.get(`${c.id}/${m.n}`)}/${l.slug}`),
+      key: "scaffold",
+      position: 0,
+      kind: "prose",
+      payload: { md: lessonBody(c, m, l) },
+    })),
+  ),
+).filter((r) => r.lesson_id);
+
+await run(
+  `scaffold blocks (${scaffoldRows.length})`,
+  db.from("lesson_blocks").upsert(scaffoldRows, { onConflict: "lesson_id,key" }),
+);
 
 /* -------------------------------------------------------------- judge seats */
 /*

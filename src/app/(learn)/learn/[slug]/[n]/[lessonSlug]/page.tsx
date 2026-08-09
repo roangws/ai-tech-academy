@@ -13,7 +13,6 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, StatusChip } from "@/components/ui";
 import { LockedPanel } from "@/components/lms/ui";
-import { Prose } from "@/components/lms/prose";
 import { LessonBlocks } from "@/components/lms/blocks";
 import { CourseRail } from "@/components/lms/course-rail";
 import { getViewer } from "@/lib/auth";
@@ -120,9 +119,12 @@ export default async function LessonPage({
           ? FileTextIcon
           : ArticleIcon;
 
-  /* No blocks means nobody has authored this lesson yet: the seed script writes
-     a prose scaffold into `lessons.body` and nothing else. */
-  const scaffolding = blocks.length === 0;
+  /* The seed script writes one prose block keyed `scaffold`. A lesson carrying
+     only that has not been authored, and says so — the banner disappears the
+     moment somebody adds anything else. The key is what makes that knowable:
+     moving the 173 bodies into blocks without it would have marked every lesson
+     authored overnight. */
+  const scaffolding = blocks.length === 0 || blocks.every((b) => b.key === "scaffold");
 
   return (
     <Container className="py-10 md:py-14">
@@ -199,8 +201,6 @@ export default async function LessonPage({
 
         {blocks.length > 0 ? (
           <LessonBlocks blocks={blocks} />
-        ) : lesson.body ? (
-          <Prose body={lesson.body} className="mt-7 max-w-[68ch]" />
         ) : (
           <p className="t-body mt-7 text-ink-secondary">This lesson has no written content yet.</p>
         )}
