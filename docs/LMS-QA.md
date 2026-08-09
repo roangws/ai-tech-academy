@@ -281,7 +281,24 @@ This is the site's central promise and it is stated on six surfaces.
   learner can be scored without being shown the score.
 - **[FILL: lesson bodies]** — there is no lesson content in the repo: no video, no
   text, no storage bucket. A lesson is currently a name, a kind and a tick.
-- **[FILL: file uploads]** — artifacts are text only.
+- **[FILL: file uploads]** — artifacts are text only. Avatars are the one upload
+  that exists (`avatars` bucket, one folder per user enforced by policy).
+- **[FILL: account deletion does not reap the avatar]** — and it cannot be fixed
+  in SQL. `storage.objects` has no foreign key to `auth.users`, so nothing
+  cascades, and Supabase installs a `storage.protect_delete()` trigger that
+  refuses direct SQL deletes from storage tables outright. A delete-my-account
+  feature therefore has to call the Storage API to remove
+  `avatars/<user id>/…` before deleting the user. There is no delete-account
+  feature yet, so nothing is leaking today — but the privacy policy promises one,
+  and whoever builds it needs to know this.
+- **Column-level grants are a whitelist, and a new column is not in it.** This
+  schema has now been bitten three times by privilege changes that looked applied
+  and were not: a column REVOKE shadowed by a table grant, a function REVOKE
+  shadowed by the PUBLIC grant, and `profiles.avatar_url` added after the
+  column-level UPDATE grant was written — so a portrait uploaded to storage
+  correctly and the row that records its URL was silently refused. Any column
+  added to `profiles` from here needs an explicit decision about whether a
+  learner may write it.
 - **[FILL: teams]** — individual enrolment only, which matches the current copy.
 - **No admin UI.** Granting a role, assigning an instructor and binding a judge
   seat are all SQL. This is deliberate — a self-service path into `user_roles` is
