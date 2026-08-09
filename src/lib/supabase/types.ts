@@ -68,6 +68,8 @@ export type LessonRow = {
   name: string;
   kind: LessonKind;
   minutes: number | null;
+  /** The lesson itself. Seeded by scripts/seed-catalog.mjs. */
+  body: string | null;
   position: number;
 };
 
@@ -78,6 +80,7 @@ export type Profile = {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  avatar_url: string | null;
   company: string | null;
   role_title: string | null;
   source: string | null;

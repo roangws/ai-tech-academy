@@ -133,6 +133,76 @@ const modules = await run(
 const moduleId = new Map(modules.map((m) => [`${m.course_id}/${m.n}`, m.id]));
 
 /* ------------------------------------------------------------------ lessons */
+/**
+ * The body of one lesson.
+ *
+ * ------------------------------------------------------------ why generated
+ *
+ * A lesson used to be a title and a tick, so there were 173 things a learner
+ * could see and none they could open. Writing 173 lessons by hand is the real
+ * answer and it is not a thing a seed script can do — so this produces the
+ * scaffold each one needs: what it covers, what to do, and what it feeds into.
+ *
+ * Everything in it is derived from facts that already exist in content.ts — the
+ * course, the module, the lesson's own name and kind, and the artifact the
+ * module produces — so no lesson claims anything the curriculum does not already
+ * say. It is placeholder in the sense that an author will replace the prose, not
+ * in the sense that it is filler: the structure is the one every lesson needs.
+ *
+ * Marked as such at the end of every body, because a learner deserves to know
+ * which parts of a course are written and which are scaffolding.
+ */
+function lessonBody(course, m, lesson, i) {
+  const n = i + 1;
+  const shape = {
+    lesson: "Watch, then write down where this applies to your own process.",
+    lab: "Do this one in your own environment, on your own data.",
+    template: "Copy this, fill it in, and keep it — it goes into your artifact.",
+  }[lesson.kind];
+
+  const steps = {
+    lesson: [
+      `Where "${lesson.name.toLowerCase()}" fits in ${m.name.toLowerCase()}.`,
+      "The two failure modes teams hit here, and how to spot them early.",
+      "A worked example on a process the size of yours.",
+    ],
+    lab: [
+      "Open the tool you actually use for this. Not a sandbox.",
+      `Run the smallest version of "${lesson.name.toLowerCase()}" end to end.`,
+      "Write down what broke. That list is the useful output, not the happy path.",
+    ],
+    template: [
+      "Copy the template into wherever your team keeps working documents.",
+      "Fill in only the rows you have evidence for. Leave the rest blank.",
+      "Blank rows are the questions to answer next — do not invent values.",
+    ],
+  }[lesson.kind];
+
+  return [
+    `**${course.badge} · Module ${m.n} · Lesson ${n} of ${m.lessons.length}**`,
+    "",
+    m.summary ?? "",
+    "",
+    `## What this covers`,
+    "",
+    shape,
+    "",
+    ...steps.map((s) => `- ${s}`),
+    "",
+    `## Why it is here`,
+    "",
+    `Module ${m.n} of ${course.title} ends with one thing you keep: **${m.artifact ?? "the module artifact"}**. This lesson is one of the ${m.lessons.length} pieces that produce it. If you only have time for part of this module, the parts that feed that artifact are the ones to do.`,
+    "",
+    `## Before you move on`,
+    "",
+    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, go back to the ${lesson.kind === "lab" ? "lab" : "example"} above — the point is not to finish it, it is to have run it on something real.`,
+    "",
+    "---",
+    "",
+    "_Course scaffolding: the structure of this lesson is final, the prose is being written. The labs, the template and the artifact it feeds are real and are what the module is assessed on._",
+  ].join("\n");
+}
+
 const lessonRows = courses.flatMap((c) =>
   c.curriculum.flatMap((m) =>
     m.lessons.map((l, i) => ({
@@ -143,6 +213,7 @@ const lessonRows = courses.flatMap((c) =>
          carries a duration, and inventing the other 172 would be a lie stored in
          a column. */
       minutes: l.minutes ?? null,
+      body: lessonBody(c, m, l, i),
       position: i,
     })),
   ),

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, requireUser } from "@/lib/auth";
 import { byId, bySlug, getMySeat } from "@/lib/lms/queries";
+import { safeNext } from "@/lib/safe-next";
 
 /**
  * Throw on a failed write instead of pretending it succeeded.
@@ -159,9 +160,22 @@ export async function toggleLesson(formData: FormData): Promise<void> {
   await touchEnrollment(supabase, viewer.id, course.id, module?.id ?? null);
 
   /* Also the course board, which shows the per-module counts this just changed. */
-  revalidatePath(`/learn/${slug}/${n}`);
+  revalidatePath(`/learn/${slug}/${n}`, "layout");
   revalidatePath(`/learn/${slug}`);
   revalidatePath("/dashboard");
+
+  /*
+    "Complete and continue" — the lesson page sends where to go next.
+
+    Only honoured when the lesson was just COMPLETED, never when it was unticked:
+    pressing "Mark as not done" and being carried forward to the next lesson
+    would be the control doing something nobody asked for. `safeNext` because
+    this arrives in a form field like any other.
+  */
+  const then = formData.get("then");
+  if (!done && typeof then === "string" && then) {
+    redirect(safeNext(then, `/learn/${slug}/${n}`));
+  }
 }
 
 /* -------------------------------------------------------------- artifacts */

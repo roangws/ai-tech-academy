@@ -15,7 +15,8 @@ import { CaretDownIcon, ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
 import { CourseGlyph, allCoursesGlyph as AllCoursesGlyph } from "@/components/course/icons";
 import { ButtonLink, Container, EnrollButton } from "@/components/ui";
-import { courseHref, courses, nav } from "@/lib/content";
+import { Avatar } from "@/components/lms/avatar";
+import { courseHref, courses, moduleCount, nav } from "@/lib/content";
 
 /**
  * Single-tier product header, 72px.
@@ -70,7 +71,22 @@ import { courseHref, courses, nav } from "@/lib/content";
  * this bar went with it, so this is the whole of the chrome: one 72px tier
  * carrying the lockup, six nav links and the primary control.
  */
-export function SiteHeader() {
+/**
+ * Who is signed in, if anyone.
+ *
+ * Passed down from the `(site)` layout, which is a server component and can read
+ * the session. This header is a client component — scroll-spy, the motion pill,
+ * the drawer — so it cannot read cookies itself, and the alternative (a client
+ * Supabase call on mount) would flash "Sign in" at every signed-in reader on
+ * every page load before correcting itself.
+ */
+export type HeaderViewer = {
+  name: string;
+  email: string | null;
+  avatarUrl: string | null;
+};
+
+export function SiteHeader({ viewer = null }: { viewer?: HeaderViewer | null }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -532,25 +548,63 @@ export function SiteHeader() {
               could come from that is not a route to something: hiding Sign in
               between lg and xl would leave it unreachable, because the mobile panel
               that also carries it stops at lg. content.ts has the accounting. */}
-          <div className="hidden lg:block">
-            <ButtonLink href="/sign-in" tone="secondary" size="md" className="max-xl:px-4">
-              Sign in
-            </ButtonLink>
-          </div>
+          {/*
+            SIGNED IN, THE CHROME CHANGES.
 
-          {/* The primary CTA stays visible at every width, and carries the label
-              alone: the dated second line is for the body of the page, where a
-              reader is deciding. `EnrollButton` owns that split.
+            "Sign in" and "Enroll for free" are both offers to someone who has
+            not accepted one. Showing them to a reader who is signed in is the
+            site failing to notice its own user — and worse, "Enroll for free"
+            sent them to /sign-up, which the proxy bounces straight back to
+            /dashboard, so the most prominent control in the chrome was a loop.
 
-              It runs a size down below sm: at 320px the lockup, this control and
-              the menu button measured 320 inside a 288px content box, and the
-              document grew a horizontal scrollbar. `h-11` rather than `h-10`,
-              because 40px is under the 44px target the rest of the page holds and
-              height was never what overflowed at 320 — the padding was. */}
-          <EnrollButton
-            size="md"
-            className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
-          />
+            So the pair is replaced by the two things a signed-in reader wants:
+            their courses, and their account.
+          */}
+          {viewer ? (
+            <>
+              <div className="hidden lg:block">
+                <ButtonLink href="/dashboard" tone="secondary" size="md" className="max-xl:px-4">
+                  My courses
+                </ButtonLink>
+              </div>
+              <Link
+                href="/account"
+                aria-label="Your account"
+                title={viewer.email ?? "Your account"}
+                className="rounded-full outline-none ring-offset-2 transition-shadow hover:ring-2 hover:ring-line-strong focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
+              >
+                <Avatar
+                  name={viewer.name}
+                  email={viewer.email}
+                  url={viewer.avatarUrl}
+                  size={36}
+                />
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="hidden lg:block">
+                <ButtonLink href="/sign-in" tone="secondary" size="md" className="max-xl:px-4">
+                  Sign in
+                </ButtonLink>
+              </div>
+
+              {/* The primary CTA stays visible at every width, and carries the
+                  label alone: the dated second line is for the body of the page,
+                  where a reader is deciding. `EnrollButton` owns that split.
+
+                  It runs a size down below sm: at 320px the lockup, this control
+                  and the menu button measured 320 inside a 288px content box, and
+                  the document grew a horizontal scrollbar. `h-11` rather than
+                  `h-10`, because 40px is under the 44px target the rest of the
+                  page holds and height was never what overflowed at 320 — the
+                  padding was. */}
+              <EnrollButton
+                size="md"
+                className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
+              />
+            </>
+          )}
 
           <button
             ref={toggleRef}
@@ -649,11 +703,27 @@ export function SiteHeader() {
                 the clock. This is the one call site inside a client component, and
                 a `new Date()` rendered here would be evaluated once on the server
                 and again during hydration. */}
+            {/* Same substitution as the bar above. The drawer is the only place
+                Sign in exists below lg, so it has to make the swap too or a
+                signed-in reader on a phone is offered an account they have. */}
             <div className="mt-4 flex flex-col gap-2.5 pb-1">
-              <EnrollButton onClick={closeMenu} />
-              <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
-                Sign in
-              </ButtonLink>
+              {viewer ? (
+                <>
+                  <ButtonLink href="/dashboard" onClick={closeMenu}>
+                    My courses
+                  </ButtonLink>
+                  <ButtonLink href="/account" tone="secondary" onClick={closeMenu}>
+                    Your account
+                  </ButtonLink>
+                </>
+              ) : (
+                <>
+                  <EnrollButton onClick={closeMenu} />
+                  <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
+                    Sign in
+                  </ButtonLink>
+                </>
+              )}
             </div>
           </Container>
       </div>
@@ -872,7 +942,7 @@ function CoursesMenu({
         id="courses-menu"
         aria-label="Courses menu"
         hidden={!open}
-        className="absolute left-0 top-full z-50 mt-2 w-[320px] overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e3"
+        className="absolute left-0 top-full z-50 mt-2 w-[300px] overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e3"
       >
           <ul className="p-1.5">
             {courses.map((course) => (
@@ -888,11 +958,21 @@ function CoursesMenu({
                   />
                   <span className="min-w-0">
                     <span className="t-button block text-ink">{course.title}</span>
-                    {/* `summary`, not `tagline`. The tagline is a 180-character
-                        promise written for a 620px column; this is a 260px menu
-                        row and the summary is the one-line version that already
-                        exists for the catalog card. */}
-                    <span className="t-meta mt-0.5 block text-ink-muted">{course.summary}</span>
+                    {/*
+                      FACTS, NOT A SENTENCE.
+
+                      This printed `course.summary`, and five summaries stacked
+                      in a 320px panel is five wrapped sentences — roughly 60
+                      words of prose in a menu, which is a page rather than a
+                      list. A reader opening a nav dropdown is choosing between
+                      five things, and what separates them is level and length.
+
+                      The summary still exists and is still the right copy on the
+                      catalog card, where there is a column to read it in.
+                    */}
+                    <span className="t-meta mt-0.5 block text-ink-muted">
+                      {course.level} · {course.duration} · {moduleCount(course)}
+                    </span>
                   </span>
                 </Link>
               </li>

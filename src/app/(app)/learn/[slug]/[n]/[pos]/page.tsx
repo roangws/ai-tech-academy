@@ -1,0 +1,208 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  FlaskIcon,
+  FileTextIcon,
+  PlayCircleIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import { Container, StatusChip } from "@/components/ui";
+import { LockedPanel } from "@/components/lms/ui";
+import { Prose } from "@/components/lms/prose";
+import { getViewer } from "@/lib/auth";
+import { getLessonView, bySlug } from "@/lib/lms/queries";
+import { isLocked, unlockHref } from "@/lib/lms/access";
+import { toggleLesson } from "@/app/actions/lms";
+import type { LessonKind } from "@/lib/supabase/types";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; n: string; pos: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  return { title: bySlug.get(slug)?.title ?? "Lesson", robots: { index: false, follow: false } };
+}
+
+const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
+  lesson: PlayCircleIcon,
+  lab: FlaskIcon,
+  template: FileTextIcon,
+};
+
+/**
+ * A lesson, open and readable.
+ *
+ * This is the page that did not exist. A learner could see 173 lesson titles
+ * across the five courses and open none of them — the module page listed names
+ * with a tick beside each, which is a syllabus rather than a course. Clicking a
+ * lesson now goes somewhere.
+ *
+ * The gate is re-checked here rather than trusted from the module page, for the
+ * same reason it is checked there: this is a directly addressable URL, so
+ * `/learn/<course>/04/02` has to decide for itself whether module 04 is open to
+ * this reader. The check reads `module.access` from the row, not the number in
+ * the path.
+ */
+export default async function LessonPage({
+  params,
+}: {
+  params: Promise<{ slug: string; n: string; pos: string }>;
+}) {
+  const { slug, n, pos } = await params;
+  const index = Number(pos);
+  if (!Number.isInteger(index) || index < 0) notFound();
+
+  const viewer = await getViewer();
+  const view = await getLessonView(slug, n, index, viewer?.id ?? null);
+  if (!view) notFound();
+
+  const { course, module, lesson, total, done, prev, next, nextModule } = view;
+  const signedIn = Boolean(viewer);
+  const path = `/learn/${slug}/${n}/${pos}`;
+
+  if (isLocked(module.access, signedIn)) {
+    return (
+      <Container className="py-10 md:py-14">
+        <div className="max-w-[720px]">
+          <LockedPanel as="h1" href={unlockHref(path)} moduleName={`Module ${module.n}`} />
+        </div>
+      </Container>
+    );
+  }
+
+  const Icon = kindIcon[lesson.kind];
+
+  return (
+    <Container className="py-10 md:py-14">
+      <nav aria-label="Breadcrumb" className="t-meta text-ink-muted">
+        <Link href={`/learn/${slug}`} className="text-ink-secondary no-underline hover:underline">
+          {course.title}
+        </Link>
+        <span className="px-1.5 text-line-strong">/</span>
+        <Link href={`/learn/${slug}/${n}`} className="text-ink-secondary no-underline hover:underline">
+          Module {module.n}
+        </Link>
+        <span className="px-1.5 text-line-strong">/</span>
+        Lesson {index + 1}
+      </nav>
+
+      <div className="mt-5 max-w-[720px]">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="t-label inline-flex items-center gap-1.5 text-ink-muted">
+            <Icon size={14} aria-hidden="true" />
+            {lesson.kind}
+          </span>
+          <span className="t-label tabular-nums text-ink-muted">
+            Lesson {index + 1} of {total}
+          </span>
+          {lesson.minutes ? (
+            <span className="t-label text-ink-muted">{lesson.minutes} min</span>
+          ) : null}
+          {done ? <StatusChip>Done</StatusChip> : null}
+        </div>
+
+        <h1 className="t-h2 mt-2.5 text-ink">{lesson.name}</h1>
+
+        {lesson.body ? (
+          <Prose body={lesson.body} className="mt-7" />
+        ) : (
+          <p className="t-body mt-7 text-ink-secondary">
+            This lesson has no written content yet.
+          </p>
+        )}
+
+        {/* ------------------------------------------------------- complete */}
+        <div className="mt-10 border-t border-line pt-6">
+          {signedIn ? (
+            <form action={toggleLesson} className="flex flex-wrap items-center gap-4">
+              <input type="hidden" name="lessonId" value={lesson.id} />
+              <input type="hidden" name="slug" value={slug} />
+              <input type="hidden" name="n" value={n} />
+              <input type="hidden" name="done" value={String(done)} />
+              {/* The `next` hint tells the action where to send them, so finishing
+                  a lesson moves forward instead of leaving them on a page they
+                  have just finished reading. */}
+              <input
+                type="hidden"
+                name="then"
+                value={next ? `/learn/${slug}/${n}/${index + 1}` : `/learn/${slug}/${n}`}
+              />
+              <button
+                type="submit"
+                className={`t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] px-5 transition-colors ${
+                  done
+                    ? "border border-line text-ink-secondary hover:border-line-strong hover:text-ink"
+                    : "bg-accent text-white hover:bg-accent-hover"
+                }`}
+              >
+                <CheckIcon size={15} weight="bold" aria-hidden="true" />
+                {done ? "Mark as not done" : next ? "Complete and continue" : "Complete lesson"}
+              </button>
+              {done ? (
+                <span className="t-meta text-ink-muted">You finished this one.</span>
+              ) : null}
+            </form>
+          ) : (
+            <p className="t-body-sm text-ink-secondary">
+              Module 1 is open with no account, and saving your progress is not.{" "}
+              <Link href={unlockHref(path)} className="text-accent no-underline hover:underline">
+                A free account
+              </Link>{" "}
+              keeps track of what you have finished.
+            </p>
+          )}
+        </div>
+
+        {/* ----------------------------------------------------- pagination */}
+        <nav
+          aria-label="Lessons"
+          className="mt-10 flex flex-wrap justify-between gap-4 border-t border-line pt-6"
+        >
+          {prev ? (
+            <Link
+              href={`/learn/${slug}/${n}/${index - 1}`}
+              className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-ink-secondary no-underline hover:text-ink"
+            >
+              <ArrowLeftIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
+              <span className="clamp-1">{prev.name}</span>
+            </Link>
+          ) : (
+            <Link
+              href={`/learn/${slug}/${n}`}
+              className="t-button inline-flex items-center gap-1.5 text-ink-secondary no-underline hover:text-ink"
+            >
+              <ArrowLeftIcon size={14} weight="bold" aria-hidden="true" />
+              Module {module.n}
+            </Link>
+          )}
+
+          {next ? (
+            <Link
+              href={`/learn/${slug}/${n}/${index + 1}`}
+              className="t-button inline-flex max-w-[45%] items-center gap-1.5 text-right text-accent no-underline hover:underline"
+            >
+              <span className="clamp-1">{next.name}</span>
+              <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
+            </Link>
+          ) : nextModule ? (
+            <Link
+              href={`/learn/${slug}/${nextModule.n}`}
+              className="t-button inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
+            >
+              Module {nextModule.n} — {nextModule.name}
+              <ArrowRightIcon size={14} weight="bold" aria-hidden="true" className="flex-none" />
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      </div>
+    </Container>
+  );
+}

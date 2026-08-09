@@ -335,6 +335,78 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     .filter((x): x is DashboardCourse => x !== null);
 }
 
+export type LessonView = {
+  course: Course;
+  module: ModuleRow;
+  lesson: LessonRow;
+  index: number;
+  total: number;
+  done: boolean;
+  prev: LessonRow | null;
+  next: LessonRow | null;
+  /** The first lesson of the following module, for the end of a module. */
+  nextModule: ModuleRow | null;
+};
+
+/**
+ * One lesson, by its position within a module.
+ *
+ * Keyed on `position` rather than a lesson id in the URL, so a lesson address is
+ * readable and stable — `/learn/<course>/04/02` is the second lesson of module
+ * four, and it stays that even after a re-seed gives the row a new uuid.
+ */
+export async function getLessonView(
+  slug: string,
+  n: string,
+  pos: number,
+  userId: string | null,
+): Promise<LessonView | null> {
+  const course = bySlug.get(slug);
+  if (!course) return null;
+
+  const supabase = await createClient();
+
+  const modules = await rows<ModuleRow>(
+    "lesson modules",
+    supabase.from("modules").select("*").eq("course_id", course.id).order("position"),
+  );
+  const mi = modules.findIndex((m) => m.n === n);
+  if (mi === -1) return null;
+  const current = modules[mi];
+
+  const lessons = await rows<LessonRow>(
+    "lesson list",
+    supabase.from("lessons").select("*").eq("module_id", current.id).order("position"),
+  );
+  const lesson = lessons.find((l) => l.position === pos);
+  if (!lesson) return null;
+
+  let done = false;
+  if (userId) {
+    const progress = await rows<{ lesson_id: string }>(
+      "lesson done",
+      supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", userId)
+        .eq("lesson_id", lesson.id),
+    );
+    done = progress.length > 0;
+  }
+
+  return {
+    course,
+    module: current,
+    lesson,
+    index: pos,
+    total: lessons.length,
+    done,
+    prev: lessons[pos - 1] ?? null,
+    next: lessons[pos + 1] ?? null,
+    nextModule: modules[mi + 1] ?? null,
+  };
+}
+
 /* ---------------------------------------------------------- outcome sheets */
 
 export async function getOutcomeSheet(

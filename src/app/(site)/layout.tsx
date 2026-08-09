@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getViewer } from "@/lib/auth";
 
 /**
  * The page chrome, for every route that has chrome.
@@ -32,7 +33,23 @@ import { SiteHeader } from "@/components/site-header";
  * `<main>` the page does not own. That is the point. It is what makes one skip
  * link work for all of them.
  */
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+/**
+ * ------------------------------------------------------- why this is now async
+ *
+ * The header needs to know whether anyone is signed in, so it can show a reader
+ * their account instead of offering them one they already have. `SiteHeader` is
+ * a client component and cannot read the session itself, so the layout reads it
+ * and passes it down.
+ *
+ * The cost is real and worth naming: `getViewer()` reads cookies, so every route
+ * under this group becomes dynamic. The pages themselves keep their own
+ * `revalidate` for data, but the shell is now rendered per request. The
+ * alternative — fetching the session in the browser after mount — would flash
+ * "Sign in" at every signed-in reader on every page before correcting itself,
+ * which is worse than the caching.
+ */
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const viewer = await getViewer();
   return (
     <>
       <a
@@ -41,7 +58,13 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Skip to content
       </a>
-      <SiteHeader />
+      <SiteHeader
+        viewer={
+          viewer
+            ? { name: viewer.name, email: viewer.email, avatarUrl: viewer.profile?.avatar_url ?? null }
+            : null
+        }
+      />
       {/*
         `tabIndex={-1}` is what makes the skip link above actually skip.
 

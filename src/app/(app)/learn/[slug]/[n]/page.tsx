@@ -128,15 +128,27 @@ export default async function ModulePage({
               return (
                 <li key={lesson.id} className="flex items-center gap-4 py-3.5">
                   <Icon size={18} aria-hidden="true" className="flex-none text-ink-muted" />
-                  <span className="min-w-0 flex-1">
-                    <span className={`t-body block ${isDone ? "text-ink-muted line-through" : "text-ink"}`}>
+                  {/* A link, which it was not. The list used to be inert text
+                      beside a tick, so a learner could read 173 lesson titles
+                      across the site and open none of them — a syllabus rather
+                      than a course. */}
+                  <Link
+                    href={`/learn/${slug}/${n}/${lesson.position}`}
+                    className="group min-w-0 flex-1 no-underline"
+                  >
+                    <span
+                      className={`t-body block group-hover:text-accent ${
+                        isDone ? "text-ink-muted" : "text-ink"
+                      }`}
+                    >
                       {lesson.name}
                     </span>
                     <span className="t-micro text-ink-muted">
                       {lesson.kind}
                       {lesson.minutes ? ` · ${lesson.minutes} min` : ""}
+                      {isDone ? " · done" : ""}
                     </span>
-                  </span>
+                  </Link>
 
                   {/*
                     A form per lesson, not a checkbox with an onChange.
