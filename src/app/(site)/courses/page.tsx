@@ -241,7 +241,15 @@ export default function CoursesPage() {
             </div>
             <div>
               <EnrollButton withDate tone="onDark" href="/sign-up" />
-              <p className="t-meta mt-2.5 text-white/60">A free account opens the rest.</p>
+              {/* "Pick a course above" was the whole instruction, and the cards
+                  above link to the marketing page rather than to module 1 — so
+                  a panel headed "Start with module 1" offered no way to start
+                  module 1. The course pages each carry the direct link now; this
+                  says where to find it rather than repeating the access model a
+                  fourth time. */}
+              <p className="t-meta mt-2.5 text-white/60">
+                A free account opens the rest. Module 1 starts from any course page.
+              </p>
             </div>
           </div>
         </Panel>

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpSteps } from "@/components/auth/sign-up-steps";
@@ -101,8 +102,24 @@ export function AuthScreen({ variant }: { variant: "signIn" | "signUp" }) {
           have made the sign-in screen, the panel and the lockup client
           components too, for a stepper that only one of the two routes renders.
         */}
+        {/*
+          The Suspense boundary is not optional, and it is not for slow data.
+
+          Both forms read `next` from the query string with `useSearchParams`, to
+          finish the journey a reader was on when the proxy sent them here. That
+          hook opts its subtree out of prerendering, and without a boundary
+          around it the opt-out reaches the whole route: the build fails outright,
+          or the entire screen — lockup, panel and all — waits on the client.
+
+          With it, only the form column is deferred; the panel that gives a
+          reader the reason to be on this page still renders on the server. The
+          fallback is a reserved box the same height as the form rather than a
+          spinner, so the two-column layout does not shift when it arrives.
+        */}
         <div className="min-w-0">
-          {variant === "signUp" ? <SignUpSteps /> : <SignInForm />}
+          <Suspense fallback={<div className="min-h-[420px] max-w-[440px]" aria-hidden="true" />}>
+            {variant === "signUp" ? <SignUpSteps /> : <SignInForm />}
+          </Suspense>
         </div>
 
         {/* ----------------------------------------------------------- panel */}

@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the template, which is the only record of which variables the app
+# needs. `.env*` swallowed it, so a new checkout had no way to find out.
+!.env.example
 
 # vercel
 .vercel

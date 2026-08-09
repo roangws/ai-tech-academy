@@ -3121,8 +3121,22 @@ export const legal = {
     is about to hand over an email address should know what state the thing is
     in before they do, not after.
   */
+  /*
+    Rewritten the day accounts went live, and it had to be.
+
+    It said "Accounts are not open yet" — printed at the head of both legal
+    documents, which is the page a reader opens BECAUSE they have just been
+    asked for a name, an email address and a password. Free accounts are open,
+    the sign-up form collects all of that plus company and role, and the work a
+    learner saves is stored against it. A privacy notice that misdescribes
+    whether it is collecting anything is the one sentence on the site that has to
+    be true first.
+
+    The draft framing stays, because it is still accurate: the legal entity
+    fields below are still [placeholder].
+  */
   draftNote:
-    "These terms are published in draft while the platform is being built. Accounts are not open yet and nothing on this site takes payment. When accounts open, this page will be reviewed and dated again, and anyone who has given us an email address will be told before anything here changes in a way that affects them.",
+    "These terms are published in draft while the platform is being built, and the entity details below are still being finalised. Free accounts are open and nothing on this site takes payment. This page will be reviewed and dated again when the details are settled, and anyone who has given us an email address will be told before anything here changes in a way that affects them.",
   terms: {
     title: "Terms of Use",
     intro:
@@ -3227,7 +3241,10 @@ export const legal = {
       {
         heading: "Cookies",
         body: [
-          "There is no cookie banner because there are no tracking cookies. When accounts open, an account will need one cookie to keep you signed in, and that is the only one there will be.",
+          /* Present tense now. The session cookies are being set today, and a
+             cookies section written in the future tense about them is wrong in
+             the direction that matters. */
+          "There is no cookie banner because there are no tracking cookies. If you have an account we set cookies to keep you signed in, and those are the only ones we set.",
         ],
       },
       {
@@ -3431,12 +3448,16 @@ export const auth = {
     before they type a password into it, and a reader browsing does not need it
     shouted. Delete this the day an auth backend exists.
   */
-  /* No cohort. This program does not run them — the note at the top of this
-     file spells it out ("Module 1 opens with no account and no cohort, so there
-     is no future date to wait for"), and the enrol control on every other page
-     prints today's date. A reader who reached this screen from a button reading
-     "Start today" was told on arrival to wait for an intake that does not
-     exist. `legal.draftNote` states the same fact in the same words. */
-  shellNote:
-    "Accounts are not open yet and this form is not live. Module 1 of every course runs right now with no account.",
+  /* REMOVED, and the removal is the note.
+   *
+   * `shellNote` read "Accounts are not open yet and this form is not live." It
+   * was the honest thing to say when the form's submit handler called
+   * preventDefault, and it became the dishonest thing to say the moment the form
+   * started creating real accounts. Both auth screens now render the live state
+   * instead — an error slot when something fails, the access model when nothing
+   * has, and a check-your-inbox screen when the account is waiting on a link.
+   *
+   * Deleted rather than left unreferenced, so it cannot be reached for again by
+   * somebody looking for a note to put under a button.
+   */
 } as const;

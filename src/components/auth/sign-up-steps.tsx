@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useActionState, useId, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeftIcon, CheckIcon } from "@phosphor-icons/react";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
+import { CheckInbox } from "@/components/auth/check-inbox";
+import { signUp, type AuthState } from "@/app/actions/auth";
 import { auth } from "@/lib/content";
 
 /**
@@ -62,18 +65,88 @@ import { auth } from "@/lib/content";
  * position in a sequence. The same argument course/tabs.tsx makes about the
  * section row.
  *
- * ---------------------------------------------------------------- NO BACKEND
+ * ------------------------------------------------------------ THERE IS A BACKEND
  *
- * There is nothing to submit to, which `auth.shellNote` says on the last step.
- * The final control is a real `type="submit"` on a form with an `onSubmit` that
- * prevents default and shows the note, rather than a button that silently does
- * nothing.
+ * The `onSubmit` that prevented default is gone; the form's `action` is now the
+ * `signUp` Server Action, driven through `useActionState`.
+ *
+ * The "one form, hidden steps stay mounted" decision above is what makes that a
+ * two-line change rather than a rewrite. Every field from all three steps is
+ * still in the DOM when the last step submits, so the whole payload posts in one
+ * go — which is exactly what that section said it was for. Nothing had to be
+ * lifted into hidden inputs or re-serialised from state.
+ *
+ * The one thing that did need care: the server validates step 1 again, but by
+ * then the reader is looking at step 3. `state.field` is mapped back to the step
+ * that owns it and the wizard jumps there, or an error about an email address
+ * renders under a question about podcasts.
  */
 export function SignUpSteps() {
   const steps = auth.signUpSteps;
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [state, formAction, pending] = useActionState<AuthState, FormData>(signUp, null);
+
+  const next = useSearchParams().get("next") ?? "";
+
+  /* Which step owns which field, so a server error can send the reader back to
+     it. Only step 1 can fail server-side — steps 2 and 3 are optional in full —
+     but the map is written out rather than assumed, so adding a required field
+     to a later step does not silently strand its error. */
+  const stepOfField: Record<string, number> = {
+    "first-name": 0, "last-name": 0, email: 0, password: 0,
+    company: 1, role: 1,
+    source: 2,
+  };
+  const errorStep = state?.field ? stepOfField[state.field] : undefined;
+
+  /*
+    LATCHED ON THE ACTION RESULT, and the latch is the entire point.
+
+    The first version jumped to the offending step with a bare
+    `if (errorStep !== step) setStep(errorStep)` during render. It was loop-safe
+    — the update satisfies its own guard — and it trapped the reader forever.
+
+    `state` from `useActionState` only changes when the action runs again, and
+    the only submit button is on the last step. So: submit on step 3, server
+    rejects the email, wizard jumps to step 0 (right), reader fixes it and
+    presses Continue, `goTo(1)` runs, re-render, `state.error` is STILL set and
+    `errorStep(0) !== step(1)`, snapped back to step 0. They could never reach
+    step 3 again, so they could never submit again. Account creation was dead
+    until a full page reload.
+
+    Comparing against the previous `state` object makes the jump fire once per
+    action result, which is what "jump to the error" meant all along. This is
+    React's documented adjust-state-when-a-prop-changes shape.
+  */
+  const [seenState, setSeenState] = useState(state);
+  if (state !== seenState) {
+    setSeenState(state);
+    if (state?.error && errorStep !== undefined && errorStep !== step) {
+      setStep(errorStep);
+      /* Focus the field that failed, the same way the client-side path already
+         does. Without it a screen-reader user pressed "Create account", the form
+         silently became a different step, and focus stayed on a button whose
+         label had changed. */
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLInputElement>("[data-invalid='true']")?.focus();
+      });
+    }
+  }
+
+  /*
+    Server-side field errors have to be dismissable too.
+
+    `onChange` below clears the client `errors` map, but `state` cannot change
+    until the next submission — so a server error like "there is already an
+    account on that address" kept `aria-invalid`, the description and the red
+    border on the field for the whole time the reader was correcting it. That is
+    exactly what the client path was written to avoid: "an error that stays put
+    while somebody fixes it is the form telling them they are still wrong."
+  */
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const serverErrorFor = (name: string) =>
+    state?.field === name && dismissed !== name ? state.error : "";
 
   const [values, setValues] = useState<Record<string, string>>({});
   const [role, setRole] = useState("");
@@ -125,6 +198,18 @@ export function SignUpSteps() {
 
   const current = steps[step];
   const isLast = step === steps.length - 1;
+
+  /*
+    The account exists and needs its email confirmed.
+
+    This is a whole screen rather than a line under the button, because it is the
+    end of the flow: the form has nothing left to collect and the next action is
+    in another application. Rendering the wizard underneath it would invite a
+    second submission that can only fail with "already registered".
+  */
+  if (state?.checkInbox) {
+    return <CheckInbox email={state.checkInbox} />;
+  }
 
   return (
     <div className="max-w-[440px]">
@@ -189,19 +274,16 @@ export function SignUpSteps() {
       </h1>
       <p className="t-body mt-2.5 text-ink-secondary">{current.intro}</p>
 
-      <form
-        className="mt-7"
-        noValidate
-        onSubmit={(e) => {
-          e.preventDefault();
-          setSubmitted(true);
-        }}
-      >
+      <form className="mt-7" noValidate action={formAction}>
+        <input type="hidden" name="next" value={next} />
         {/* ------------------------------------------------------- step 1 */}
         <div hidden={step !== 0}>
           <div className="grid gap-4 sm:grid-cols-2">
             {auth.signUp.fields.map((f) => {
-              const error = errors[f.name];
+              /* Client error first, then the server's for the same field. They
+                 use the same strings for the same failures, so a reader who
+                 trips both does not get two differently-worded complaints. */
+              const error = errors[f.name] || serverErrorFor(f.name);
               return (
                 <div key={f.name} className={f.half ? "" : "sm:col-span-2"}>
                   <label htmlFor={f.name} className="t-field block text-ink-secondary">
@@ -217,8 +299,10 @@ export function SignUpSteps() {
                       set(f.name, e.target.value);
                       /* Clear this field's error as soon as it is touched. An
                          error that stays put while somebody fixes it is the
-                         form telling them they are still wrong. */
-                      if (error) setErrors((v) => ({ ...v, [f.name]: "" }));
+                         form telling them they are still wrong. Both sources —
+                         the client map and the latched server result. */
+                      if (errors[f.name]) setErrors((v) => ({ ...v, [f.name]: "" }));
+                      if (state?.field === f.name) setDismissed(f.name);
                     }}
                     aria-invalid={error ? true : undefined}
                     data-invalid={error ? "true" : undefined}
@@ -309,10 +393,11 @@ export function SignUpSteps() {
               type={isLast ? "submit" : "button"}
               variant="accent"
               size="lg"
-              className="t-button w-full"
+              disabled={pending}
+              className="t-button w-full disabled:opacity-60"
               onClick={isLast ? undefined : onContinue}
             >
-              {current.next}
+              {pending ? "Creating your account…" : current.next}
             </LiquidButton>
           </div>
         </div>
@@ -346,31 +431,27 @@ export function SignUpSteps() {
             </p>
 
             {/*
-              The honest note, and it is only on the last step.
+              Where the "this form is not live" note used to sit.
 
-              It said the same thing under every field before this was a
-              stepper, which meant a reader was told the form does not work
-              three times on the way to using it. Here it sits exactly where
-              somebody is about to press the control that would have done
-              something.
-
-              `role="status"` on the post-submit line rather than `alert`:
-              nothing has gone wrong, and `alert` interrupts.
+              It is now an error slot, and it only carries errors that belong to
+              no field — a field error renders under its own field on step 1, and
+              repeating it here would say the same thing twice. `role="alert"`
+              rather than the old `role="status"`, because this only ever renders
+              when something has actually failed.
             */}
-            <p className="t-micro mt-3 text-ink-muted">{auth.shellNote}</p>
-            {submitted ? (
+            {state?.error && !state.field ? (
               <p
-                role="status"
-                className="t-body-sm mt-4 rounded-[var(--radius-card)] border border-line bg-surface-subtle p-4 text-ink-secondary"
+                role="alert"
+                className="t-body-sm mt-4 rounded-[var(--radius-card)] border border-danger/30 bg-danger/5 p-4 text-danger"
               >
-                Nothing was sent, because there is nowhere to send it yet. Module 1 of
-                every course is open right now with no account —{" "}
-                <Link href="/courses" className="text-accent no-underline hover:underline">
-                  pick a course
-                </Link>{" "}
-                and start.
+                {state.error}
               </p>
-            ) : null}
+            ) : (
+              <p className="t-micro mt-3 text-ink-muted">
+                One free account opens modules 2 to 8 in every course, and the account
+                stays free.
+              </p>
+            )}
           </>
         ) : null}
       </form>
