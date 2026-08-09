@@ -123,6 +123,28 @@ allowed.
   needs to author a course — that means unfreezing `(site)` and moving it to
   `use cache` + `cacheTag`.
 
+## Verified on production, 10 Aug
+
+Driven headless as four real roles against `academy.roanweigert.com`, desktop and
+mobile, light and dark. Screenshots in `references/lms-review/after/`.
+
+| Check | Result |
+|---|---|
+| Locked lesson, signed out | `LockedPanel`; no prose in the HTML |
+| Locked lesson over PostgREST, publishable key | id, kind, minutes, module_id, name, position, slug — no content field |
+| `lesson_blocks` signed out | 19 rows, exactly the count in open modules (173 total) |
+| iframes on a video lesson at rest | 0; one appears on the click that means play |
+| Radio groups in a quiz | one per question — the collapse bug is not repeated |
+| Footer links under a lesson | 2, down from 16 |
+| Horizontal overflow at 360 / 390 / 768 / 1024 | none |
+| Dark theme across a hard navigation | persists; marketing stays white |
+| Console errors across the whole pass | 0 |
+| `/admin` as student / signed out | → `/dashboard` / `/sign-in` |
+
+The QA accounts were deleted afterwards. Doing so surfaced the cascade bug in
+`user_roles_guard` — which is the argument for running a real teardown rather
+than assuming one would work.
+
 ## Still open
 
 - The first fifteen migrations are not in the repo. One command, needs the
