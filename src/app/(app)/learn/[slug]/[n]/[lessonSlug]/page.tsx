@@ -4,19 +4,21 @@ import { notFound, permanentRedirect } from "next/navigation";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArticleIcon,
   CheckIcon,
   FlaskIcon,
   FileTextIcon,
+  HeadphonesIcon,
   PlayCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, StatusChip } from "@/components/ui";
 import { LockedPanel } from "@/components/lms/ui";
 import { Prose } from "@/components/lms/prose";
+import { LessonBlocks } from "@/components/lms/blocks";
 import { getViewer } from "@/lib/auth";
 import { getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { toggleLesson } from "@/app/actions/lms";
-import type { LessonKind } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +44,6 @@ export async function generateMetadata({
     robots: { index: false, follow: false },
   };
 }
-
-const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
-  lesson: PlayCircleIcon,
-  lab: FlaskIcon,
-  template: FileTextIcon,
-};
 
 /**
  * A lesson, open and readable.
@@ -86,7 +82,7 @@ export default async function LessonPage({
   const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { course, module, lesson, index, total, done, prev, next, nextModule } = view;
+  const { course, module, lesson, index, total, done, prev, next, nextModule, blocks } = view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}/${lessonSlug}`;
 
@@ -100,7 +96,31 @@ export default async function LessonPage({
     );
   }
 
-  const Icon = kindIcon[lesson.kind];
+  /*
+    The icon describes what is in the lesson, not what kind of lesson it is.
+
+    It used to be `kindIcon[lesson.kind]`, and `kind: "lesson"` mapped to a play
+    circle — so 81 lessons across five courses wore a play button over a page of
+    text, on a product with no player anywhere. A first-time reader pressed it,
+    got prose, and correctly concluded the course was unfinished. The kind enum
+    is a pedagogy label (lesson / lab / template) and must never double as a
+    claim about media again.
+  */
+  const hasVideo = blocks.some((b) => b.kind === "video");
+  const hasAudio = blocks.some((b) => b.kind === "audio");
+  const Icon = hasVideo
+    ? PlayCircleIcon
+    : hasAudio
+      ? HeadphonesIcon
+      : lesson.kind === "lab"
+        ? FlaskIcon
+        : lesson.kind === "template"
+          ? FileTextIcon
+          : ArticleIcon;
+
+  /* No blocks means nobody has authored this lesson yet: the seed script writes
+     a prose scaffold into `lessons.body` and nothing else. */
+  const scaffolding = blocks.length === 0;
 
   return (
     <Container className="py-10 md:py-14">
@@ -109,11 +129,12 @@ export default async function LessonPage({
           {course.title}
         </Link>
         <span className="px-1.5 text-line-strong">/</span>
+        {/* Names the module, not just its number. "Module 01" told a reader
+            nothing they did not already have from the URL, and the module's
+            subject appeared nowhere on this page. */}
         <Link href={`/learn/${slug}/${n}`} className="text-ink-secondary no-underline hover:underline">
-          Module {module.n}
+          Module {module.n} · {module.name}
         </Link>
-        <span className="px-1.5 text-line-strong">/</span>
-        Lesson {index + 1}
       </nav>
 
       <div className="mt-5 max-w-[720px]">
@@ -125,7 +146,11 @@ export default async function LessonPage({
           <span className="t-label tabular-nums text-ink-muted">
             Lesson {index + 1} of {total}
           </span>
-          {lesson.minutes ? (
+          {/* A duration only where there is something with a running time. The
+              one `minutes` value in content.ts is a marketing claim about a
+              video that was never shot, and printing it beside a text lesson
+              made the product state a runtime for something you cannot play. */}
+          {lesson.minutes && (hasVideo || hasAudio) ? (
             <span className="t-label text-ink-muted">{lesson.minutes} min</span>
           ) : null}
           {done ? <StatusChip>Done</StatusChip> : null}
@@ -133,12 +158,29 @@ export default async function LessonPage({
 
         <h1 className="t-h2 mt-2.5 text-ink">{lesson.name}</h1>
 
-        {lesson.body ? (
+        {/*
+          The scaffolding notice, at the top.
+
+          It used to be the last line of every generated body, in italics, after
+          600 words — so a reader learned the lesson was a placeholder only after
+          spending the time on it. It is a fact about the row now rather than
+          text inside it, which also means it disappears on its own the moment
+          real content is attached instead of needing a re-seed.
+        */}
+        {scaffolding ? (
+          <p className="t-body-sm mt-5 rounded-[var(--radius-card)] border border-dashed border-line-control bg-surface-subtle p-4 text-ink-secondary">
+            <strong className="font-medium text-ink">This lesson is not written yet.</strong> What
+            follows is the outline it will be built on. The lab, the template and the artifact this
+            module produces are real, and they are what the module is assessed on.
+          </p>
+        ) : null}
+
+        {blocks.length > 0 ? (
+          <LessonBlocks blocks={blocks} />
+        ) : lesson.body ? (
           <Prose body={lesson.body} className="mt-7" />
         ) : (
-          <p className="t-body mt-7 text-ink-secondary">
-            This lesson has no written content yet.
-          </p>
+          <p className="t-body mt-7 text-ink-secondary">This lesson has no written content yet.</p>
         )}
 
         {/* ------------------------------------------------------- complete */}

@@ -162,10 +162,17 @@ const moduleId = new Map(modules.map((m) => [`${m.course_id}/${m.n}`, m.id]));
  * Marked as such at the end of every body, because a learner deserves to know
  * which parts of a course are written and which are scaffolding.
  */
-function lessonBody(course, m, lesson, i) {
-  const n = i + 1;
+function lessonBody(course, m, lesson) {
   const shape = {
-    lesson: "Watch, then write down where this applies to your own process.",
+    /*
+      "Watch, then write down..." until 10 Aug, on all 81 lesson-kind rows, with
+      no video anywhere in the product and a renderer that structurally cannot
+      emit one. A learner read it, hunted for a player, found none, and concluded
+      the page was broken rather than unwritten. Copy may not promise media that
+      does not exist; when a lesson has a video block it will say "watch" because
+      it will be true.
+    */
+    lesson: "Read this, then write down where it applies to your own process.",
     lab: "Do this one in your own environment, on your own data.",
     template: "Copy this, fill it in, and keep it — it goes into your artifact.",
   }[lesson.kind];
@@ -188,9 +195,17 @@ function lessonBody(course, m, lesson, i) {
     ],
   }[lesson.kind];
 
+  /*
+    No position line at the top any more.
+
+    It used to open `**Course A · Module 01 · Lesson 1 of 4**`, which the page
+    chrome already states twice above it — once in the breadcrumb and once in the
+    meta row — so the first 145px of every lesson said where you were three
+    times and what the module was about zero times. Worse, it baked chrome into
+    content: every authored lesson would have had to remember not to repeat it.
+    Position belongs to the page, prose belongs to the body.
+  */
   return [
-    `**${course.badge} · Module ${m.n} · Lesson ${n} of ${m.lessons.length}**`,
-    "",
     m.summary ?? "",
     "",
     `## What this covers`,
@@ -205,11 +220,25 @@ function lessonBody(course, m, lesson, i) {
     "",
     `## Before you move on`,
     "",
-    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, go back to the ${lesson.kind === "lab" ? "lab" : "example"} above — the point is not to finish it, it is to have run it on something real.`,
-    "",
-    "---",
-    "",
-    "_Course scaffolding: the structure of this lesson is final, the prose is being written. The labs, the template and the artifact it feeds are real and are what the module is assessed on._",
+    /*
+      "go back to the example above" pointed at an example that was never
+      generated, on every lesson-kind row. It now names the thing that is
+      actually there.
+    */
+    `You should be able to say, in one sentence, what changed in your own process because of this lesson. If you cannot, work through ${lesson.kind === "lab" ? "the lab" : "the points"} above again — the point is not to finish it, it is to have run it on something real.`,
+    /*
+      The scaffolding note used to be appended here, in italics, at the foot of
+      every one of the 173 bodies: "the structure of this lesson is final, the
+      prose is being written". Signing 600 words of generated prose with a
+      confession at the bottom is the worst place for it — the reader has already
+      spent the time before they learn it was a placeholder.
+
+      It is a banner at the TOP of the lesson page now, rendered from a fact
+      about the row rather than baked into the text: a lesson with no authored
+      blocks is scaffolding, and says so before it is read. That also means it
+      disappears by itself the moment real content is attached, instead of
+      needing a re-seed to remove a sentence.
+    */
   ].join("\n");
 }
 
@@ -224,7 +253,7 @@ const lessonRows = courses.flatMap((c) =>
          carries a duration, and inventing the other 172 would be a lie stored in
          a column. */
       minutes: l.minutes ?? null,
-      body: lessonBody(c, m, l, i),
+      body: lessonBody(c, m, l),
       position: i,
     })),
   ),

@@ -5,6 +5,7 @@ import type {
   CurriculumReview,
   Enrollment,
   JudgeSeat,
+  LessonBlock,
   LessonRow,
   ModuleRow,
   OutcomeRow,
@@ -187,10 +188,13 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
   };
 }
 
+/** A lesson in a list, carrying just enough about its blocks to pick an icon. */
+export type LessonWithKinds = LessonRow & { lesson_blocks?: { kind: string }[] };
+
 export type ModuleView = {
   course: Course;
   module: ModuleRow;
-  lessons: LessonRow[];
+  lessons: LessonWithKinds[];
   done: Set<string>;
   artifact: Artifact | null;
   prev: ModuleRow | null;
@@ -217,11 +221,16 @@ export async function getModuleView(
   /* Modules and their lessons in one select rather than two sequential round
      trips. `prev`/`next` need the whole ordered list anyway, and the lessons
      ride along on the module they belong to. */
-  const modules = await rows<ModuleRow & { lessons: LessonRow[] }>(
+  /* `lesson_blocks(kind)` rides along so the list can draw an icon that
+     describes what is actually in each lesson. It used to derive the icon from
+     `lessons.kind`, where "lesson" mapped to a play circle — 81 play buttons
+     over pages of text, on a product with no player. Only the kind column is
+     selected; the payloads are not needed here and are the expensive part. */
+  const modules = await rows<ModuleRow & { lessons: (LessonRow & { lesson_blocks: { kind: string }[] })[] }>(
     "module view",
     supabase
       .from("modules")
-      .select("*, lessons(*)")
+      .select("*, lessons(*, lesson_blocks(kind))")
       .eq("course_id", course.id)
       .order("position")
       .order("position", { referencedTable: "lessons" }),
@@ -346,6 +355,17 @@ export type LessonView = {
   next: LessonRow | null;
   /** The first lesson of the following module, for the end of a module. */
   nextModule: ModuleRow | null;
+  /**
+   * What the lesson is made of, in author order.
+   *
+   * Empty means the lesson has not been authored yet — the seed script writes a
+   * prose scaffold into `lessons.body` and no blocks. The page uses that to say
+   * so at the top, rather than the scaffold signing itself at the bottom after
+   * the reader has already spent the time.
+   */
+  blocks: LessonBlock[];
+  /** Every lesson in this module, in order — the syllabus rail. */
+  siblings: LessonRow[];
 };
 
 /**
@@ -395,6 +415,16 @@ export async function getLessonView(
   if (li === -1) return null;
   const lesson = lessons[li];
 
+  /* The blocks are gated in Postgres by `catalog_blocks_read`, not here: a
+     locked module's blocks are simply not returned to a signed-out reader, so
+     this needs no branch and cannot be talked out of one by a forged parameter.
+     The rendering gate above is still the thing that stops the page being drawn;
+     this is the layer that stops the content existing to be drawn. */
+  const blocks = await rows<LessonBlock>(
+    "lesson blocks",
+    supabase.from("lesson_blocks").select("*").eq("lesson_id", lesson.id).order("position"),
+  );
+
   let done = false;
   if (userId) {
     const progress = await rows<{ lesson_id: string }>(
@@ -418,6 +448,8 @@ export async function getLessonView(
     prev: lessons[li - 1] ?? null,
     next: lessons[li + 1] ?? null,
     nextModule: modules[mi + 1] ?? null,
+    blocks,
+    siblings: lessons,
   };
 }
 

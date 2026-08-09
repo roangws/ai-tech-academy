@@ -49,6 +49,54 @@ const nextConfig: NextConfig = {
     // or a media host. See IMAGE_MANIFEST in src/lib/content.ts.
     remotePatterns: [{ protocol: "https", hostname: "picsum.photos" }],
   },
+
+  /**
+   * Security headers.
+   *
+   * There were none until lessons could embed things. Now that a lesson can
+   * carry a YouTube player and a third-party interactive tool, `frame-src` is
+   * the difference between "an author picked from a reviewed list" and "any
+   * origin that ends up in a jsonb column can execute script in our page".
+   *
+   * ---------------------------------------------- this list exists twice, deliberately
+   *
+   * The same origins are written into the CHECK constraint on
+   * `lesson_blocks.payload` for `kind = 'embed'`. That is not duplication to
+   * remove — it is defence at both ends: the constraint means a bad origin
+   * cannot be *stored*, and this means a bad origin cannot be *loaded* even if
+   * one somehow were. They must be edited in the same commit, and the migration
+   * says so too.
+   *
+   * ------------------------------------------------------------- no script-src
+   *
+   * On purpose. A real `script-src` fights Next's inline bootstrap unless nonces
+   * are threaded through the whole render, and a CSP that has to be loosened
+   * every time something breaks teaches everyone to loosen it. A small correct
+   * policy beats a large one nobody trusts. `script-src` lands with nonces, as
+   * its own change.
+   */
+  async headers() {
+    const csp = [
+      "frame-src 'self' https://www.youtube-nocookie.com https://www.figma.com https://colab.research.google.com https://codesandbox.io https://www.desmos.com https://www.loom.com",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: csp },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          /* The site asks for none of these anywhere, and saying so stops an
+             embedded third party asking on our behalf. */
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

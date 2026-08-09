@@ -4,18 +4,19 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArticleIcon,
   CheckIcon,
   FlaskIcon,
   FileTextIcon,
+  HeadphonesIcon,
   PlayCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, StatusChip } from "@/components/ui";
 import { LockedPanel, Meter } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
-import { getModuleView, bySlug } from "@/lib/lms/queries";
+import { getModuleView, bySlug, type LessonWithKinds } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { toggleLesson, saveArtifact } from "@/app/actions/lms";
-import type { LessonKind } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +33,22 @@ export async function generateMetadata({
   };
 }
 
-const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
-  lesson: PlayCircleIcon,
-  lab: FlaskIcon,
-  template: FileTextIcon,
-};
+/**
+ * The icon says what is in the lesson, not what kind of lesson it is.
+ *
+ * `kind: "lesson"` used to map to a play circle, so every row in every module
+ * list wore a play button — 81 of them across the five courses — over lessons
+ * with no media at all. The kind enum is a pedagogy label and must never double
+ * as a claim about media again.
+ */
+function lessonIcon(lesson: LessonWithKinds) {
+  const kinds = new Set((lesson.lesson_blocks ?? []).map((b) => b.kind));
+  if (kinds.has("video")) return PlayCircleIcon;
+  if (kinds.has("audio")) return HeadphonesIcon;
+  if (lesson.kind === "lab") return FlaskIcon;
+  if (lesson.kind === "template") return FileTextIcon;
+  return ArticleIcon;
+}
 
 /**
  * The player: one module, its lessons, and the artifact it asks for.
@@ -55,13 +67,13 @@ const kindIcon: Record<LessonKind, typeof PlayCircleIcon> = {
  * The condition reads `module.access` from the database rather than the `n` in
  * the URL, so a request for module 04 cannot claim to be module 01.
  *
- * ------------------------------------------------------- no lesson bodies yet
+ * ---------------------------------------------------------- lesson content
  *
- * [FILL: lesson content.] content.ts carries lesson names, kinds and a single
- * duration; there is no lesson body anywhere in this repo, no video, and no
- * storage bucket. So a lesson here is its name, its kind and a completion tick,
- * which is what can be built truthfully from what exists. When bodies arrive
- * they hang off `lessons` and nothing else on this page changes.
+ * Lessons carry an ordered list of typed blocks — prose, video, audio, docs,
+ * quizzes, embeds, exercises, checklists — in `lesson_blocks`, gated in Postgres
+ * by `catalog_blocks_read` rather than only by the early return above. This list
+ * selects `lesson_blocks(kind)` so each row can draw an icon describing what is
+ * actually in the lesson; the payloads are read on the lesson page itself.
  */
 export default async function ModulePage({
   params,
@@ -124,7 +136,7 @@ export default async function ModulePage({
           <ul className="mt-8 divide-y divide-line border-y border-line">
             {lessons.map((lesson) => {
               const isDone = done.has(lesson.id);
-              const Icon = kindIcon[lesson.kind];
+              const Icon = lessonIcon(lesson);
               return (
                 <li key={lesson.id} className="flex items-center gap-4 py-3.5">
                   <Icon size={18} aria-hidden="true" className="flex-none text-ink-muted" />
