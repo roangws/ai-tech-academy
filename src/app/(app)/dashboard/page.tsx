@@ -8,7 +8,7 @@ import {
   TableIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, StatusChip } from "@/components/ui";
-import { CourseGlyph } from "@/components/course/icons";
+import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
@@ -130,10 +130,19 @@ export default async function DashboardPage() {
           <h2 id="continue-heading" className="sr-only">
             Continue where you left off
           </h2>
-          <div
-            style={{ borderLeftColor: current.course.ground ?? undefined }}
-            className="rounded-[var(--radius-feature)] border border-line border-l-[3px] bg-surface p-6 shadow-e1"
-          >
+          <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e1 sm:grid-cols-[240px_minmax(0,1fr)]">
+            {/* The photograph, not a glyph. It is the same frame the catalogue
+                card uses, so the course a learner clicked is the course they
+                recognise here. Hidden below sm, where 240px of picture would be
+                most of the first screen. */}
+            {/* An explicit ratio, because the photo is `absolute inset-0` and a grid
+                cell with no in-flow content has nothing else to take its height
+                from. The grid cards get theirs the same way. */}
+            <div className="relative hidden aspect-[4/3] sm:block">
+              <CoursePhoto course={current.course} sizes="240px" priority />
+            </div>
+
+            <div className="min-w-0 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="t-label text-ink-muted">{current.course.badge}</p>
@@ -164,6 +173,7 @@ export default async function DashboardPage() {
                   <span className="text-ink-muted"> · {current.resume.moduleName}</span>
                 </p>
               ) : null}
+            </div>
             </div>
           </div>
         </section>
@@ -259,23 +269,19 @@ export default async function DashboardPage() {
             return (
               <li
                 key={course.id}
-                style={{ borderLeftColor: course.ground ?? undefined }}
-                className="flex flex-col rounded-[var(--radius-feature)] border border-line border-l-[3px] bg-surface p-5 transition-shadow hover:shadow-e1"
+                className="flex flex-col overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface transition-shadow hover:shadow-e1"
               >
-                <div className="flex items-start gap-3.5">
-                  <span
-                    aria-hidden="true"
-                    className="grid size-10 flex-none place-items-center rounded-[var(--radius-card)] border border-line bg-surface-subtle text-ink-secondary"
-                  >
-                    <CourseGlyph id={course.id} size={20} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="t-label text-ink-muted">{course.badge}</p>
-                    <h3 className="t-card-title mt-0.5 text-ink">{course.title}</h3>
-                  </div>
+                <div className="relative aspect-[16/9]">
+                  <CoursePhoto course={course} sizes="(min-width: 1024px) 420px, 100vw" />
                 </div>
 
-                <p className="t-body-sm mt-3 line-clamp-2 text-ink-secondary">{course.summary}</p>
+                <div className="flex flex-1 flex-col p-5">
+                <div className="min-w-0">
+                  <p className="t-label text-ink-muted">{course.badge}</p>
+                  <h3 className="t-card-title mt-0.5 text-ink">{course.title}</h3>
+                </div>
+
+                <p className="t-body-sm mt-2.5 line-clamp-2 text-ink-secondary">{course.summary}</p>
 
                 {isStarted ? (
                   <Meter className="mt-4" done={done} total={total} />
@@ -307,6 +313,7 @@ export default async function DashboardPage() {
                         : "Start an outcome sheet"
                       : "What it covers"}
                   </Link>
+                </div>
                 </div>
               </li>
             );

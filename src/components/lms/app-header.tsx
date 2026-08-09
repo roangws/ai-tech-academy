@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui";
-import { Avatar } from "@/components/lms/avatar";
+import { AccountMenu } from "@/components/lms/account-menu";
 import { getViewer } from "@/lib/auth";
 import { getTheme } from "@/lib/theme";
 import { ThemeToggle } from "@/components/lms/theme-toggle";
@@ -51,7 +51,6 @@ export async function AppHeader() {
     ? [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/courses", label: "Catalog" },
-        { href: "/account", label: "Account" },
         ...(viewer.is("instructor") || viewer.is("admin")
           ? [{ href: "/instructor", label: "Instructor" }]
           : []),
@@ -99,37 +98,20 @@ export async function AppHeader() {
             {/* Hidden under sm so the 72px bar stays one row on a phone; the
                 mobile nav row below carries it instead. */}
             <ThemeToggle theme={theme} className="hidden sm:inline-flex" />
-            {/* The portrait is the account control, and it carries the email as
-                its title: on this control a reader is checking which account
-                they are in, and two people called Sam are told apart by the
-                address and not by the greeting. */}
-            <Link
-              href="/account"
-              aria-label="Your account"
-              title={viewer.email ?? "Your account"}
-              className="flex items-center gap-2.5 rounded-full outline-none transition-shadow hover:ring-2 hover:ring-line-strong focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
-            >
-              <Avatar
-                name={viewer.profile?.first_name ?? viewer.name}
-                email={viewer.email}
-                url={viewer.profile?.avatar_url ?? null}
-                size={34}
-              />
-            </Link>
             {/*
-              A form, not a link. Signing out changes server state, and a GET
-              that mutates is a GET that a link prefetcher, a browser preview or
-              an antivirus scanner will eventually fire on its own — which is how
-              a reader gets signed out by hovering.
+              Identity lives on the portrait, not in the nav row. "Account" was a
+              top-level link beside Dashboard and Catalog, which are places in the
+              product; this is who you are. It also meant the portrait, the
+              account link and a sign-out button were three controls for one
+              concept on a bar that already has to carry Instructor, Judge and
+              Admin for staff.
             */}
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="t-button rounded-[var(--radius-control)] border border-line-control px-3.5 py-2 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
-              >
-                Sign out
-              </button>
-            </form>
+            <AccountMenu
+              name={viewer.profile?.first_name ?? viewer.name}
+              email={viewer.email}
+              avatarUrl={viewer.profile?.avatar_url ?? null}
+              signOut={signOut}
+            />
           </div>
         ) : (
           <div className="flex items-center gap-4">

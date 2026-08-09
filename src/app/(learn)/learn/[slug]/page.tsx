@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, TextAction } from "@/components/ui";
-import { CourseGlyph } from "@/components/course/icons";
+import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, ModuleState } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
 import { getCourseBoard, bySlug } from "@/lib/lms/queries";
@@ -20,7 +20,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const course = bySlug.get(slug);
   return {
-    title: course ? `${course.title} · contents` : "Course",
+    title: course ? `${course.title} · modules` : "Course",
     robots: { index: false, follow: false },
   };
 }
@@ -72,7 +72,7 @@ export default async function CourseBoardPage({
   const resumeN = resume?.n ?? "01";
 
   return (
-    <Container className="py-10 md:py-14">
+    <Container className="py-8 md:py-10">
       <nav aria-label="Breadcrumb" className="t-meta text-ink-muted">
         <Link href="/dashboard" className="text-ink-secondary no-underline hover:underline">
           Dashboard
@@ -81,19 +81,39 @@ export default async function CourseBoardPage({
         {course.title}
       </nav>
 
-      <div className="mt-5 flex flex-wrap items-start justify-between gap-6">
+      {/*
+        The banner.
+
+        Opening a course used to give a glyph tile, a heading and a wall of module
+        rows: almost no visual input on the screen that is supposed to make a
+        learner feel like they have arrived somewhere. The course has had a real
+        photograph since the catalogue shipped, and the signed-in product ignored
+        it — so somebody who clicked a picture on /courses landed on a page that
+        looked like a different site.
+
+        The title sits ON the image rather than under it, which is what ties the
+        two together: the picture stops being decoration above the content and
+        becomes the thing the content is named on. The scrim is solid ink at a
+        fixed opacity rather than a gradient wash, matching PosterTitleCard, so
+        it stays a legibility device.
+      */}
+      <div className="relative mt-4 overflow-hidden rounded-[var(--radius-feature)]">
+        <div className="relative aspect-[16/7] sm:aspect-[16/5]">
+          <CoursePhoto course={course} sizes="(min-width: 1280px) 1216px, 100vw" priority />
+        </div>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[linear-gradient(to_top,rgb(13_26_34/0.88),rgb(13_26_34/0.35)_55%,rgb(13_26_34/0.1))]"
+        />
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+          <p className="t-label text-white/70">{course.badge}</p>
+          <h1 className="t-h2 mt-1 max-w-[24ch] text-white">{course.title}</h1>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 max-w-[62ch]">
-          <div className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="grid size-10 flex-none place-items-center rounded-[var(--radius-card)] border border-line bg-surface-subtle text-ink-secondary"
-            >
-              <CourseGlyph id={course.id} size={20} />
-            </span>
-            <p className="t-label text-ink-muted">{course.badge}</p>
-          </div>
-          <h1 className="t-h2 mt-3 text-ink">{course.title}</h1>
-          <p className="t-body mt-2.5 text-ink-secondary">{course.summary}</p>
+          <p className="t-body text-ink-secondary">{course.summary}</p>
           <FactsLine
             className="mt-4"
             items={[course.level, course.duration, `${modules.length} modules`, `${totalLessons} lessons`]}
@@ -151,7 +171,22 @@ export default async function CourseBoardPage({
       </div>
 
       {/* ------------------------------------------------------------ modules */}
-      <h2 className="t-h3 mt-14 text-ink">Contents</h2>
+      {/*
+        "Contents" was the heading here, and it told a reader nothing: it is the
+        word a book uses for a page of page numbers, and this is the course. The
+        heading now says what the rows are and what happens when you press one,
+        because the step from here to a module to a lesson was the part people
+        reported as confusing.
+      */}
+      <section aria-labelledby="modules-heading" className="mt-12">
+        <h2 id="modules-heading" className="t-h3 text-ink">
+          The {modules.length} modules
+        </h2>
+        <p className="t-body-sm mt-1.5 max-w-[62ch] text-ink-secondary">
+          Each one is a set of lessons and ends with one thing you keep. Open a module to see
+          its lessons.
+        </p>
+      </section>
       <ol className="mt-5 divide-y divide-line border-y border-line">
         {modules.map((m) => {
           const locked = isLocked(m.access, signedIn);

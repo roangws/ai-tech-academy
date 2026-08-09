@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Empty } from "@/components/lms/ui";
+import { Banner } from "@/components/ui/banner";
 import { getInsights, listLearners, listSeats, listPeople } from "@/lib/lms/admin";
 
 export const dynamic = "force-dynamic";
@@ -57,8 +58,43 @@ export default async function AdminOverview() {
     },
   ];
 
+  /*
+    What is actually wrong right now, in the order it costs the platform.
+
+    An operations screen that only shows counts makes the reader do the
+    diagnosis. These are the three states that stop the product working at all,
+    and each one is invisible from a number: a course with nobody teaching it
+    silently swallows every artifact submitted to it, an unbound seat means
+    submitted sheets sit unread forever, and a course with nothing authored is
+    five modules of generated outline with a learner in them.
+  */
+  const blocking: string[] = [];
+  if (unassignedInstructors > 0) {
+    blocking.push(
+      `${unassignedInstructors} instructor${unassignedInstructors === 1 ? " has" : "s have"} no course, so work submitted to them is unread`,
+    );
+  }
+  if (awaitingReview > 0 && instructors === 0) {
+    blocking.push(`${awaitingReview} artifact${awaitingReview === 1 ? "" : "s"} submitted with no instructor to read them`);
+  }
+  if (unboundSeats === 6) {
+    blocking.push("no judge seat is bound, so no outcome sheet can be scored");
+  }
+
   return (
     <>
+      {/*
+        The banner earns its place by being conditional. A strip that is always
+        there is chrome a reader stops seeing by the second visit, and this one
+        appears only when something is actually blocked.
+      */}
+      {blocking.length ? (
+        <Banner tone="accent" height="auto" className="-mt-8 mb-8 min-h-12 py-2 md:-mt-10">
+          {blocking[0]}
+          {blocking.length > 1 ? ` · and ${blocking.length - 1} more below` : ""}
+        </Banner>
+      ) : null}
+
       <h1 className="t-h2 text-ink">Overview</h1>
 
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -75,6 +111,25 @@ export default async function AdminOverview() {
           </li>
         ))}
       </ul>
+
+      {/* ------------------------------------------------------- needs a human */}
+      {blocking.length ? (
+        <section aria-labelledby="blocking" className="mt-8">
+          <h2 id="blocking" className="t-h3 text-ink">
+            Waiting on you
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {blocking.map((line) => (
+              <li
+                key={line}
+                className="t-body-sm rounded-[var(--radius-card)] border border-line border-l-[3px] border-l-danger bg-surface px-4 py-3 text-ink-secondary"
+              >
+                {line}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* ------------------------------------------------------------ drop-off */}
       <section aria-labelledby="dropoff" className="mt-10">

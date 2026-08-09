@@ -121,7 +121,7 @@ export function CourseRail({
   );
 
   return (
-    <nav aria-label="Module contents" className="lg:sticky lg:top-[88px]">
+    <nav aria-label="Lessons in this module" className="lg:sticky lg:top-[88px]">
       {/* Desktop: always open, its own scroll region. */}
       <div className="hidden rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-4 lg:block lg:max-h-[calc(100dvh-120px)] lg:overflow-y-auto">
         <Link
