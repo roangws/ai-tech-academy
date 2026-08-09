@@ -2605,6 +2605,16 @@ export type Seat = {
   /** Employer, when they publish one. */
   org?: string;
   location?: string;
+  /**
+   * A sentence or two about the person, shown on hover.
+   *
+   * Assembled from their own profile and nothing else: the focus they list, and
+   * where they studied. No assessment of them, no claim about what they do for
+   * this program, and no adjective they did not write about themselves. It is
+   * the same rule as every other field here, and it matters more in a free-text
+   * field than in a one-word one because prose is where invention hides.
+   */
+  summary?: string;
   /** Backdrop hue for the hover face, from globals.css. */
   ground: string;
   photo: Img;
@@ -2665,6 +2675,8 @@ export const board = {
       org: "The AI Collective",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/lizz-zhang/",
+      summary:
+        "AI developer relations, two companies founded, and a community of 250,000. Studied at KTH Royal Institute of Technology.",
       ground: "var(--path-a)",
       photo: {
         src: "/images/people/liz-zhang.jpg",
@@ -2682,6 +2694,8 @@ export const board = {
       org: "a1mobile",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/yunbinbae/",
+      summary:
+        "Design and human-computer-interaction research, and one company founded. Studied at the University of Maryland.",
       ground: "var(--path-b)",
       photo: {
         src: "/images/people/yunbin-bae.jpg",
@@ -2701,6 +2715,8 @@ export const board = {
       org: "NVIDIA",
       location: "Santa Clara, California",
       linkedin: "https://www.linkedin.com/in/abhi-bala/",
+      summary:
+        "Generative AI, agentic systems, RAG and AI observability. Studied at San Jose State University.",
       ground: "var(--path-c)",
       photo: {
         src: "/images/people/abhinav-balasubramanian.jpg",
@@ -2715,6 +2731,8 @@ export const board = {
       org: "Pacific Gas and Electric",
       location: "San Francisco, California",
       linkedin: "https://www.linkedin.com/in/abhinandanvasanthin/",
+      summary:
+        "Data engineering at one of the largest utilities in the United States. Studied at Udacity.",
       ground: "var(--path-d)",
       photo: {
         src: "/images/people/abhi-vasanth.jpg",
@@ -2729,6 +2747,8 @@ export const board = {
       org: "eBay",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/guptasachin1/",
+      summary:
+        "Engineering leadership on systems built for massive scale. Studied at the University of Colorado Boulder.",
       ground: "var(--path-e)",
       photo: {
         src: "/images/people/sachin-gupta.jpg",

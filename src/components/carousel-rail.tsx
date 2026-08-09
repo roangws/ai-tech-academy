@@ -28,10 +28,10 @@ import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
  *      is written 150ms after the last scroll event, when momentum has stopped
  *      and there is no animation to interrupt.
  *
- * The second list is `inert`. The loop needs two copies of the cards; a screen
- * reader needs one, and it already has all six in the first list — and since
- * every card is a stretched link, the clone also has to stay out of the tab
- * ring. One attribute does both; the note at the element has the detail.
+ * The loop needs two copies of the cards; a screen reader needs one, and the tab
+ * ring needs one. The clone is `aria-hidden` with its links taken out of the tab
+ * order, and it is emphatically NOT `inert` — the note at the element has the
+ * bug that cost.
  *
  * ------------------------------------------------------------ why it stops
  *
@@ -82,11 +82,25 @@ const STEP_MS = 3000;
 
 export function CarouselRail({
   children,
+  clone,
   count,
   label,
   className = "",
 }: {
   children: React.ReactNode;
+  /**
+   * The same items again, for the loop, rendered with their links out of the
+   * tab order.
+   *
+   * Passed in rather than derived from `children`, because taking the focusable
+   * elements out of an arbitrary React tree from the outside is not something a
+   * parent can do — it would mean walking children and cloning props onto
+   * elements it knows nothing about. The caller knows which prop does it.
+   *
+   * Falls back to `children` when omitted, which keeps the old behaviour for a
+   * rail whose items are not interactive.
+   */
+  clone?: React.ReactNode;
   /** Number of items in one copy of the list, for the dots. */
   count: number;
   label: string;
@@ -278,27 +292,40 @@ export function CarouselRail({
           {children}
         </ul>
         {/*
-          The loop needs a second copy; a screen reader does not, and neither
-          does the tab ring.
+          The second copy, and the attribute on it has now been wrong twice in
+          two different directions. Worth writing down properly.
 
-          `aria-hidden` alone was not enough and was actively worse than
-          nothing. Every card in here is a stretched link, so the clone put six
-          focusable anchors inside a hidden subtree: a keyboard reader tabbing
-          through the rail hit six stops that announce nothing, land on nothing
-          nameable, and navigate to pages they were never told about. That is
-          the specific pattern `aria-hidden` on interactive content is called
-          out for.
+          `aria-hidden` ALONE was the first version and was worse than nothing.
+          Every card is a stretched link, so the clone put five focusable
+          anchors inside a hidden subtree: a keyboard reader tabbing the rail hit
+          five stops that announce nothing and navigate somewhere they were never
+          told about. That is the exact pattern `aria-hidden` on interactive
+          content is called out for.
 
-          `inert` fixes both halves in one attribute — it removes the subtree
-          from the tab order and from the accessibility tree — so `aria-hidden`
-          comes off with it rather than being stacked on top. It also sets
-          `pointer-events: none` on the clone, which does not affect the rail:
-          scrolling is handled by the overflow container above, and a touch or
-          trackpad gesture over an inert child still scrolls its nearest
-          scrollable ancestor.
+          `inert` replaced it and fixed that, because it removes the subtree from
+          both the tab order and the accessibility tree in one attribute. It also
+          sets `pointer-events: none`, which was dismissed at the time as
+          harmless to scrolling. Scrolling was never the problem. THE CLONE IS
+          VISIBLE — that is its entire purpose — and one copy of five 256px cards
+          is 1280px against a 1216px viewport, so from the very first autoplay
+          step part of what a reader is looking at is clone. Those cards took no
+          hover and no click. Measured on production: at scrollLeft 256 two
+          sample points across the rail were dead, at 512 four, at 1024 nine of
+          eleven. `elementFromPoint` did not even return a card, because a
+          pointer-events-none subtree is skipped entirely and the hit test fell
+          through to the rail behind it.
+
+          That is the bug Roan reported as "after the first layer of people it
+          stopped working totally", and it was not a hover bug. Half the rail was
+          a photograph of a control.
+
+          So: `aria-hidden` for the accessibility tree, `tabIndex={-1}` on the
+          clone's links for the tab order — which is the pair that makes
+          `aria-hidden` legitimate, since nothing inside it is focusable — and
+          nothing at all touching pointer events.
         */}
-        <ul inert className="flex shrink-0 gap-4 pr-4">
-          {children}
+        <ul aria-hidden="true" className="flex shrink-0 gap-4 pr-4">
+          {clone ?? children}
         </ul>
       </div>
 

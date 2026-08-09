@@ -30,6 +30,13 @@ import { board } from "@/lib/content";
  * the cards are 82vw on a phone so the next one peeks. carousel-rail.tsx has
  * the note on why the edges come out clean without masks.
  */
+/* The height lives on the list item rather than in the card, because the roster
+   page wants a taller frame for the same component. Named because the rail and
+   its clone must agree exactly: a pixel of difference between the two copies
+   accumulates into a visible jump at the seam. */
+const CARD_FRAME =
+  "flex h-[300px] w-[82vw] max-w-[320px] shrink-0 snap-start sm:h-[340px] sm:w-[240px]";
+
 export function Board() {
   return (
     <Section id="board" tint>
@@ -48,21 +55,39 @@ export function Board() {
       />
 
       {/*
-        Every card links to that judge's own LinkedIn now, which is what Roan
-        asked for on this page. They used to point at `/review-judge-board#<id>`,
-        and with the open seats gone that page says exactly what the card in
-        front of you already says: five cards linking to a longer copy of
-        themselves.
+        Cards go to the board page, at that judge's own anchor. The LinkedIn
+        badge in the corner is the only thing that leaves the site.
+
+        For one pass the whole card went to LinkedIn. Roan corrected it on 9 Aug
+        and it was the right correction: a teaser on the homepage whose every
+        click sends a reader off the site has no way back, and the roster page is
+        where the summaries live.
+
+        `clone` renders the same five with their links out of the tab order, for
+        the loop. carousel-rail.tsx has the note on why the second copy cannot
+        simply be `inert`.
       */}
-      <CarouselRail count={board.members.length} label="The judges on the Review Judge board">
+      <CarouselRail
+        count={board.members.length}
+        label="The judges on the Review Judge board"
+        clone={board.members.map((m) => (
+          <li key={m.id} className={CARD_FRAME}>
+            <BoardCard
+              member={m}
+              href={`/review-judge-board#${m.id}`}
+              sizes="(max-width: 640px) 82vw, 240px"
+              linkTabIndex={-1}
+            />
+          </li>
+        ))}
+      >
         {board.members.map((m) => (
-          <li
-            key={m.id}
-            /* The height lives here rather than in the card, because the roster
-               page wants a taller frame for the same component. */
-            className="flex h-[300px] w-[82vw] max-w-[320px] shrink-0 snap-start sm:h-[340px] sm:w-[240px]"
-          >
-            <BoardCard member={m} sizes="(max-width: 640px) 82vw, 240px" />
+          <li key={m.id} className={CARD_FRAME}>
+            <BoardCard
+              member={m}
+              href={`/review-judge-board#${m.id}`}
+              sizes="(max-width: 640px) 82vw, 240px"
+            />
           </li>
         ))}
       </CarouselRail>
