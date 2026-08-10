@@ -42,18 +42,39 @@ import { signOut } from "@/app/actions/auth";
  * The one badge in this bar, and it is the whole notification mechanism for
  * judging events: nothing is emailed, so a judge who does not open /judge is
  * never told anything. `openInvitationCount` counts invitations with no answer
- * on an event that is still open — not unread, because nothing here tracks
- * whether a page was looked at and a badge that clears when you glance at it
- * reports nothing. It clears when they have actually replied.
+ * on an event still ahead — not unread, because nothing here tracks whether a
+ * page was looked at and a badge that clears when you glance at it reports
+ * nothing. It clears when they have actually replied.
  *
  * One extra query, for judges only, on pages a judge is looking at.
+ *
+ * -------------------------------------------------- AND IT MUST NOT THROW
+ *
+ * Caught here, and this is not defensive noise — it is the one rule this
+ * component has to obey. `AppHeader` renders from the `(app)` and `(learn)`
+ * LAYOUTS, and `error.tsx` does not wrap the layout of its own segment; there is
+ * no `global-error.tsx` either. So an exception raised here is not a broken
+ * badge, it is Next's default error screen in place of every signed-in page on
+ * the site.
+ *
+ * `getViewer` carries the same guard fifteen lines into `lib/auth.ts`, put there
+ * by exactly this outage: a deploy with no Supabase variables threw inside this
+ * component and took down every LMS route. A count for a nav badge is nowhere
+ * near worth that, so a failure degrades to no badge and a log line.
  */
 export async function AppHeader() {
   const viewer = await getViewer();
 
   const theme = await getTheme();
 
-  const judgeCount = viewer?.is("judge") ? await openInvitationCount(viewer.id) : 0;
+  let judgeCount = 0;
+  if (viewer?.is("judge")) {
+    try {
+      judgeCount = await openInvitationCount();
+    } catch (error) {
+      console.error("judging invitations badge:", error);
+    }
+  }
 
   /*
     Signed out, this offered "Dashboard" and "Account" — two links whose only

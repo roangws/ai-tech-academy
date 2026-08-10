@@ -1,5 +1,13 @@
 # LMS UX review
 
+> **Read as history from 9 Aug 2026.** The module hand-in was removed that day at
+> Roan's instruction, and the instructor review queue with it. Every observation
+> and recommendation below that turns on `artifacts` — including "join the
+> learner's submitted artifacts into `getSheetForReview`" and "derive the
+> headline number from artifacts submitted" — describes a surface the product no
+> longer has. The table and its policies are untouched, so none of it is wrong
+> about the schema; it is wrong about the screens.
+
 Ten specialists were pointed at the signed-in LMS on `academy.roanweigert.com` and
 told to be harsh. They read the code and 38 full-page production screenshots
 captured as four real roles at 1440 and 390. They returned **140 findings**:
@@ -17,6 +25,7 @@ specialist overstated something, the correction is in **Corrections** below.
 | P3 | Polish | 3 |
 
 ## How it was produced
+
 
 - QA accounts created in production Supabase (student, instructor, judge, admin),
   with realistic state seeded: one enrolment, six completed lessons, one artifact

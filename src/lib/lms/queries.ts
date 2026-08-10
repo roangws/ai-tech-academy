@@ -106,7 +106,6 @@ export type ModuleWithProgress = ModuleRow & {
   doneIds: Set<string>;
   /** Lessons this reader has completed. Always 0 when signed out. */
   done: number;
-  artifact_status: Artifact["status"] | null;
 };
 
 export type CourseBoard = {
@@ -122,7 +121,7 @@ export type CourseBoard = {
  * The course contents, with this reader's progress folded in.
  *
  * One query for the modules with their lessons nested, one for the reader's
- * completions, one for their artifacts. Three round trips rather than the
+ * completions, one for their enrolment. Three round trips rather than the
  * obvious N+1 of a query per module.
  *
  * `userId` is null for a signed-out reader, and every per-reader query is then
@@ -152,12 +151,16 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
   if (!modules.length) return null;
 
   let doneIds = new Set<string>();
-  let artifacts = new Map<string, Artifact["status"]>();
   let enrollment: Enrollment | null = null;
 
   if (userId) {
     const moduleIds = modules.map((m) => m.id);
-    const [progress, arts, enr] = await Promise.all([
+    /* The artifacts read that used to ride along here is gone with the module
+       hand-in, 9 Aug. It fed `artifact_status`, which was printed in exactly one
+       place — beside a "Write your <artifact>" link that no longer exists — so
+       it had become a per-reader query on the busiest signed-in page whose
+       result nothing consumed. */
+    const [progress, enr] = await Promise.all([
       rows<{ lesson_id: string }>(
         "board progress",
         supabase
@@ -166,10 +169,6 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
           .eq("user_id", userId)
           .in("lessons.module_id", moduleIds),
       ),
-      rows<{ module_id: string; status: Artifact["status"] }>(
-        "board artifacts",
-        supabase.from("artifacts").select("module_id, status").eq("user_id", userId).in("module_id", moduleIds),
-      ),
       one<Enrollment>(
         "board enrolment",
         supabase.from("enrollments").select("*").eq("user_id", userId).eq("course_id", course.id).maybeSingle(),
@@ -177,7 +176,6 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
     ]);
 
     doneIds = new Set(progress.map((p) => p.lesson_id));
-    artifacts = new Map(arts.map((a) => [a.module_id, a.status]));
     enrollment = enr;
   }
 
@@ -188,7 +186,6 @@ export async function getCourseBoard(slug: string, userId: string | null): Promi
       lessons,
       doneIds: new Set(lessons.filter((l) => doneIds.has(l.id)).map((l) => l.id)),
       done: lessons.filter((l) => doneIds.has(l.id)).length,
-      artifact_status: artifacts.get(m.id) ?? null,
     };
   });
 
@@ -210,7 +207,6 @@ export type ModuleView = {
   module: ModuleRow;
   lessons: LessonWithKinds[];
   done: Set<string>;
-  artifact: Artifact | null;
   prev: ModuleRow | null;
   next: ModuleRow | null;
 };
@@ -258,30 +254,21 @@ export async function getModuleView(
   const lessons = current.lessons ?? [];
 
   let done = new Set<string>();
-  let artifact: Artifact | null = null;
 
   if (userId) {
-    const [progress, art] = await Promise.all([
-      rows<{ lesson_id: string }>(
-        "module progress",
-        supabase
-          .from("lesson_progress")
-          .select("lesson_id")
-          .eq("user_id", userId)
-          .in("lesson_id", lessons.map((l) => l.id)),
-      ),
-      one<Artifact>(
-        "module artifact",
-        supabase
-          .from("artifacts")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("module_id", current.id)
-          .maybeSingle(),
-      ),
-    ]);
+    /* The artifact read that was the second half of this `Promise.all` went with
+       the module hand-in on 9 Aug. The player no longer renders a form, a status
+       chip or a feedback block, so it was a full `select("*")` on every module
+       view for every signed-in reader, feeding a field nothing destructured. */
+    const progress = await rows<{ lesson_id: string }>(
+      "module progress",
+      supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", userId)
+        .in("lesson_id", lessons.map((l) => l.id)),
+    );
     done = new Set(progress.map((p) => p.lesson_id));
-    artifact = art;
   }
 
   return {
@@ -289,7 +276,6 @@ export async function getModuleView(
     module: current,
     lessons,
     done,
-    artifact,
     prev: modules[index - 1] ?? null,
     next: modules[index + 1] ?? null,
   };
@@ -662,6 +648,13 @@ export type SubmittedWork = Artifact & {
 
 /**
  * Artifacts an instructor may act on.
+ *
+ * NOTHING CALLS THIS TODAY. The instructor review queue was its only reader and
+ * that section was removed on 9 Aug with the module hand-in it read from, so
+ * this is kept deliberately rather than deleted: the table, the policies and
+ * `leaveFeedback` are all still in place, and putting the hand-in back means
+ * putting this back with it. Deleting it would turn a reversible rendering
+ * decision into a rewrite. See the note on the module page.
  *
  * No instructor filter in the query. The `artifacts_read_as_instructor` policy
  * already restricts this to non-draft rows on courses the caller is assigned to,

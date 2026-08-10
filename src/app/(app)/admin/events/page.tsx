@@ -11,7 +11,7 @@ import { StatusChip } from "@/components/ui";
 import type { FormState } from "@/lib/form-state";
 import { listEventsForAdmin, countJudges, type EventForAdmin } from "@/lib/lms/events";
 import { EVENT_ZONES, formatEventTime, instantToWallClock } from "@/lib/lms/time";
-import { saveEvent, issueEvent, setEventStatus, deleteEvent } from "@/app/actions/events";
+import { saveEvent, issueEvent, closeEvent, deleteEvent } from "@/app/actions/events";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -179,7 +179,7 @@ function EventCard({ event }: { event: EventForAdmin }) {
                         : r.response === "unavailable"
                           ? "cannot make it"
                           : "no answer yet"}
-                      {r.note ? ` — ${r.note}` : ""}
+                      {r.note ? `: ${r.note}` : ""}
                     </span>
                   </li>
                 );
@@ -191,28 +191,38 @@ function EventCard({ event }: { event: EventForAdmin }) {
 
       {/* ---------------------------------------------------------- controls */}
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {/* `ActionForm`, so "issued, 4 judges notified" — or "everybody had
-            already been told" — lands beside the button that did it rather than
-            being a page that silently re-renders identically. */}
-        <ActionForm action={issueEvent}>
-          <input type="hidden" name="id" value={event.id} />
-          <Save>{issued ? "Notify anyone new" : "Issue and notify judges"}</Save>
-        </ActionForm>
+        {/*
+          `ActionForm`, so "issued, 4 judges notified", or "everybody had already
+          been told", lands beside the button that did it rather than being a
+          page that silently re-renders identically.
+
+          NOT ON A CLOSED CARD. This form used to render on every card, and
+          `issue_judge_event` had no status guard, so "Notify anyone new" on a
+          closed event reopened it and said nothing. Reopening is the control
+          below, and it now goes through the same fan-out.
+        */}
+        {event.status !== "closed" ? (
+          <ActionForm action={issueEvent}>
+            <input type="hidden" name="id" value={event.id} />
+            <Save>{issued ? "Notify anyone new" : "Issue and notify judges"}</Save>
+          </ActionForm>
+        ) : null}
 
         {event.status === "issued" ? (
-          <form action={setEventStatus}>
+          <form action={closeEvent}>
             <input type="hidden" name="id" value={event.id} />
-            <input type="hidden" name="status" value="closed" />
             <Quiet>Close</Quiet>
           </form>
         ) : null}
 
+        {/* Reopening is issuing again, deliberately: an event shut for a month
+            and then reopened has to reach anybody appointed in the meantime. */}
         {event.status === "closed" ? (
-          <form action={setEventStatus}>
+          <ActionForm action={issueEvent}>
             <input type="hidden" name="id" value={event.id} />
-            <input type="hidden" name="status" value="issued" />
-            <Quiet>Reopen</Quiet>
-          </form>
+            <input type="hidden" name="reopen" value="1" />
+            <Save>Reopen and notify</Save>
+          </ActionForm>
         ) : null}
 
         {/* Only a draft. Deleting an issued event takes every answer with it,

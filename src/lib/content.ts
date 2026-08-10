@@ -3328,11 +3328,11 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       "Work a stranger can check without asking you: a repository, a product, a paper, a talk, a public profile with your name on it.",
       "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people who do not work with you.",
       "The ability to teach one thing well on camera, which is a separate skill from doing it well and is the one the board tests directly.",
-      "Time. One course is roughly eight modules of recording, plus reading the work that comes back.",
+      "Time. One course is roughly eight modules of recording, plus the board's review each term.",
     ],
     asked: [
       "Record the deep dives on one course, in your own voice, against a curriculum somebody else wrote.",
-      "Read the artifacts learners submit on that course and reply to each one.",
+      "Keep that course honest as the tools move, and say when a lesson has stopped being true.",
       "Sit for the board's review each term, on the same terms the curriculum does.",
     ],
     /*

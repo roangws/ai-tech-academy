@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { wallClockToInstant } from "@/lib/lms/time";
+import { wallClockToInstant, isEventZone } from "@/lib/lms/time";
 import type { FormState } from "@/lib/form-state";
 import type { JudgeEventFormat } from "@/lib/supabase/types";
 
@@ -54,6 +54,13 @@ export async function saveEvent(_prev: FormState, formData: FormData): Promise<F
 
   if (!title) return { error: "An event needs a title." };
   if (!FORMATS.includes(format)) return { error: `Unknown format "${format}".` };
+  /* Checked against the list the form offers, rather than passed through to
+     `Intl.DateTimeFormat`. An unrecognised zone reaches this function only from a
+     hand-rolled POST, and the failure it produces is a `RangeError` in the error
+     boundary with every field lost — an answer on the form is the right shape for
+     something the caller can correct. It also keeps the column to values
+     `instantToWallClock` can round-trip on the edit form. */
+  if (!isEventZone(timezone)) return { error: `Unknown time zone "${timezone}".` };
 
   const starts_at = wallClockToInstant(String(formData.get("starts_at") ?? ""), timezone);
   if (!starts_at) return { error: "An event needs a start date and time." };
@@ -119,51 +126,90 @@ export async function issueEvent(_prev: FormState, formData: FormData): Promise<
   const id = String(formData.get("id") ?? "");
   if (!id) return { error: "No event to issue." };
 
+  /*
+    Reopening is the same act, said out loud.
+
+    Both paths fan out, which is the entire reason issuing is an RPC: a closed
+    event that is reopened has to notify anybody appointed while it was shut, and
+    a plain `status = 'issued'` UPDATE would not. Review found the other half of
+    this — the issue form used to render on closed cards too, so "Notify anyone
+    new" silently reopened them. `issue_judge_event` refuses that outright now
+    unless `p_reopen` says it was asked for.
+  */
+  const reopen = Boolean(formData.get("reopen"));
+
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("issue_judge_event", { p_event_id: id });
+  const { data, error } = await supabase.rpc("issue_judge_event", {
+    p_event_id: id,
+    p_reopen: reopen,
+  });
   if (error) throw new Error(`issueEvent: ${error.message}`);
 
   revalidatePath("/admin/events");
   revalidatePath("/judge");
 
   const notified = Number(data ?? 0);
+  const verb = reopen ? "Reopened" : "Issued";
   return {
     ok: notified
-      ? `Issued. ${notified} judge${notified === 1 ? "" : "s"} notified.`
-      : "Issued. Everybody holding the judge role had already been notified.",
+      ? `${verb}. ${notified} judge${notified === 1 ? "" : "s"} notified.`
+      : `${verb}. Everybody holding the judge role had already been notified.`,
   };
 }
 
 /**
- * Close it, or put it back.
+ * Close it.
+ *
+ * Only closing. It used to take a status and write it, which meant it could also
+ * reopen — and reopening without a fan-out is the split `issue_judge_event`
+ * exists to prevent, because a judge appointed while the event was shut would
+ * never hear about it. Reopening goes through `issueEvent` with `reopen` set.
  *
  * Closing does not delete the invitations. A judge who said they were available
  * for something that has been and gone should still be able to see that they
- * did, and the answers are the only record of who turned up to what.
+ * did, and the answers are the only record of who agreed to what.
  */
-export async function setEventStatus(formData: FormData): Promise<void> {
+export async function closeEvent(formData: FormData): Promise<void> {
   await requireRole("admin", "/admin/events");
   const id = String(formData.get("id") ?? "");
-  const status = String(formData.get("status") ?? "");
   if (!id) return;
-  if (status !== "issued" && status !== "closed") throw new Error(`unknown status "${status}"`);
 
   const supabase = await createClient();
-  const { error } = await supabase.from("judge_events").update({ status }).eq("id", id);
-  if (error) throw new Error(`setEventStatus: ${error.message}`);
+  /* `eq("status", "issued")` so this cannot reach a draft — the constraint
+     `judge_events_issued_has_a_time` would refuse that with a 500, and an action
+     that relies on a constraint to catch a state it should not have reached is
+     an action missing a check. */
+  const { error } = await supabase
+    .from("judge_events")
+    .update({ status: "closed" })
+    .eq("id", id)
+    .eq("status", "issued");
+  if (error) throw new Error(`closeEvent: ${error.message}`);
 
   revalidatePath("/admin/events");
   revalidatePath("/judge");
 }
 
-/** Delete a draft nobody has been told about. The invitations cascade. */
+/**
+ * Delete a draft nobody has been told about. The invitations cascade.
+ *
+ * `eq("status", "draft")` is the enforcement, not the button. The card renders
+ * this control only for drafts and a comment beside it explains why deleting an
+ * issued event would be wrong — deleting it takes every answer with it — and
+ * until review pointed it out, neither of those was true of the action itself,
+ * which took an id and deleted whatever it named.
+ */
 export async function deleteEvent(formData: FormData): Promise<void> {
   await requireRole("admin", "/admin/events");
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("judge_events").delete().eq("id", id);
+  const { error } = await supabase
+    .from("judge_events")
+    .delete()
+    .eq("id", id)
+    .eq("status", "draft");
   if (error) throw new Error(`deleteEvent: ${error.message}`);
 
   revalidatePath("/admin/events");
@@ -197,12 +243,35 @@ export async function respondToEvent(formData: FormData): Promise<void> {
   const note = String(formData.get("note") ?? "").trim().slice(0, 2_000) || null;
 
   const supabase = await createClient();
-  const { error } = await supabase
+  /*
+    WHEN an answer may be written is decided by the guard trigger, not here.
+
+    Review found that nothing at any layer looked at the event's state: the
+    update policy is `judge_id = auth.uid()` and nothing more, so a judge with a
+    tab left open — or a PATCH sent straight at PostgREST with their own token —
+    could flip "unavailable" to "available" on a panel that had already happened,
+    and the trigger would stamp a fresh `responded_at` on the rewrite. The whole
+    reason an invitation is a row is that it records what somebody said and when;
+    that record has to be closed to the person it describes.
+
+    So `judge_event_invitations_guard` now refuses a changed answer once the
+    event is closed or its end has passed, and this is the good error message
+    rather than the boundary. `select()` is here so a refusal is not silent: a
+    write that matches no row comes back `error: null`, which would render as a
+    successful answer that changed nothing.
+  */
+  const { data, error } = await supabase
     .from("judge_event_invitations")
     .update({ response, note })
     .eq("event_id", eventId)
-    .eq("judge_id", viewer.id);
+    .eq("judge_id", viewer.id)
+    .select("id");
   if (error) throw new Error(`respondToEvent: ${error.message}`);
+  if (!data?.length) {
+    throw new Error(
+      "respondToEvent: no invitation for this judge on this event, or it is no longer open",
+    );
+  }
 
   revalidatePath("/judge");
 }

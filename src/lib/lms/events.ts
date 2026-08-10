@@ -34,8 +34,20 @@ import type { JudgeEvent, JudgeEventInvitation, Profile } from "@/lib/supabase/t
  */
 
 /* Errors throw, for the reason `queries.ts` explains at length: a dropped error
-   is a page that renders "no events" as a fact when the read failed. */
+   is a page that renders "no events" as a fact when the read failed.
+
+   The one caller that must NOT inherit that is the header count, because it
+   renders inside a layout where no error boundary can catch it. See the note in
+   app-header.tsx. */
 type Result = { data: unknown; error: { message: string } | null };
+
+/** The events desk pages its list rather than rendering the whole table. */
+const PAGE_SIZE = 50;
+
+/* A ceiling for the invitations that ride along with those events. The board is
+   six seats and the role is granted by hand, so this is generous by an order of
+   magnitude and exists to bound the query rather than to express a rule. */
+const MAX_JUDGES_PER_EVENT = 40;
 
 async function rows<T>(label: string, query: PromiseLike<Result>): Promise<T[]> {
   const { data, error } = await query;
@@ -110,26 +122,34 @@ export async function listInvitations(judgeId: string): Promise<Invitations> {
  * How many of this judge's invitations are waiting on an answer.
  *
  * This is the notification badge, and what it counts is deliberate: not "unread"
- * — nothing here tracks whether a page was looked at — but unanswered, on an
- * event that has not been closed. A badge that clears when you glance at it
- * tells you nothing; this one clears when you have actually replied, which is
- * the thing the person issuing the event is waiting for.
+ * (nothing here tracks whether a page was looked at) but unanswered, on an event
+ * that is still ahead. A badge that clears when you glance at it tells you
+ * nothing; this one clears when you have actually replied.
  *
- * `eq("judge_id")` for the same reason `listInvitations` has one: an admin may
- * read every row, so without it the badge counts the whole board's silence.
+ * ------------------------------------------------------ why it is an RPC now
+ *
+ * It was a `head: true` count with an `!inner` embed, filtered on
+ * `judge_events.status = 'issued'` and nothing else — and review caught what
+ * that leaves out. `/judge` only offers the answer form for events still ahead,
+ * so an event nobody closed after the fact left a permanent number on the Judge
+ * tab over a page with nothing answerable on it. The judge could not clear it by
+ * any action available to them.
+ *
+ * The correct condition is `coalesce(ends_at, starts_at) >= now()`, and PostgREST
+ * has no way to express a coalesce across an embed. `my_open_invitations()` is
+ * SECURITY INVOKER, so row-level security still applies and it still answers only
+ * for the caller — and it is the same condition `listInvitations` uses to fill
+ * "Upcoming", so the tab and the page cannot disagree.
+ *
+ * The caller's id is not a parameter for the same reason `my_seat()` takes none:
+ * a function that answers "how many are mine" must not be askable about somebody
+ * else. It reads `auth.uid()` itself.
  */
-export async function openInvitationCount(judgeId: string): Promise<number> {
+export async function openInvitationCount(): Promise<number> {
   const supabase = await createClient();
-
-  const { count, error } = await supabase
-    .from("judge_event_invitations")
-    .select("id, judge_events!inner(status)", { count: "exact", head: true })
-    .eq("judge_id", judgeId)
-    .is("response", null)
-    .eq("judge_events.status", "issued");
-
+  const { data, error } = await supabase.rpc("my_open_invitations");
   if (error) throw new Error(`open invitations: ${error.message}`);
-  return count ?? 0;
+  return Number(data ?? 0);
 }
 
 /* --------------------------------------------------------------- the admin */
@@ -161,16 +181,34 @@ export type EventForAdmin = JudgeEvent & {
 export async function listEventsForAdmin(): Promise<EventForAdmin[]> {
   const supabase = await createClient();
 
-  const [events, invitations] = await Promise.all([
-    rows<JudgeEvent>(
-      "events",
-      supabase.from("judge_events").select("*").order("starts_at", { ascending: false }),
-    ),
-    rows<JudgeEventInvitation>(
-      "event invitations",
-      supabase.from("judge_event_invitations").select("*").order("notified_at"),
-    ),
-  ]);
+  /*
+    Both bounded. PostgREST caps a response at 1000 rows by default and reports
+    the truncation nowhere, so an unbounded invitations read would eventually
+    make every "3 notified · 2 available" on this page quietly too low — a wrong
+    number that looks like a right one. The events read is bounded first and the
+    invitations are then fetched only for the events actually on screen, which
+    also stops the second query growing with the whole history.
+  */
+  const events = await rows<JudgeEvent>(
+    "events",
+    supabase
+      .from("judge_events")
+      .select("*")
+      .order("starts_at", { ascending: false })
+      .limit(PAGE_SIZE),
+  );
+
+  const invitations = events.length
+    ? await rows<JudgeEventInvitation>(
+        "event invitations",
+        supabase
+          .from("judge_event_invitations")
+          .select("*")
+          .in("event_id", events.map((e) => e.id))
+          .order("notified_at")
+          .limit(PAGE_SIZE * MAX_JUDGES_PER_EVENT),
+      )
+    : [];
 
   const judgeIds = [...new Set(invitations.map((i) => i.judge_id))];
   const profiles = judgeIds.length

@@ -319,9 +319,16 @@ This is the site's central promise and it is stated on six surfaces.
 - [ ] The tick is a real toggle: `aria-pressed` flips, and a screen reader
       announces the change.
 - [ ] Progress counts on the dashboard match the module page.
-- [ ] Save an artifact as a draft → it is not on `/instructor`.
-- [ ] Submit it → it is.
-- [ ] **Press "Save draft" on a submitted artifact.** It must stay submitted.
+- [ ] The module page has **no hand-in on it at all** — no textarea, no "Save
+      draft", no "Submit for review". Removed 9 Aug at Roan's instruction. The
+      `artifacts` table, its policies and `saveArtifact` are all still in place,
+      so this is a rendering check, not a schema one.
+- [ ] The module page's primary control is **"Start: &lt;first lesson&gt;"** at the
+      top, filled, and it opens that lesson. "Next module" is outlined and at the
+      bottom.
+- [ ] "Module 02" is legible as the page's location, not an 11px grey line.
+- [ ] The course board links into every module ("Open module 03"), including
+      modules with no artifact set.
 - [ ] Outcome sheet: fill three measures, save draft, reload → values persist.
 - [ ] Leave a measure blank → that row is dropped, not stored empty.
 - [ ] Submit the sheet → fields become read-only **but still tabbable and
@@ -333,13 +340,15 @@ This is the site's central promise and it is stated on six surfaces.
 
 ## 5. Instructor
 
-- [ ] With no assignment: the empty state names `instructor_assignments` rather
-      than rendering an empty table.
-- [ ] With an assignment: only that course's submitted work appears.
-- [ ] Drafts never appear.
-- [ ] Leaving feedback moves the item to Reviewed and the learner sees it on the
-      module page.
+- [ ] **Sign in as somebody holding only the `instructor` role.** `/instructor`
+      opens. It used to be guarded on `admin`, so the role granted nothing and
+      the header drew no link either.
+- [ ] With no assignment: the empty state points at `/admin/people`.
+- [ ] With an assignment: exactly the assigned courses appear, and **each card
+      opens the course**.
+- [ ] `/admin/*` still redirects that account to `/dashboard`.
 - [ ] The course list does not reorder between page loads.
+- [ ] There is no review queue. Removed 9 Aug with the hand-in that fed it.
 
 ---
 
@@ -383,16 +392,18 @@ This is the site's central promise and it is stated on six surfaces.
   `content.ts` gives four of five instructors no course, by policy, so nothing is
   derivable. Until rows exist, `/instructor` is empty for everyone and
   "Submitted. Your instructor can read it." is optimistic.
-- **[FILL: judge identities]** — all six seats are unbound. `/judge` is empty for
-  everyone until an admin binds one.
+- **[FILL: judge identities]** — all six seats are unbound. That now affects
+  `/judge/curriculum` only; `/judge` is the events console and needs no seat.
 - **[FILL: rubric criteria]** — the four seeded per course are a proposal derived
   from the FAQ's definition of completion, not a specification. Confirm with the
   board.
 - **[FILL: term definition]** — free text (`2026-H2`) until someone defines the
   calendar.
-- **[FILL: events]** — the board copy promises a panel judging events where
-  learners present. No event exists anywhere in the product. Either the copy or
-  the feature has to give; nothing here invents one.
+- ~~[FILL: events]~~ **Answered 9 Aug.** An admin writes an event on
+  `/admin/events` and issues it; `issue_judge_event` notifies every holder of the
+  judge role; a judge answers on `/judge`. What is still missing is the CHANNEL:
+  the notification is a badge in the app header and nothing else, so a judge who
+  does not open the console is never told. That waits on the email blocker above.
 - ~~[FILL: completion record]~~ **Answered 12 Aug.** A learner claims their own
   record from `/dashboard/certifications`, an admin can still issue one early
   from `/admin/learners`, and `/verify/<reference>` resolves it for anybody

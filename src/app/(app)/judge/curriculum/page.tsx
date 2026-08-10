@@ -71,21 +71,29 @@ export default async function JudgeCurriculumPage() {
           <Empty
             title="You do not hold a seat yet"
             action={
-              /* /admin/judging, not /review-judge-board. This pointed at the public
-                 board to "see the six seats" and that page has never listed a seat
-                 in its life — it lists the judges. So the one screen a seatless
-                 judge was sent to could not answer the question the empty state
-                 raised, which is Roan's report. Judging is where seats are bound and
-                 where all three facts about a judge are visible at once. */
-              <Link href="/admin/judging" className="t-button text-accent no-underline hover:underline">
-                Where seats are assigned
+              /*
+                /judge, and not /admin/judging.
+
+                This linked to the console where seats are bound, labelled "Where
+                seats are assigned" — and that page is behind `requireRole("admin")`,
+                so the one reader this empty state is written for, a judge without a
+                seat, was bounced to the dashboard by the only control on it. The
+                link before that was worse: it pointed at the public board to "see
+                the six seats", and that page has never listed a seat in its life.
+
+                A seatless judge cannot fix this themselves, so the honest control
+                sends them to the part of the console that does work today and the
+                copy says who to ask.
+              */
+              <Link href="/judge" className="t-button text-accent no-underline hover:underline">
+                Back to judging opportunities
               </Link>
             }
           >
-            The board has six seats and each one reads a particular course. An administrator
-            binds a seat to a person, and until one is bound to you there is no curriculum to
-            review under your name and no sheets to score. Judging events do not need a seat —
-            those are on the main console.
+            The board has six seats and each one reads a particular course. An administrator binds
+            a seat to a person, and until one is bound to you there is no curriculum to review
+            under your name and no sheets to score. Ask an administrator if you were expecting
+            one. Judging events need no seat, and those are on the main console.
           </Empty>
         </div>
       </Container>

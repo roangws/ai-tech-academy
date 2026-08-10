@@ -41,7 +41,7 @@ export default async function AdminLearners() {
         <h1 className="t-h2 text-ink">Learners</h1>
         <div className="mt-6">
           <Empty title="Nobody is enrolled yet">
-            An enrolment is created the first time somebody ticks a lesson or saves an artifact.
+            An enrolment is created the first time somebody ticks a lesson.
           </Empty>
         </div>
       </>
@@ -83,8 +83,11 @@ export default async function AdminLearners() {
 
               <Meter className="mt-3 max-w-[360px]" done={l.done} total={l.total} />
 
+              {/* The two artifact counts that used to lead this line are gone
+                  with the module hand-in, 9 Aug. "0 awaiting review · 0 reviewed"
+                  on every learner forever is not a fact about the learner, it is
+                  a fact about a form that no longer exists. */}
               <p className="t-meta mt-3 text-ink-secondary">
-                {l.artifacts.submitted} awaiting review · {l.artifacts.reviewed} reviewed ·{" "}
                 {l.sheet ? `outcome sheet ${l.sheet.status}` : "no outcome sheet"}
               </p>
 

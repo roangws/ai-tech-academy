@@ -68,15 +68,46 @@ function offsetAt(instant: Date, tz: string): number {
 /**
  * A `datetime-local` value read as a wall clock in `tz`, as an ISO instant.
  *
- * Returns null for an empty or unparseable string, so an optional field left
- * blank stays null rather than becoming 1970.
+ * Returns null for anything that is not a complete wall clock, so an optional
+ * field left blank stays null rather than becoming 1970.
+ *
+ * ------------------------------------------------------------- what it rejects
+ *
+ * The shape is checked rather than handed to `new Date`, and that is a fix, not
+ * decoration. The first version only used the regex to decide whether to append
+ * `:00` and passed everything else through, so `"2026-09-12"` — a plausible
+ * hand-rolled POST, and what some pickers submit when the time is left empty —
+ * parsed as `2026-09-12T00:00Z` and silently created a midnight event instead of
+ * returning the "needs a start date and time" answer the form is written to give.
+ *
+ * ---------------------------------------------------- the two hours a year
+ *
+ * Twice a year a local wall clock is not a single instant, and no amount of
+ * arithmetic fixes that, because the input genuinely does not identify a moment:
+ *
+ *   * In the SKIPPED hour (spring forward) the wall clock never happens. This
+ *     resolves it to a real instant either side of the gap, and which side
+ *     depends on the sign of the zone's offset: 2:30am in Los Angeles comes back
+ *     as 1:30 PST, an hour earlier than typed, while 2:30am in Berlin comes back
+ *     as 3:30 CEST, an hour later. Measured, not assumed.
+ *   * In the REPEATED hour (autumn back) the wall clock happens twice, and this
+ *     always picks the first. So an event stored at the second 1:30am and then
+ *     re-saved from the form, even with nothing changed, moves an hour earlier.
+ *
+ * Both are left as they are. `formatEventTime` prints the zone abbreviation
+ * alongside every time, so the card always says which of the two it means, and
+ * an administrator who lands on the wrong one can see it and move the event. The
+ * alternative is carrying an explicit offset per event, which is real complexity
+ * for an hour a year, on a school that has run no events in those hours yet.
  */
+const WALL_CLOCK = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
+
 export function wallClockToInstant(value: string | null | undefined, tz: string): string | null {
   const naive = (value ?? "").trim();
-  if (!naive) return null;
+  if (!WALL_CLOCK.test(naive)) return null;
 
   /* Seconds are optional in what the picker submits. */
-  const withSeconds = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(naive) ? `${naive}:00` : naive;
+  const withSeconds = naive.length === 16 ? `${naive}:00` : naive;
   const guess = new Date(`${withSeconds}Z`);
   if (Number.isNaN(guess.getTime())) return null;
 
@@ -132,17 +163,21 @@ export function formatEventDate(iso: string, tz: string): string {
  * partners actually run events in. The column takes any IANA name, so adding one
  * is a line here rather than a migration.
  */
+export function isEventZone(value: string): boolean {
+  return EVENT_ZONES.some((z) => z.value === value);
+}
+
 export const EVENT_ZONES: readonly { value: string; label: string }[] = [
-  { value: "America/Los_Angeles", label: "Pacific — Los Angeles" },
-  { value: "America/Denver", label: "Mountain — Denver" },
-  { value: "America/Chicago", label: "Central — Chicago" },
-  { value: "America/New_York", label: "Eastern — New York" },
-  { value: "America/Sao_Paulo", label: "Brazil — São Paulo" },
-  { value: "Europe/London", label: "United Kingdom — London" },
-  { value: "Europe/Berlin", label: "Central Europe — Berlin" },
-  { value: "Asia/Dubai", label: "Gulf — Dubai" },
+  { value: "America/Los_Angeles", label: "Pacific (Los Angeles)" },
+  { value: "America/Denver", label: "Mountain (Denver)" },
+  { value: "America/Chicago", label: "Central (Chicago)" },
+  { value: "America/New_York", label: "Eastern (New York)" },
+  { value: "America/Sao_Paulo", label: "Brazil (São Paulo)" },
+  { value: "Europe/London", label: "United Kingdom (London)" },
+  { value: "Europe/Berlin", label: "Central Europe (Berlin)" },
+  { value: "Asia/Dubai", label: "Gulf (Dubai)" },
   { value: "Asia/Singapore", label: "Singapore" },
-  { value: "Asia/Tokyo", label: "Japan — Tokyo" },
-  { value: "Australia/Sydney", label: "Australia — Sydney" },
+  { value: "Asia/Tokyo", label: "Japan (Tokyo)" },
+  { value: "Australia/Sydney", label: "Australia (Sydney)" },
   { value: "UTC", label: "UTC" },
 ];

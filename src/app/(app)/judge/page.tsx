@@ -155,10 +155,11 @@ export default async function JudgePage() {
         job.
       */}
       <p className="t-body-sm mt-14 border-t border-line pt-6 text-ink-secondary">
+        The work that comes with a seat on the board is on its own page:{" "}
         <Link href="/judge/curriculum" className="text-accent no-underline hover:underline">
-          Curriculum review and outcome sheets
-        </Link>{" "}
-        — the work that comes with a seat on the board.
+          curriculum review and outcome sheets
+        </Link>
+        .
       </p>
     </Container>
   );
@@ -251,7 +252,7 @@ function EventCard({ invitation }: { invitation: InvitationWithEvent }) {
 
         <label htmlFor={`note-${event.id}`} className="t-field block text-ink-secondary">
           Anything the organiser should know
-          <span className="t-meta text-ink-muted"> — optional</span>
+          <span className="t-meta text-ink-muted"> (optional)</span>
         </label>
         <textarea
           id={`note-${event.id}`}

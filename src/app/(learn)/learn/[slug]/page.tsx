@@ -294,20 +294,29 @@ export default async function CourseBoardPage({
                       })}
                     </ul>
 
-                    {/* The module page still exists and this says what it is for.
-                        It is the artifact surface, not a second contents list. */}
-                    {m.artifact ? (
-                      <Link
-                        href={`/learn/${slug}/${m.n}`}
-                        className="t-meta mt-2 inline-flex min-h-[44px] items-center gap-1.5 px-2 text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
-                      >
-                        Write your {m.artifact.toLowerCase()}
-                        {m.artifact_status && m.artifact_status !== "draft"
-                          ? ` · ${m.artifact_status}`
-                          : ""}
-                        <ArrowRightIcon size={12} weight="bold" aria-hidden="true" />
-                      </Link>
-                    ) : null}
+                    {/*
+                      THE WAY INTO THE MODULE, and it says so now.
+
+                      It read "Write your logline and script" and was rendered only
+                      when `m.artifact` was set, because the module page used to be
+                      the hand-in surface. The hand-in was removed on 9 Aug, so this
+                      was a link labelled after a form that no longer exists — and
+                      since it was the ONLY link from this board into the module
+                      page, a module with no artifact set had no route to its own
+                      page at all. The new "Start: <first lesson>" control on that
+                      page was unreachable from here.
+
+                      Unconditional now, and named after where it goes. The lesson
+                      list above is still the fast path for somebody who knows which
+                      lesson they want; this is for the reader who wants the module.
+                    */}
+                    <Link
+                      href={`/learn/${slug}/${m.n}`}
+                      className="t-meta mt-2 inline-flex min-h-[44px] items-center gap-1.5 px-2 text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
+                    >
+                      Open module {m.n}
+                      <ArrowRightIcon size={12} weight="bold" aria-hidden="true" />
+                    </Link>
                   </div>
                 )}
               </details>

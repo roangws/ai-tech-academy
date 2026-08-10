@@ -65,7 +65,7 @@ export default async function InstructorPage() {
     <Container className="py-12 md:py-16">
       <h1 className="t-display text-ink">Instructor</h1>
       <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
-        The courses you record and review. Open one to read it exactly as a learner does.
+        The courses you record. Open one to read it exactly as a learner does.
       </p>
 
       <h2 className="t-h3 mt-12 text-ink">Your courses</h2>

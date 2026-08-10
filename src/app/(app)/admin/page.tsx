@@ -44,9 +44,8 @@ export default async function AdminOverview() {
      chart renders empty rather than throwing. */
   const busiest = [...insights].sort((a, b) => b.enrolled - a.enrolled)[0] ?? insights[0];
 
-  const awaitingReview = learners.reduce((n, l) => n + l.artifacts.submitted, 0);
   const unboundSeats = seats.filter((s) => !s.user_id).length;
-  const instructors = people.filter((p) => p.roles.includes("instructor")).length;
+  const judges = people.filter((p) => p.roles.includes("judge")).length;
   const unassignedInstructors = people.filter(
     (p) => p.roles.includes("instructor") && p.courses.length === 0,
   ).length;
@@ -59,11 +58,21 @@ export default async function AdminOverview() {
       href: "/admin/people",
       note: newThisWeek ? `${newThisWeek} new this week` : "none new this week",
     },
+    /*
+      "Judges to notify" replaced "Artifacts awaiting review", 9 Aug.
+
+      The old tile counted submitted artifacts, and the module hand-in that was
+      the only way to write one was removed the same day — so it was a number
+      that could only ever fall, over a queue nobody can join, pointing at a
+      console that no longer reviews anything. Judging events are what this
+      section of the product actually does now, and the useful operational fact
+      is whether there is anybody to issue one to.
+    */
     {
-      label: "Artifacts awaiting review",
-      value: awaitingReview,
-      href: "/admin/learners",
-      note: unassignedInstructors ? `${unassignedInstructors} instructor with no course` : "all assigned",
+      label: "Judges who can be notified",
+      value: judges,
+      href: "/admin/events",
+      note: unboundSeats === 6 ? "no seat bound yet" : `${6 - unboundSeats} of 6 seats bound`,
     },
     {
       label: "Sheets awaiting a score",
@@ -92,11 +101,14 @@ export default async function AdminOverview() {
   const blocking: string[] = [];
   if (unassignedInstructors > 0) {
     blocking.push(
-      `${unassignedInstructors} instructor${unassignedInstructors === 1 ? " has" : "s have"} no course, so work submitted to them is unread`,
+      `${unassignedInstructors} instructor${unassignedInstructors === 1 ? " has" : "s have"} no course, so nothing opens on their console`,
     );
   }
-  if (awaitingReview > 0 && instructors === 0) {
-    blocking.push(`${awaitingReview} artifact${awaitingReview === 1 ? "" : "s"} submitted with no instructor to read them`);
+  /* Both artifact lines are gone with the hand-in. "Work submitted to them is
+     unread" described a queue that can no longer be joined, and an operations
+     screen naming a problem nobody can cause is worse than one line shorter. */
+  if (judges === 0) {
+    blocking.push("nobody holds the judge role, so a judging event would notify nobody");
   }
   if (unboundSeats === 6) {
     blocking.push("no judge seat is bound, so no outcome sheet can be scored");
