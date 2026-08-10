@@ -1267,6 +1267,37 @@ export type Person = {
   site?: { label: string; href: string };
   /** Companies this person has invested in. Named and linked, never counted. */
   investments?: readonly { label: string; href: string }[];
+  /**
+   * A book this person wrote, as a row inside their card.
+   *
+   * ON THE PERSON RATHER THAN ON THE PAGE, and that is the whole placement
+   * decision rather than a detail of the type.
+   *
+   * A book by the lead instructor was one of four chips in the credibility band
+   * that used to sit under the fold, and the note further up this file records
+   * why that band went and what it said about this one: "Roan authoring on
+   * applied AI in media production belongs on a biography rather than in the
+   * second screen of a course page." Roan asked for the book back on the
+   * homepage on 9 Aug, and the biography is where it went, because that is the
+   * one place on this page where it is a fact about a named human being rather
+   * than a chip asking to be admired.
+   *
+   * The consequence of putting it here is the point: it travels with the card,
+   * so it renders on /instructors too, and it is impossible to state the book
+   * without the author beside it.
+   *
+   * `blurb` is the author's own description, from the book's own page. Nothing
+   * here assesses the book, and nothing claims it is required, recommended, or
+   * connected to any course. It is a thing this instructor wrote.
+   */
+  book?: {
+    /** The eyebrow over the row. */
+    label: string;
+    title: string;
+    blurb: string;
+    href: string;
+    cover: Img;
+  };
 };
 
 /*
@@ -1405,6 +1436,44 @@ export const instructors = {
         { label: "Produtoras de Video", href: "https://www.produtorasdevideo.com.br/" },
         { label: "Bayhaus Creative", href: "https://bayhauscreative.com/" },
       ],
+      /*
+        Added 9 Aug at Roan's request. The `book` field on `Person` carries the
+        argument for it being here rather than in a band of its own.
+
+        `title` and `blurb` are the book's own listing copy, supplied by Roan,
+        verbatim apart from the eyebrow. Nothing on the card recommends it or
+        ties it to a course: the media path teaches applied AI for video and
+        this book is about world models in video, and the temptation to draw
+        that line into a sentence is exactly the kind of claim this file exists
+        to refuse. A reader who wants the connection can see it.
+
+        The cover is the author's own render, CROPPED TO THE JACKET, and the
+        crop is the point rather than housekeeping.
+
+        What Roan supplied is a 832 x 1023 photograph of the book standing on a
+        table in front of a film crew. That is a good image at a good size and it
+        is worthless at 40px: scaled into the thumbnail whole, the jacket was
+        about a third of a very small rectangle and the rest was blurred studio,
+        so the row's one visual read as a smudge. The asset is now the front face
+        alone — `extract({ left: 203, top: 363, width: 387, height: 628 })` off
+        that render, measured against a 100px grid — which is 0.616, a book's own
+        proportions, so the frame in the card crops nothing.
+
+        Still deliberately too small to read. The row underneath says what the
+        book is, and a cover set large enough to be legible would be a second,
+        competing statement of the same title.
+      */
+      book: {
+        label: "The book",
+        title: "World Models Applied in Video Production",
+        blurb:
+          "A comprehensive technical guide to how world models are reshaping video, from concept to production pipeline.",
+        href: "https://roanwe.gumroad.com/l/World-Models",
+        cover: {
+          src: "/images/book/world-models-cover.webp",
+          alt: "Cover of World Models Applied in Video Production by Roan Weigert",
+        },
+      },
       lead: true,
     },
     /*
@@ -1811,6 +1880,138 @@ export const board = {
 } as const;
 
 /*
+  The community partners, added 9 Aug at Roan's instruction.
+
+  --------------------------------------------------------------- what is claimed
+
+  Exactly one thing: that these two organisations are community partners of this
+  program. That is Roan's statement and it is his to make. Everything else on
+  the band is each organisation describing itself.
+
+  What is deliberately NOT claimed, because nobody has stated it: what either
+  partnership does. No joint events, no shared curriculum, no co-branded
+  anything. The moment this band says "we run monthly sessions with them" it has
+  invented a commitment on behalf of a third party, which is the one failure
+  this file has the most notes about. A partner list that names its partners and
+  stops is a complete object; the activity goes in when there is activity to
+  describe.
+
+  ------------------------------------------------------------- `blurb` is theirs
+
+  Both lines are lifted from each organisation's own meta description, shortened
+  and not otherwise altered:
+
+    The AI Collective ...... "The world's largest AI community. Uniting 250K+
+                              pioneers across 100+ global chapters. Building the
+                              human layer for the AI era."
+    The Multimodal Society . "A community of creatives and engineers building the
+                              AI era together. Masterclasses, hackathons, and
+                              screening nights in San Francisco. Membership is
+                              free."
+
+  Those are superlatives and headcounts that this site would never write about
+  anybody, which is the reason they are attributed rather than absorbed: the
+  band's intro says the lines are theirs, so "world's largest" reads as a claim
+  the AI Collective makes and not as one this program endorses. Two hundred and
+  fifty thousand is also the same figure Liz Zhang's board entry carries, from
+  her own profile, so the two agree without either being copied from the other.
+
+  If one of them rewrites its own description, this goes stale quietly. That is
+  the accepted cost of quoting rather than paraphrasing, and it is the cheaper
+  failure: a stale quote is out of date, a paraphrase is this site putting words
+  in somebody's mouth.
+
+  --------------------------------------------------------------------- the marks
+
+  Two organisations that ship two different kinds of file, which is why `wordmark`
+  exists here as it does on `Seat`.
+
+  The AI Collective publishes a lockup with its name already set in it, so the
+  image is the whole identity and nothing is printed beside it. The Multimodal
+  Society publishes a square mark with no name in it — their own site pairs it
+  with the name in type at 64px, and this band does the same thing. Printing "The
+  AI Collective" next to a wordmark that already reads "The AI Collective" is the
+  failure this split avoids.
+
+  Both sit on the same light chip the roster cards use, for the same reason
+  instructor-card.tsx has written down: the Multimodal Society's mark is black by
+  design and the AI Collective's is a dark serif, so the chip makes the treatment
+  independent of what colour anybody's brand happens to be.
+*/
+export type Partner = {
+  id: string;
+  /** The organisation's own name for itself. */
+  name: string;
+  /** Their site. The whole card links here. */
+  href: string;
+  /** Their own description of themselves, shortened and not otherwise altered. */
+  blurb: string;
+  /** Their published mark. `alt` is empty when `setNameInType` prints the name. */
+  logo: Img;
+  /**
+   * Print the name in type beside the mark.
+   *
+   * True for a mark that does not contain its owner's name — a square icon, an
+   * emblem — and false for a lockup that already reads as the name. It is the
+   * same decision `Seat.wordmark` makes for an employer with no logo file at
+   * all, arrived at from the other end: there the name is set in type because
+   * there is no mark, here because the mark says nothing.
+   */
+  setNameInType?: boolean;
+  /**
+   * The mark ships its own background and is drawn edge to edge rather than on
+   * the site's light chip.
+   *
+   * True for an app-icon-shaped mark whose ground is part of the design. It is
+   * the same exception `scripts/prepare-logos.mjs` makes with `keepBox` for
+   * n-aible, and for the same reason: putting a square icon that is already
+   * black on a white chip draws a white frame around something that has no need
+   * of one, and shrinks the mark to fit a chip it is not asking for.
+   *
+   * It is a separate flag from `setNameInType` because they are separate facts.
+   * Both happen to be true of the one mark here, and a lockup with its own dark
+   * ground would want this and not that.
+   */
+  markHasOwnGround?: boolean;
+};
+
+export const partners = {
+  label: "Community partners",
+  headline: "The AI communities this program partners with",
+  /* The sentence that turns the two lines below from assertions into quotations.
+     It is doing real work and it is not decoration — see the note above. */
+  intro: "Two independent organisations, each described in its own words.",
+  /* Roan's order, as he listed them. Two entries have no order worth deriving
+     and any other one would be this site ranking two partners against each
+     other, which is a judgement nobody asked it to publish. */
+  items: [
+    {
+      id: "multimodal-society",
+      name: "The Multimodal Society",
+      href: "https://www.multimodalsociety.com/",
+      blurb:
+        "A community of creatives and engineers building the AI era together. Masterclasses, hackathons and screening nights in San Francisco.",
+      /* Their mark carries no name, so the name is set in type beside it, which
+         is what their own header does. `setNameInType` is the switch, and `alt` is
+         empty because the name is right there in text. */
+      logo: { src: "/images/logos/multimodal-society.png", alt: "" },
+      setNameInType: true,
+      markHasOwnGround: true,
+    },
+    {
+      id: "ai-collective",
+      name: "The AI Collective",
+      href: "https://www.aicollective.com/",
+      blurb:
+        "The world's largest AI community, uniting 250K+ pioneers across 100+ global chapters.",
+      /* The lockup reads the organisation's name, so it carries it as `alt` and
+         nothing is set beside it. */
+      logo: { src: "/images/logos/ai-collective.png", alt: "The AI Collective" },
+    },
+  ] as readonly Partner[],
+} as const;
+
+/*
   Ordered for a sceptic. Cost first, then the question a free offer with a
   signup form always raises, then the mechanic, then the two questions that
   decide whether a reader can actually start: the account ask and the access
@@ -2080,6 +2281,13 @@ export const footer = {
         /* The page, not the homepage band. The band is a six-card teaser with a
            link to this; the footer is a sitemap, and a sitemap points at routes. */
         { label: "Practitioner Review Judge Board", href: "/review-judge-board" },
+        /* The band, because there is no route. Added 9 Aug with the partner
+           section, and it goes here rather than in the header: the nav note at
+           `nav` above measured that row down to 40px of clear air at 1024 and
+           said the next label added to it has to be measured first. A footer has
+           no such budget, and a reader who wants to know who a program runs with
+           looks in the sitemap. */
+        { label: "Community partners", href: "/#partners" },
       ],
     },
   ],

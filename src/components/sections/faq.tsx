@@ -94,12 +94,20 @@ export function Faq() {
     instructors and teams above it, and dropping that would trade one
     three-band run for another.
 
-    No `hairlineTop`: the tinted band above draws its own bottom rule, and
-    asking for one here stacks two into a 2px line. Closing, which now follows a
-    white band, takes the hairline instead.
+    `hairlineTop`, ADDED 9 AUG, and it is the same chain one link longer. The
+    tinted board is no longer the band above: the community partners went in
+    between the two, on white, because the board's tint forbids a tint beside
+    it. So the rule this section used to inherit from a tinted neighbour is not
+    drawn any more, and without one the FAQ and the partner band above it run
+    together as one undivided white field.
+
+    The reason it had none until now still stands and is the reason it is worth
+    writing twice: a tinted band draws its own bottom rule, so asking for a
+    hairline under one stacks two into a 2px line. Partners takes none for
+    exactly that reason. This one takes one for the opposite one.
   */
   return (
-    <Section id="faq">
+    <Section id="faq" hairlineTop>
       <SectionHeader label="Questions" heading="Common questions" />
 
       <div className="max-w-[900px]">

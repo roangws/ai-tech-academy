@@ -40,12 +40,49 @@ const LOGOS = [
   // The app icon is square and its dark ground is part of the mark, so it is
   // resized but never trimmed: trimming would eat the rounded corners.
   { src: `${HOME}/Downloads/n_aaible_logo.jpeg`, out: "n-aible.png", keepBox: true },
+
+  /*
+    The two community partners, added 9 Aug.
+
+    Both break the 36px rule above, and it is the same break for two different
+    reasons: neither is only a roster mark any more. The partner band renders a
+    lockup at 26px and a square mark at 44, on cards that are 600px wide, so a
+    36px-tall source is under-resolution at 1x and visibly soft at 2x. They ship
+    at a height that serves the largest place each one is drawn.
+
+    The AI Collective's file is also the one on Liz Zhang's board card, which
+    still asks for 18px. Downscaling is free and upscaling is not, so one
+    high-resolution file serves both.
+  */
+  {
+    src: `${HOME}/Downloads/692db3b0a2a851c307e344f2_AI Collective Logo with words (transparent).png`,
+    out: "ai-collective.png",
+    height: 120,
+  },
+  /*
+    Fetched from their own site rather than a download, because that is where
+    they publish it: https://www.multimodalsociety.com/assets/logo.png, the file
+    their own header renders at 64px. Square, black-grounded, and `keepBox` for
+    the same reason n-aible is.
+  */
+  {
+    src: "https://www.multimodalsociety.com/assets/logo.png",
+    out: "multimodal-society.png",
+    keepBox: true,
+    height: 256,
+  },
 ];
 
 await mkdir(OUT, { recursive: true });
 
-for (const { src, out, density, keepBox } of LOGOS) {
-  let img = sharp(src, density ? { density } : undefined);
+for (const { src, out, density, keepBox, height = HEIGHT } of LOGOS) {
+  /* A published URL is as valid a source as a download, and fetching it keeps
+     the provenance in this file instead of in somebody's Downloads folder. */
+  const input = src.startsWith("https://")
+    ? Buffer.from(await (await fetch(src)).arrayBuffer())
+    : src;
+
+  let img = sharp(input, density ? { density } : undefined);
 
   if (!keepBox) {
     // Trim whatever the file uses as its own background, transparent or white.
@@ -53,11 +90,13 @@ for (const { src, out, density, keepBox } of LOGOS) {
   }
 
   const buf = await img
-    .resize({ height: HEIGHT, fit: "inside", withoutEnlargement: false })
+    .resize({ height, fit: "inside", withoutEnlargement: false })
     .png({ compressionLevel: 9 })
     .toBuffer();
 
   await sharp(buf).toFile(join(OUT, out));
-  const { width, height } = await sharp(join(OUT, out)).metadata();
-  console.log(`${out.padEnd(16)} ${width}x${height}`);
+  /* Not `{ width, height }`: `height` is the loop's own binding above, and
+     destructuring it here is a TDZ error rather than a shadow. */
+  const written = await sharp(join(OUT, out)).metadata();
+  console.log(`${out.padEnd(20)} ${written.width}x${written.height}`);
 }
