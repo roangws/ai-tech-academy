@@ -10,6 +10,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
 import { EnrollButton, TextAction } from "@/components/ui";
+import { TrustSeal } from "@/components/trust-seal";
 import { moduleFormat, type Course } from "@/lib/content";
 
 /**
@@ -117,6 +118,14 @@ export function EnrollRail({ course }: { course: Course }) {
               href={`/courses/${course.slug}/start`}
               className="w-full"
             />
+          </div>
+
+          {/* The trustmark, directly under the enrol control, which is the slot the
+              reference card spends on a payment-method row. It is the one place on this
+              page a reader is deciding whether to trust the site rather than the
+              course. trust-seal.tsx has the note. */}
+          <div className="mt-3 flex justify-center">
+            <TrustSeal />
           </div>
 
           {/* The account, offered second and as a reason rather than as a gate.

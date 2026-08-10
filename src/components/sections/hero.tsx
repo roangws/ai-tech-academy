@@ -2,6 +2,7 @@ import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-ic
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
 import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
+import { TrustSeal } from "@/components/trust-seal";
 import { cta, hero } from "@/lib/content";
 import { getInstructors } from "@/lib/roster";
 import { getCatalog } from "@/lib/catalog";
@@ -125,6 +126,13 @@ export async function Hero() {
               <ArrowRightIcon size={14} weight="bold" />
             </TextAction>
           </div>
+
+          {/* The trustmark, next to the control it exists to support, which is where
+              Roan asked for it. Its own row rather than a third item in the row above:
+              at 92px it is wider than the text action beside the button and would push
+              "See how the course works" onto a second line at md. trust-seal.tsx has
+              the note on why this is their asset rather than their div. */}
+          <TrustSeal className="mt-4" />
 
           {/*
             The byline, as a facepile, with the faces after the words.
