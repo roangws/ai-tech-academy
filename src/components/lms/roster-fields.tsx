@@ -146,7 +146,7 @@ export function ImageField({
             name={pathName}
             value={kept ?? ""}
             onChange={(e) => setKept(e.target.value)}
-            placeholder="/images/people/name.jpg — or upload above"
+            placeholder="/images/people/name.jpg, or upload above"
             className="t-meta mt-1.5 h-8 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-2.5 font-mono text-ink-muted transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
           />
 

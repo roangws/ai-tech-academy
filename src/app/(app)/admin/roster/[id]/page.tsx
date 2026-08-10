@@ -124,7 +124,7 @@ export default async function AdminRosterEntry({
             </Field>
             <Field
               label="Role"
-              hint="Their own headline, verbatim. Never a title written here — a job description under a real person's photograph is a claim about their employment."
+              hint="Their own headline, verbatim. Never a title written here: a job description under a real person's photograph is a claim about their employment."
             >
               <Text name="role" defaultValue={entry.role} placeholder="Staff AI engineer" />
             </Field>
@@ -146,7 +146,7 @@ export default async function AdminRosterEntry({
               <Field
                 label="Summary"
                 className="sm:col-span-2"
-                hint="Shown on the card's hover face. Assembled from their own profile and nothing else — no assessment of them, no adjective they did not write."
+                hint="Shown on the card's hover face. Assembled from their own profile and nothing else: no assessment of them, no adjective they did not write."
               >
                 <Area name="summary" defaultValue={entry.summary} rows={3} />
               </Field>
@@ -206,7 +206,7 @@ export default async function AdminRosterEntry({
               <Field
                 label="Wordmark"
                 className="sm:col-span-2"
-                hint="For an employer that publishes no logo file at all — their name set in type, rather than a mark invented for them."
+                hint="For an employer that publishes no logo file at all. Their name set in type, rather than a mark invented for them."
               >
                 <Text name="wordmark" defaultValue={entry.wordmark} placeholder="a1mobile" />
               </Field>
@@ -249,7 +249,7 @@ export default async function AdminRosterEntry({
         </h2>
         <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
           Optional, and it grants nothing. Linking says the person on the website and the person
-          with this account are the same human being — it is what lets their console know which
+          with this account are the same human being, which is what lets their console know which
           card is theirs. Roles are granted on{" "}
           <Link href="/admin/people" className="text-accent no-underline hover:underline">
             People
@@ -333,7 +333,7 @@ export default async function AdminRosterEntry({
       {!isJudge && !entry.lead ? (
         <form action={setRosterLead} className="mt-6">
           <input type="hidden" name="id" value={entry.id} />
-          <Quiet title="Make this the lead instructor — the wide card, first on the roster">
+          <Quiet title="Make this the lead instructor: the wide card, first on the roster">
             <StarIcon size={13} aria-hidden="true" />
             Make this the lead instructor
           </Quiet>

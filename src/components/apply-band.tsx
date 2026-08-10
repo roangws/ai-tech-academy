@@ -148,7 +148,7 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
           id={stepsId}
           label="How to apply"
           heading="Create an account, fill in the form, send it"
-          intro="About fifteen minutes in total, and you do not have to do it in one sitting — every field saves as you type, and nothing reaches anyone until you press send. The advisory board reads every application that arrives."
+          intro="About fifteen minutes in total, and you do not have to do it in one sitting. Every field saves as you type, and nothing reaches anyone until you press send. The advisory board reads every application that arrives."
         />
 
         {/*

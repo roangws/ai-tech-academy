@@ -190,7 +190,11 @@ export async function listCertifications(): Promise<AdminCertification[]> {
       name: [p?.first_name, p?.last_name].filter(Boolean).join(" ") || p?.email || "Deleted account",
       email: p?.email ?? null,
       courseTitle: course.get(r.course_id)?.title ?? r.course_id,
-      courseBadge: course.get(r.course_id)?.badge ?? "—",
+      /* "Course gone" rather than a dash. The row survives a deleted course the
+         way it survives a deleted account, and the line above already made that
+         choice for the name; a bare glyph in the badge column reads as a
+         rendering fault instead of a fact. */
+      courseBadge: course.get(r.course_id)?.badge ?? "Course gone",
     };
   });
 }

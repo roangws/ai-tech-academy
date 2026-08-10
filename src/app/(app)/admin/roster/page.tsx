@@ -66,8 +66,8 @@ export default async function AdminRoster() {
     <>
       <h1 className="t-h2 text-ink">Instructors and judges</h1>
       <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
-        The two rosters the website shows. A new entry starts as a draft — invisible on
-        /instructors and /review-judge-board — so a card can be written before anyone sees it.
+        The two rosters the website shows. A new entry starts as a draft, invisible on
+        /instructors and /review-judge-board, so a card can be written before anyone sees it.
         Linking an account is separate from granting a role.
       </p>
 

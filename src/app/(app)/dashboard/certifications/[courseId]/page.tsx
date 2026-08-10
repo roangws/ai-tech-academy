@@ -90,7 +90,7 @@ export default async function CertificatePage({
           <SealCheckIcon size={16} weight="fill" aria-hidden="true" className="text-accent" />
           <span>
             <strong className="font-medium text-ink">This is yours.</strong> It is saved to your
-            account — come back to it any time from Certifications.
+            account, so come back to it any time from Certifications.
           </span>
         </p>
       ) : null}

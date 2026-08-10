@@ -165,7 +165,7 @@ export async function createRosterEntry(
   const id = text(formData, "id", 60) ?? slugify(name);
   if (!id) {
     return {
-      error: "That name produced no id. Type one by hand — lowercase letters, numbers and hyphens.",
+      error: "That name produced no id. Type one by hand, using lowercase letters, numbers and hyphens.",
     };
   }
 
@@ -317,7 +317,7 @@ export async function setRosterStatus(_prev: FormState, formData: FormData): Pro
     if (!row?.photo_src) {
       return {
         error:
-          "This card has no portrait yet. Add one above and save, then publish — an empty frame on the roster reads as a broken page.",
+          "This card has no portrait yet. Add one above and save, then publish. An empty frame on the roster reads as a broken page.",
       };
     }
   }
