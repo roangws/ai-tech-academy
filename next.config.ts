@@ -37,11 +37,29 @@ const LEGACY_COURSE_IDS: readonly (readonly [string, string])[] = [
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return LEGACY_COURSE_IDS.map(([id, slug]) => ({
-      source: `/courses/${id}`,
-      destination: `/courses/${slug}`,
-      permanent: true,
-    }));
+    return [
+      ...LEGACY_COURSE_IDS.map(([id, slug]) => ({
+        source: `/courses/${id}`,
+        destination: `/courses/${slug}`,
+        permanent: true,
+      })),
+      /*
+        /admin/seats became /admin/judging on 9 Aug.
+
+        The old page showed one of the three things being a judge is made of and
+        called that "Judge seats", which is why Roan read it as confusing — the
+        page's own name was a description of the fragment it showed. The new
+        route carries all three; the note at the head of that file has the
+        reasoning.
+
+        `permanent: false`, and it is the one entry here that is. The list above
+        is public URLs that were once indexed and must transfer their signals;
+        this is an admin route that nothing outside the console links to and
+        that is `robots: noindex` anyway. A 307 keeps a bookmark working without
+        asking a browser to cache the rule forever.
+      */
+      { source: "/admin/seats", destination: "/admin/judging", permanent: false },
+    ];
   },
 
   // The dev overlay badge sits on top of the closing CTA in review captures.

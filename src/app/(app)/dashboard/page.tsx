@@ -139,9 +139,29 @@ export default async function DashboardPage() {
             list under it.
           */}
           <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[300px]">
+            {/*
+              The picture is the way in, like every other course picture on the
+              site now. It was inert here — a 50%-wide photograph of the one
+              course this learner is actually doing, on the one card the whole
+              page is built around, that did nothing when pressed.
+
+              A `<Link>` rather than a div with a stretched child: this box has
+              nothing else in it, so the link can simply be the box. It goes
+              where the primary control beside it goes, so a reader who presses
+              the picture and a reader who presses "Continue" land in the same
+              lesson.
+
+              `aria-hidden` and out of the tab order for the same reason as the
+              catalog covers: "Continue" is two inches away with a better name.
+            */}
+            <Link
+              href={`/courses/${current.course.slug}/start`}
+              aria-hidden="true"
+              tabIndex={-1}
+              className="relative block aspect-[16/10] lg:aspect-auto lg:min-h-[300px]"
+            >
               <CoursePhoto course={current.course} sizes="(min-width: 1024px) 50vw, 100vw" priority />
-            </div>
+            </Link>
 
             <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
               <div className="flex flex-wrap items-center gap-3">
@@ -163,11 +183,27 @@ export default async function DashboardPage() {
               ) : null}
 
               <div className="mt-5">
+                {/*
+                  THROUGH `/start`, not at a lesson URL computed here.
+
+                  This was `current.resume?.href ?? /learn/<slug>`, which is the
+                  enrolment's `last_lesson_id` — the lesson that was last TICKED.
+                  Straight after finishing one, that pointer names the lesson
+                  just completed, so the card's primary control sent a learner
+                  backwards; and once the pointer is skipped for being finished
+                  (see `getDashboard`), the fallback is the module list, which is
+                  two more clicks than "continue" should ever be.
+
+                  `/courses/<slug>/start` is the one place that resolves where a
+                  reader belongs: the pointer if it is live, otherwise the front
+                  of the unread part. One resolver, so this card and the course
+                  page's own control cannot disagree about what "resume" means.
+                */}
                 <Link
-                  href={current.resume?.href ?? `/learn/${current.course.slug}`}
+                  href={`/courses/${current.course.slug}/start`}
                   className="t-button inline-flex min-h-[48px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-6 text-on-accent no-underline transition-colors hover:bg-accent-hover"
                 >
-                  {current.resume ? "Continue" : "Open course"}
+                  {current.done > 0 ? "Continue" : "Start the course"}
                   <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
                 </Link>
                 <Link
@@ -276,8 +312,9 @@ export default async function DashboardPage() {
 
             return (
               <li key={course.id}>
+                {/* The same resolver as the card above, for the same reason. */}
                 <Link
-                  href={row?.resume?.href ?? `/learn/${course.slug}`}
+                  href={`/courses/${course.slug}/start`}
                   className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
                 >
                   <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">

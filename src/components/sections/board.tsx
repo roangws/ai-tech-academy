@@ -2,6 +2,7 @@ import { BoardCard } from "@/components/board-card";
 import { CarouselRail } from "@/components/carousel-rail";
 import { Section, SectionHeader, TextAction } from "@/components/ui";
 import { board } from "@/lib/content";
+import { getJudges } from "@/lib/roster";
 
 /**
  * The review judge board, as a controlled carousel of portrait cards.
@@ -37,7 +38,13 @@ import { board } from "@/lib/content";
 const CARD_FRAME =
   "flex h-[300px] w-[82vw] max-w-[320px] shrink-0 snap-start sm:h-[340px] sm:w-[240px]";
 
-export function Board() {
+export async function Board() {
+  /* The judges are rows now, not a literal. See the note in
+     sections/instructors.tsx — same move, same reasoning, and `BoardCard` still
+     takes the same `Seat`. `board` here is the headline and the intro only. */
+  const members = await getJudges();
+  if (!members.length) return null;
+
   return (
     <Section id="board" tint>
       <SectionHeader
@@ -49,7 +56,7 @@ export function Board() {
            a number in prose is a number that goes stale. */
         action={
           <TextAction href="/review-judge-board">
-            {`All ${board.members.length} judges`}
+            {`All ${members.length} judges`}
           </TextAction>
         }
       />
@@ -68,9 +75,9 @@ export function Board() {
         simply be `inert`.
       */}
       <CarouselRail
-        count={board.members.length}
+        count={members.length}
         label="The judges on the Review Judge board"
-        clone={board.members.map((m) => (
+        clone={members.map((m) => (
           <li key={m.id} className={CARD_FRAME}>
             <BoardCard
               member={m}
@@ -81,7 +88,7 @@ export function Board() {
           </li>
         ))}
       >
-        {board.members.map((m) => (
+        {members.map((m) => (
           <li key={m.id} className={CARD_FRAME}>
             <BoardCard
               member={m}

@@ -83,6 +83,8 @@ export function Logo({
   descriptor = false,
   tone = "light",
   compact = false,
+  href = "/",
+  label,
 }: {
   size?: number;
   descriptor?: boolean;
@@ -102,14 +104,29 @@ export function Logo({
    * never disagree. content.ts has the note.
    */
   compact?: boolean;
+  /**
+   * Where the lockup goes. `/` on the marketing site; `/dashboard` inside the
+   * signed-in product.
+   *
+   * It was hardcoded to `/`, which made the most-clicked target in the app
+   * chrome an exit. A learner in the middle of a course pressed the mark
+   * expecting the top of the product — the thing every other application on
+   * earth does — and left it for the sales page. The two surfaces have two
+   * homes and the component now has to be told which one it is in.
+   *
+   * `label` travels with it, because "AI Tech Education Academy, home" is a lie
+   * on a header whose home is the dashboard.
+   */
+  href?: string;
+  label?: string;
 }) {
   const onDark = tone === "dark";
 
   return (
     <Link
-      href="/"
+      href={href}
       className="group flex flex-none items-center gap-2.5 no-underline"
-      aria-label={`${brand.name}, home`}
+      aria-label={label ?? `${brand.name}, home`}
     >
       {size >= 24 ? (
         <Crest size={size} ring={onDark ? DARK_GROUND : "#FFFFFF"} />

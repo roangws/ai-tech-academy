@@ -34,7 +34,31 @@ import { ChecklistBlock } from "./checklist";
  * opens with a video, explains, plays the episode, then asks a question, is
  * exactly the row order in the table.
  */
-export async function LessonBlocks({ blocks }: { blocks: readonly LessonBlock[] }) {
+export async function LessonBlocks({
+  blocks,
+  /**
+   * The course's own cover, used as the poster for any video block that has not
+   * been given one.
+   *
+   * `payload.poster` is optional and unset on every block seeded so far, so
+   * `publicMediaUrl("")` returned null and the facade drew a flat charcoal
+   * rectangle with a play button on it — no picture, and therefore nothing for
+   * its own hover treatment to act on. That is what Roan reported on
+   * /learn/applied-ai-for-gtm-teams/01/map-your-customer-journey-end-to-end:
+   * "the hover of the image is totally wrong, doesn't work on the thumbnail."
+   * The hover was fine; there was no image under it.
+   *
+   * The cover rather than `i.ytimg.com`, for the reason the facade exists at
+   * all: youtube.tsx refuses to touch Google's CDN before somebody presses play,
+   * and pulling the thumbnail from it would undo the privacy win with the very
+   * picture that advertises it. `course/preview.tsx` makes the same substitution
+   * on the marketing page.
+   */
+  coverSrc = null,
+}: {
+  blocks: readonly LessonBlock[];
+  coverSrc?: string | null;
+}) {
   const docPaths = blocks.flatMap((b) => (b.kind === "doc" ? [b.payload.path] : []));
   const signed = await signDocUrls(docPaths);
 
@@ -55,7 +79,7 @@ export async function LessonBlocks({ blocks }: { blocks: readonly LessonBlock[] 
                 key={block.id}
                 id={block.payload.youtube_id}
                 title={block.title ?? "Lesson video"}
-                poster={publicMediaUrl(block.payload.poster ?? "")}
+                poster={publicMediaUrl(block.payload.poster ?? "") ?? coverSrc}
               />
             );
 

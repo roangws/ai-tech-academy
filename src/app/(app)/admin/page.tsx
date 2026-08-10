@@ -68,7 +68,7 @@ export default async function AdminOverview() {
     {
       label: "Sheets awaiting a score",
       value: sheetsAwaiting,
-      href: "/admin/seats",
+      href: "/admin/judging",
       note: unboundSeats ? `${unboundSeats} of 6 seats unbound` : "all seats bound",
     },
     {

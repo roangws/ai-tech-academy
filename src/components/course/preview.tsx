@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { YouTubeBlock } from "@/components/lms/blocks/youtube";
+import { ButtonLink } from "@/components/ui";
 import { publicMediaUrl } from "@/lib/lms/media";
 import { createClient } from "@/lib/supabase/server";
-import type { Course } from "@/lib/content";
+import { cta, type Course } from "@/lib/content";
 
 /**
  * The first lesson's video, on the public course page.
@@ -50,49 +50,58 @@ export async function CoursePreview({ course }: { course: Course }) {
 
   if (!row?.payload?.youtube_id) return null;
 
-  const lessonHref = `/learn/${course.slug}/${row.lessons.modules.n}/${row.lessons.slug}`;
-
   return (
-    <section aria-labelledby="preview-heading" className="mt-12">
-      <h2 id="preview-heading" className="t-h3 text-ink">
-        Watch the first lesson
-      </h2>
-      <p className="t-body-sm mt-1.5 max-w-[62ch] text-ink-secondary">
-        Module 1 is open to everyone. No account, no card, nothing to cancel.
-      </p>
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <YouTubeBlock
+        id={row.payload.youtube_id}
+        title={row.title ?? `${course.title}, lesson 1`}
+        /*
+          THE POSTER FALLS BACK TO THE COURSE'S OWN COVER, and without that this
+          player rendered as a flat charcoal rectangle with a play button on it.
 
-      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <YouTubeBlock
-          id={row.payload.youtube_id}
-          title={row.title ?? `${course.title}, lesson 1`}
-          poster={publicMediaUrl(row.payload.poster ?? "")}
-        />
+          `payload.poster` is optional and unset on every block seeded so far, so
+          `publicMediaUrl("")` returned null and the facade drew no image at all —
+          which is what Roan photographed and called a missing thumbnail. The old
+          reading of "no poster gets a plain ground" was written for a lesson page
+          where the surrounding chrome already says which course you are in. On a
+          marketing page it is a hole.
 
-        <div className="rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-5">
-          <p className="t-card-title text-ink">Start module 1 now</p>
-          <p className="t-body-sm mt-2 text-ink-secondary">
-            Four lessons, one lab, and you finish holding a baseline you measured yourself. It is
-            the same course whether or not you ever make an account.
-          </p>
-          {/*
-            The one control this section exists for, and it goes to the LESSON
-            rather than to sign-up. The whole argument of the free first module is
-            that somebody can start without deciding anything, and a call to
-            action that opens an account form instead is the offer withdrawn at
-            the moment it is accepted.
-          */}
-          <Link
-            href={lessonHref}
-            className="t-button mt-5 inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
-          >
-            Start lesson 1
-            <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-          </Link>
-          <p className="t-meta mt-3 text-center text-ink-muted">
-            An account keeps your progress and opens modules 2 to 8.
-          </p>
-        </div>
+          The cover is the right thing to fall back to rather than YouTube's
+          `i.ytimg.com` frame: the whole reason this player is a facade is to make
+          no request to Google before somebody presses play, and pulling the
+          thumbnail from Google's CDN would undo that with the picture that
+          advertises it. The cover is already on this page, already ours, and
+          already the image this reader associates with the course.
+        */
+        poster={publicMediaUrl(row.payload.poster ?? "") ?? course.cover?.src ?? null}
+      />
+
+      <div className="rounded-[var(--radius-feature)] border border-line bg-surface p-5">
+        <p className="t-card-title text-ink">Start module 1 now</p>
+        <p className="t-body-sm mt-2 text-ink-secondary">
+          Open to everyone. No account, no card, nothing to cancel.
+        </p>
+        {/*
+          `ButtonLink`, not a hand-rolled class string — and that is the whole of
+          what was wrong with this control. It carried its own `min-h-[48px]`,
+          its own padding and its own hover, which is how it ended up a different
+          height and a different radius from the rail's primary 200px above it.
+          Two filled accent buttons on one page disagreeing about their own shape
+          reads as two pages.
+
+          It also goes through `/start` now rather than at a lesson URL computed
+          here. Same destination for a signed-out reader; for a signed-in one it
+          enrols them and resumes where they were, which a hardcoded "lesson 1"
+          link cannot do. One control, one behaviour, wherever it appears.
+        */}
+        <ButtonLink href={`/courses/${course.slug}/start`} className="mt-5 w-full">
+          {cta.start}
+          <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+        </ButtonLink>
+        <p className="t-meta mt-3 text-center text-ink-muted">
+          An account keeps your progress and opens the rest.
+        </p>
       </div>
-    </section>
+    </div>
   );
 }

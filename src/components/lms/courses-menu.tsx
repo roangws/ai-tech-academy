@@ -57,12 +57,18 @@ export function CoursesMenu({
     shows courses created in the console without this file knowing they exist.
   */
   courses,
+  onMouseEnter,
+  onFocus,
+  onBlur,
 }: {
   href: string;
   label: string;
   current?: boolean;
   className?: string;
   courses: readonly Pick<Course, "id" | "slug" | "title" | "badge" | "level" | "duration">[];
+  onMouseEnter?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const openedByHover = useRef(false);
@@ -83,27 +89,54 @@ export function CoursesMenu({
   }, [open]);
 
   return (
+    /*
+      `data-nav` IS ON THIS DIV, and it used to be on the `<Link>` inside it.
+
+      Two things were wrong with that and they are the same mistake seen from two
+      sides. The travelling pill in site-header.tsx measures the element carrying
+      `data-nav`, so it measured the label alone: the caret — which is part of this
+      control, not a decoration beside it — sat outside the lozenge, which is what
+      Roan photographed. And `offsetLeft` is read against the nearest positioned
+      ancestor, which for the old target was THIS `relative` div rather than the
+      nav, so the number the pill was placed at was ~0. Courses is the first item,
+      so a pill parked at the left edge of the nav happened to land near the right
+      place and the bug stayed invisible.
+
+      Moving the attribute up one level fixes both at once: the div is a direct
+      child of the positioned nav, so `offsetLeft` is measured against the row, and
+      its width is the label plus the caret, so the pill covers the whole control.
+    */
     <div
+      data-nav={href}
       className={cn("relative", className)}
       onMouseEnter={() => {
         setOpen(true);
         openedByHover.current = true;
+        onMouseEnter?.();
       }}
       onMouseLeave={() => {
         setOpen(false);
         openedByHover.current = false;
       }}
+      onFocus={onFocus}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setOpen(false);
+          onBlur?.();
+        }
       }}
     >
-      <span className="flex items-center">
+      {/* The label and the caret read as one control, so the padding that shapes
+          the pill lives here and the two children carry none of their own on the
+          outer edges. `pr-2` against `pl-2` looks lopsided written down and is
+          correct on screen: the caret is 12px of ink inside a 20px box, so the
+          optical gap on the right is already wider than the number says. */}
+      <span className="flex items-center gap-0.5 rounded-full py-2 pl-2 pr-2 xl:pl-3.5 xl:pr-3">
         <Link
           href={href}
-          data-nav={href}
           aria-current={current ? "page" : undefined}
           className={cn(
-            "t-nav relative whitespace-nowrap rounded-full py-2 pl-2 pr-1 no-underline transition-colors xl:pl-3.5",
+            "t-nav relative whitespace-nowrap no-underline transition-colors",
             current ? "text-accent" : "text-ink-secondary hover:text-ink",
           )}
         >
@@ -123,7 +156,7 @@ export function CoursesMenu({
             setOpen((v) => !v);
           }}
           className={cn(
-            "mr-1 flex h-8 w-6 items-center justify-center rounded-full transition-colors xl:mr-2",
+            "flex size-5 items-center justify-center rounded-full transition-colors",
             current ? "text-accent" : "text-ink-muted hover:text-ink-secondary",
           )}
         >
@@ -147,13 +180,32 @@ export function CoursesMenu({
           className="w-[336px] overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e2"
         >
           <ul className="p-1">
-            {courses.map((course) => (
+            {courses.map((course) => {
+              /* The course being read is marked in the list it was picked from.
+                 Without it the menu is the only piece of chrome that cannot say
+                 where you are — you open it from a course page and five courses
+                 look identical. */
+              const here =
+                pathname === `/courses/${course.slug}` ||
+                pathname === `/learn/${course.slug}` ||
+                pathname.startsWith(`/learn/${course.slug}/`);
+
+              return (
               <li key={course.id}>
                 <Link
                   href={`/courses/${course.slug}`}
-                  className="group flex items-center gap-3 rounded-[var(--radius-control)] px-2.5 py-2 no-underline transition-colors hover:bg-surface-subtle"
+                  aria-current={here ? "page" : undefined}
+                  className={cn(
+                    "group flex items-center gap-3 rounded-[var(--radius-control)] px-2.5 py-2 no-underline transition-colors",
+                    here ? "bg-accent-tint" : "hover:bg-surface-subtle",
+                  )}
                 >
-                  <span className="grid size-8 flex-none place-items-center rounded-[var(--radius-control)] bg-surface-subtle text-accent transition-colors group-hover:bg-surface">
+                  <span
+                    className={cn(
+                      "grid size-8 flex-none place-items-center rounded-[var(--radius-control)] text-accent transition-colors",
+                      here ? "bg-surface" : "bg-surface-subtle group-hover:bg-surface",
+                    )}
+                  >
                     <CourseGlyph id={course.id} size={16} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -165,14 +217,22 @@ export function CoursesMenu({
                       A nav panel is scanned, not read: one line per course, with
                       the full title still on the card a click away.
                     */}
-                    <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
+                    <span
+                      className={cn(
+                        "t-body-sm block clamp-1",
+                        here ? "text-accent" : "text-ink",
+                      )}
+                    >
+                      {course.title}
+                    </span>
                     <span className="t-micro block text-ink-muted">
                       {course.level} · {course.duration}
                     </span>
                   </span>
                 </Link>
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           <div className="border-t border-line p-1">

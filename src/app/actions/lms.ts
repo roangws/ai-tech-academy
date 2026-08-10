@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireRole, requireUser, requireUserId } from "@/lib/auth";
+import { requireRole, requireUser } from "@/lib/auth";
 import { byId, bySlug, getMySeat } from "@/lib/lms/queries";
 
 /**
@@ -130,101 +130,23 @@ async function touchEnrollment(
 
 /* --------------------------------------------------------------- progress */
 
-/**
- * Tick or untick one lesson.
- *
- * Completion is a row that exists or does not, rather than a boolean column. It
- * makes "when" free, it makes the double-tick a no-op through the primary key,
- * and it means the table only ever holds facts.
- */
-export type ToggleState = { message: string } | null;
+/*
+  `toggleLesson` LIVED HERE AND IS GONE, 9 Aug.
 
-export async function toggleLesson(_prev: ToggleState, formData: FormData): Promise<ToggleState> {
-  const lessonId = formData.get("lessonId") as string;
-  const slug = formData.get("slug") as string;
-  const n = formData.get("n") as string;
-  const lessonSlug = formData.get("lessonSlug") as string;
-  const done = formData.get("done") === "true";
-  /* "advance" completes and opens what comes next; "stay" ticks and holds
-     still. The button the reader pressed decides, and an unrecognised value is
-     the safe one. */
-  const advance = formData.get("intent") === "advance";
-  const then = formData.get("then") as string | null;
+  It was a server action that ran the `toggle_lesson` RPC, revalidated four
+  paths and then `redirect`ed — every step of it in front of a reader who had
+  pressed "next". Measured on production that press cost between one and two
+  seconds, and Roan reported it as exactly that: too slow for a control whose
+  meaning is "I have finished this, move on".
 
-  const course = await bySlug(slug);
-  if (!course || !lessonId) return null;
+  The write and the navigation are independent, so they no longer queue. The
+  forward control is a `<Link>`, and the completion posts to
+  `/api/lesson-progress` in the background with `keepalive` so it lands whether
+  or not the reader stays. `components/lms/lesson-advance.tsx` has the full
+  reasoning and the history of the three designs before it.
 
-  /* `requireUserId`, not `requireUser`: this establishes that somebody is signed
-     in and redirects them to sign-in if not, and the fuller version costs a round
-     trip fetching a profile and a role list nothing here reads. The id itself is
-     not needed — the RPC below takes the caller from `auth.uid()`, so there is no
-     user id in this function to get wrong. */
-  await requireUserId(`/learn/${slug}/${n}/${lessonSlug}`);
-  const supabase = await createClient();
-
-  /*
-    One call, one transaction, and it does what four calls used to.
-
-    This was: upsert or delete the progress row, select the module id from
-    (course_id, n), upsert the enrolment, update the enrolment's resume pointer.
-    Four sequential round trips to us-west-1 from a function in iad1, which is
-    where most of the reported wait actually went.
-
-    `toggle_lesson` is SECURITY INVOKER, so every policy that governed those four
-    statements still governs them — see the migration. It also makes the set
-    atomic, which it never was: a failure between the progress write and the
-    enrolment left a learner completing lessons on a course they were not
-    enrolled on, and the dashboard renders that as "No courses started yet".
-
-    It is also where the lesson is checked to be in the module named by the URL.
-    `lessonId` arrives in a hidden field, so it is whatever the caller sends, and
-    the progress row would genuinely be theirs — RLS was never going to catch it.
-  */
-  const { error } = await supabase.rpc("toggle_lesson", {
-    p_lesson_id: lessonId,
-    p_course_id: course.id,
-    p_n: n,
-    p_done: done,
-  });
-  must(done ? "untick lesson" : "tick lesson", error);
-
-  /* The lesson itself, which was missing and is the page whose state just
-     changed. Then the module and the board, which show the counts.
-
-     Page, not "layout". A layout-scoped revalidation re-renders the whole learn
-     tree, which remounts the audio element — so ticking a lesson while an
-     episode plays would silence it. Nothing in the layout depends on this. */
-  revalidatePath(`/learn/${slug}/${n}/${lessonSlug}`);
-  revalidatePath(`/learn/${slug}/${n}`);
-  revalidatePath(`/learn/${slug}`);
-  revalidatePath("/dashboard");
-
-  /*
-    Advancing is one press again, and this time the destination says so.
-
-    The first version of this control was "Complete and continue": it marked the
-    lesson done and redirected in a single press, the write landed every time,
-    and it was reported as the button not working — because the page you arrive
-    on said nothing about the lesson you just finished. The fix then was to split
-    it into two presses, which cured the symptom by removing the navigation and
-    left the real defect in place: nothing ever acknowledged the completion.
-
-    So the two are joined back together and `?from=` carries the acknowledgement.
-    The destination names the lesson that was just finished and offers to undo
-    it, which is the thing that was missing both times.
-
-    `then` is validated against this module's own lessons by the caller before it
-    reaches here — see the lesson page — and defaults to the module.
-  */
-  if (advance) {
-    const target = then && then.startsWith(`/learn/${slug}/`) ? then : `/learn/${slug}/${n}`;
-    redirect(`${target}${target.includes("?") ? "&" : "?"}from=${encodeURIComponent(lessonSlug)}`);
-  }
-
-  /* Staying put still has to say something. The button flips optimistically on
-     the client, so this is the confirmation that the server agreed. */
-  return { message: done ? "Marked as not done." : "Done. Saved to your account." };
-}
+  The RPC is unchanged and so is every policy on it. Only the waiting moved.
+*/
 
 /* -------------------------------------------------------------- artifacts */
 

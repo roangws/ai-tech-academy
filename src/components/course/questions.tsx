@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRightIcon, CaretDownIcon, LinkedinLogoIcon } from "@phosphor-icons/react";
 import { AccordionItem, useDisclosureSet } from "@/components/ui/accordion";
 import { Panel, Section } from "@/components/ui";
-import { faqs, instructors } from "@/lib/content";
+import { faqs, type Person } from "@/lib/content";
 
 /**
  * Questions and the instructor, as one two-column dark panel.
@@ -57,11 +57,10 @@ import { faqs, instructors } from "@/lib/content";
  */
 const COURSE_QUESTIONS = [0, 2, 3, 4, 5, 6];
 
-export function Questions() {
+export function Questions({ lead }: { lead?: Person }) {
   const items = COURSE_QUESTIONS.map((i) => faqs[i]).filter(Boolean);
   const ids = items.map((_, i) => String(i));
   const { isOpen, toggle } = useDisclosureSet({ ids, mode: "single" });
-  const lead = instructors.people[0];
 
   return (
     <Section id="faq">
@@ -128,6 +127,7 @@ export function Questions() {
             instructor, which the FAQ answer on the site already states, and a link
             to the roster.
           */}
+          {lead ? (
           <div className="lg:border-l lg:border-white/10 lg:pl-14">
             <h2 className="t-h3 text-white">Instructor</h2>
 
@@ -214,6 +214,7 @@ export function Questions() {
               </Link>
             </div>
           </div>
+          ) : null}
         </div>
       </Panel>
     </Section>
