@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ClipboardTextIcon,
   FlaskIcon,
@@ -120,27 +119,28 @@ export function EnrollRail({ course }: { course: Course }) {
             />
           </div>
 
-          {/* The trustmark, directly under the enrol control, which is the slot the
-              reference card spends on a payment-method row. It is the one place on this
-              page a reader is deciding whether to trust the site rather than the
-              course. trust-seal.tsx has the note. */}
-          <div className="mt-3 flex justify-center">
+          {/*
+            "NO ACCOUNT NEEDED TO BEGIN. CREATE ONE TO SAVE YOUR PROGRESS." IS GONE,
+            removed 9 Aug on Roan's instruction.
+
+            It was the third statement of the access model inside one card, which is the
+            same count the note further down records for a line that was removed for it:
+            "Free" is the price, "Module 1 opens with no account" is directly under it,
+            and this said both again with a link in the middle. A card that qualifies its
+            own button twice reads as a card apologising for it.
+
+            Nothing is lost by way of a route. Creating an account is what the button
+            does for a reader who wants it, the header carries "Create account" on every
+            page, and the sign-up form still accepts this course's start URL as `next`
+            when it is reached from anywhere else.
+
+            The trustmark takes the slot, which is what Roan asked for and is a better
+            occupant: it is the one thing in this card that speaks to whether the site
+            can be trusted rather than restating what the course costs.
+          */}
+          <div className="mt-3.5 flex justify-center">
             <TrustSeal />
           </div>
-
-          {/* The account, offered second and as a reason rather than as a gate.
-              This is where "Enroll for free" belongs on this page: after the
-              reader has been told they do not need it. */}
-          <p className="t-meta mt-2.5 text-center text-ink-muted">
-            No account needed to begin.{" "}
-            <Link
-              href={`/sign-up?next=${encodeURIComponent(`/courses/${course.slug}/start`)}`}
-              className="text-accent no-underline hover:underline"
-            >
-              Create one
-            </Link>{" "}
-            to save your progress.
-          </p>
 
           {/*
             "or start module 1 without one" was here and is gone on Roan's

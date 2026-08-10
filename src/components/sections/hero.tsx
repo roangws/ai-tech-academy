@@ -116,8 +116,26 @@ export async function Hero() {
             })}
           </ul>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-1 md:mt-8">
+          {/*
+            ON THE ROW, IMMEDIATELY RIGHT OF THE BUTTON. Roan: "on home, the trust has
+            to be on the right side of the main cta."
+
+            It spent one pass on its own row below the button, on the argument that 92px
+            of badge would push "See how the course works" onto a second line at md.
+            That is true and it is the wrong trade: the badge only does its job while a
+            reader is looking at the control, and a row below it is a row they have
+            already scrolled past. The text action wrapping is what `flex-wrap` is for.
+
+            `gap-y-3`, up from `gap-y-1`. With three items the row genuinely wraps at
+            some widths, and 4px of vertical gap between two wrapped lines reads as a
+            mistake rather than as a second line.
+
+            ORDER IS BUTTON, BADGE, LINK. The badge sits against the control it vouches
+            for, and the secondary affordance goes after both rather than between them.
+          */}
+          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 md:mt-8">
             <EnrollButton withDate />
+            <TrustSeal />
             {/* `#method` since the merge: the module band and the method band
                 are one section now, and this link always meant the one that
                 answers "how does this work". */}
@@ -126,13 +144,6 @@ export async function Hero() {
               <ArrowRightIcon size={14} weight="bold" />
             </TextAction>
           </div>
-
-          {/* The trustmark, next to the control it exists to support, which is where
-              Roan asked for it. Its own row rather than a third item in the row above:
-              at 92px it is wider than the text action beside the button and would push
-              "See how the course works" onto a second line at md. trust-seal.tsx has
-              the note on why this is their asset rather than their div. */}
-          <TrustSeal className="mt-4" />
 
           {/*
             The byline, as a facepile, with the faces after the words.

@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import { TrustSeal } from "@/components/trust-seal";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpSteps } from "@/components/auth/sign-up-steps";
 import { auth } from "@/lib/content";
@@ -128,6 +129,27 @@ export function AuthScreen({
           ) : (
             <SignInForm next={next} confirmFailed={confirmFailed} />
           )}
+
+          {/*
+            The trustmark, under the form, added 9 Aug on Roan's instruction.
+
+            In the FORM column rather than in the panel beside it, because these are the
+            two screens where somebody types a password into this site and the badge
+            answers a question about the box they are typing into. In the panel it would
+            be decorating the argument for making an account instead.
+
+            On BOTH auth screens rather than only the one Roan named. He asked for
+            /sign-in; sign-up is the same shell, reached by the same readers, and it is
+            the screen where an email address actually changes hands. A badge on one and
+            not the other would read as an oversight on whichever a given person saw
+            second.
+
+            It also suppresses the corner badge on these two routes, which is what
+            `trustedsite-tm-float-disable` in the seal does everywhere it is mounted.
+          */}
+          <div className="mt-7 flex justify-center lg:justify-start">
+            <TrustSeal />
+          </div>
         </div>
 
         {/* ----------------------------------------------------------- panel */}
