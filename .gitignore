@@ -41,6 +41,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# dev-server output. `dev.log` was committed by accident and carried 48KB of
+# Turbopack chatter, including a local port and a file tree, in every clone.
+*.log
 next-env.d.ts
 
 # research/QA screenshots (not part of the shipped app)
