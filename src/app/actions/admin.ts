@@ -245,7 +245,7 @@ export async function saveBlock(_prev: FormState, formData: FormData): Promise<F
     for what genuinely belongs in it: a policy refusal, a dropped connection.
   */
   if (!lessonId) throw new Error("saveBlock: lessonId is required");
-  if (!key) return { error: "A key is required. It is how this block is addressed, so try something like “intro-video”." };
+  if (!key) return { error: "A key is required. It is how this block is addressed. Try “intro-video”." };
   if (!/^[a-z0-9-]+$/.test(key)) {
     return {
       error: `“${key}” cannot be a key. Use lowercase letters, numbers and hyphens only.`,

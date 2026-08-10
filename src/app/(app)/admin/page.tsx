@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Empty } from "@/components/lms/ui";
 import {
   getInsights,
-  getWeeks,
+  getMonths,
   listApplications,
   listLearners,
   listSeats,
@@ -28,16 +28,20 @@ export const metadata: Metadata = { title: "Admin", robots: { index: false, foll
  * you have to go and find.
  */
 export default async function AdminOverview() {
-  const [people, seats, learners, insights, weeks, applications] = await Promise.all([
+  const [people, seats, learners, insights, months, applications] = await Promise.all([
     listPeople(),
     listSeats(),
     listLearners(),
     getInsights(),
-    getWeeks(),
+    getMonths(),
     listApplications(),
   ]);
 
-  const newThisWeek = weeks.at(-1)?.signups ?? 0;
+  /* The current month's signups, and the tile below says "this month". It was
+     `weeks.at(-1)` against a weekly series; the series is monthly now and a label
+     saying "week" over a month's count is the kind of quiet wrongness an operations
+     screen must not have. */
+  const newThisMonth = months.at(-1)?.signups ?? 0;
 
   /* The course with the most people in it is the one whose drop-off is worth
      drawing. With nothing enrolled anywhere it falls back to the first, so the
@@ -45,41 +49,36 @@ export default async function AdminOverview() {
   const busiest = [...insights].sort((a, b) => b.enrolled - a.enrolled)[0] ?? insights[0];
 
   const unboundSeats = seats.filter((s) => !s.user_id).length;
-  const judges = people.filter((p) => p.roles.includes("judge")).length;
   const unassignedInstructors = people.filter(
     (p) => p.roles.includes("instructor") && p.courses.length === 0,
   ).length;
-  const sheetsAwaiting = insights.reduce((n, i) => n + (i.submittedSheets - i.scoredSheets), 0);
+  /* Who a judging event would actually reach. `issue_judge_event` fans out to
+     every holder of the role, so this is the number that decides whether issuing
+     one does anything at all. */
+  const judges = people.filter((p) => p.roles.includes("judge")).length;
 
   const tiles = [
     {
       label: "People",
       value: people.length,
       href: "/admin/people",
-      note: newThisWeek ? `${newThisWeek} new this week` : "none new this week",
+      note: `${newThisMonth} new this month`,
     },
     /*
-      "Judges to notify" replaced "Artifacts awaiting review", 9 Aug.
+      TWO TILES CAME OUT, 9 Aug. Roan, quoting them back: "1 / Artifacts awaiting
+      review / all assigned / 0 / Sheets awaiting a score / 5 of 6 seats unbound — i
+      dont want that info."
 
-      The old tile counted submitted artifacts, and the module hand-in that was
-      the only way to write one was removed the same day — so it was a number
-      that could only ever fall, over a queue nobody can join, pointing at a
-      console that no longer reviews anything. Judging events are what this
-      section of the product actually does now, and the useful operational fact
-      is whether there is anybody to issue one to.
+      They were queue depths presented as headline statistics, and a queue of one is
+      not a statistic. Worse, both spent their sub-line on a fact that only matters
+      when it is a problem: "all assigned" and "all seats bound" are four tiles' worth
+      of pixels saying nothing is wrong. When something IS wrong the "Needs a decision"
+      list below says so in a sentence, which is the screen that should own it, and
+      both numbers are one click away on the pages they linked to.
+
+      "5 of 6 seats unbound" also hardcoded the seat count, which is a row count.
+      Nothing left on this screen types a total by hand.
     */
-    {
-      label: "Judges who can be notified",
-      value: judges,
-      href: "/admin/events",
-      note: unboundSeats === 6 ? "no seat bound yet" : `${6 - unboundSeats} of 6 seats bound`,
-    },
-    {
-      label: "Sheets awaiting a score",
-      value: sheetsAwaiting,
-      href: "/admin/judging",
-      note: unboundSeats ? `${unboundSeats} of 6 seats unbound` : "all seats bound",
-    },
     {
       label: "Enrolments",
       value: learners.length,
@@ -92,11 +91,16 @@ export default async function AdminOverview() {
     What is actually wrong right now, in the order it costs the platform.
 
     An operations screen that only shows counts makes the reader do the
-    diagnosis. These are the three states that stop the product working at all,
-    and each one is invisible from a number: a course with nobody teaching it
-    silently swallows every artifact submitted to it, an unbound seat means
-    submitted sheets sit unread forever, and a course with nothing authored is
-    five modules of generated outline with a learner in them.
+    diagnosis. These are the states that stop the product working at all, and
+    each one is invisible from a number: an instructor with no course opens an
+    empty console, an unbound seat means submitted sheets sit unread forever, and
+    nobody holding the judge role means a judging event reaches no one.
+
+    THE TWO ARTIFACT LINES CAME OUT, 9 Aug. "Work submitted to them is unread"
+    and "N artifacts submitted with no instructor to read them" both described a
+    queue that can no longer be joined: the module hand-in was removed that day,
+    and the instructor review console with it. An operations screen naming a
+    problem nobody can cause is worse than one line shorter.
   */
   const blocking: string[] = [];
   if (unassignedInstructors > 0) {
@@ -104,14 +108,15 @@ export default async function AdminOverview() {
       `${unassignedInstructors} instructor${unassignedInstructors === 1 ? " has" : "s have"} no course, so nothing opens on their console`,
     );
   }
-  /* Both artifact lines are gone with the hand-in. "Work submitted to them is
-     unread" described a queue that can no longer be joined, and an operations
-     screen naming a problem nobody can cause is worse than one line shorter. */
   if (judges === 0) {
-    blocking.push("nobody holds the judge role, so a judging event would notify nobody");
+    blocking.push("Nobody holds the judge role, so a judging event would notify nobody");
   }
-  if (unboundSeats === 6) {
-    blocking.push("no judge seat is bound, so no outcome sheet can be scored");
+  /* Derived from the table rather than compared against a literal 6, which is what
+     this said and which would have gone quietly wrong the first time a seventh seat
+     was added or a sixth removed. Phrased forwards, per the copy rule: it names what
+     has to happen rather than what is absent. */
+  if (seats.length > 0 && unboundSeats === seats.length) {
+    blocking.push("Every judge seat still needs a person bound to it before a sheet can be scored");
   }
   /* An application waiting is the one item on this list that costs a person
      rather than the platform: somebody put their evidence and their phone number
@@ -172,7 +177,7 @@ export default async function AdminOverview() {
       <div className="mt-8 grid gap-4 xl:grid-cols-2">
         <BarChart
           caption="Who arrived, and who came back"
-          bars={weeks.map((w) => ({ label: w.label, value: w.signups, sub: w.active }))}
+          bars={months.map((m) => ({ label: m.label, value: m.signups, sub: m.active }))}
           unit=" signups"
         />
         {/* The busiest course, named. A funnel with no course on it is a funnel
@@ -187,11 +192,23 @@ export default async function AdminOverview() {
         />
       </div>
 
+      {/*
+        ONE LINE, from four. Roan: "too mych text."
+
+        It ran to four sentences, and three of them explained the schema: that there is
+        no session table, no page views, and that `lessons.minutes` is an editorial
+        estimate so a "time spent" figure would be meaningless. All true, all reasons
+        this chart shows what it shows rather than something better, and none of it is
+        something the reader of an operations screen needs at the moment they are
+        reading two bars. The argument belongs where the data is assembled, so it moved
+        into the docblock on `getMonths`.
+
+        What survives is the only sentence that helps somebody read the chart, which is
+        which bar is which.
+      */}
       <p className="t-meta mt-2 max-w-[70ch] text-ink-muted">
-        The solid bar is accounts created; the pale one behind it is people who completed at least
-        one lesson that week. There is no session table and no page views, so those two are the
-        only honest activity signals the schema has. `lessons.minutes` is an editorial
-        estimate, so any &ldquo;time spent&rdquo; figure would be a number with nothing behind it.
+        The solid bar is accounts created. The pale one behind it is people who finished at
+        least one lesson that month.
       </p>
 
       {/* ---------------------------------------------------------- per course */}

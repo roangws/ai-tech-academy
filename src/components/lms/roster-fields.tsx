@@ -137,18 +137,29 @@ export function ImageField({
             ) : null}
           </div>
 
-          {/* What is actually stored, and the escape hatch for the images that
-              genuinely live in the repository. Read-only-ish: it is here so an
-              author can see the value and paste a /public path, not so they have
-              to. An upload overwrites it on the server. */}
-          <input
-            type="text"
-            name={pathName}
-            value={kept ?? ""}
-            onChange={(e) => setKept(e.target.value)}
-            placeholder="/images/people/name.jpg, or upload above"
-            className="t-meta mt-1.5 h-8 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-2.5 font-mono text-ink-muted transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
-          />
+          {/*
+            HIDDEN, and it was a visible monospace text box until 9 Aug.
+
+            Roan, on the roster entry for Aaron Jimenez: "remove this field, only
+            upload /images/logos/n-aible.png."
+
+            It was there as an escape hatch for the marks that genuinely live in the
+            repository under /public, so an author could paste a path instead of
+            uploading a copy of a file the repo already has. In practice it showed a
+            path nobody needs to read, invited editing a value that has exactly one
+            correct form, and made a two-control field out of a one-control job. The
+            upload button is the whole interface now.
+
+            It stays in the DOM because it is LOAD-BEARING: it carries the existing
+            value on every save, and without it a save with no new file chosen would
+            submit nothing for this column and clear the image. `Remove` still works
+            the same way, by emptying this value rather than by a separate flag.
+
+            The paths already in the database are unaffected, and an author who needs
+            to set one by hand has the SQL editor. If it has to come back it should be
+            a disclosure rather than a field: the value is diagnostic, not editorial.
+          */}
+          <input type="hidden" name={pathName} value={kept ?? ""} />
 
           {hint ? <span className="t-meta mt-1 block text-ink-muted">{hint}</span> : null}
         </div>

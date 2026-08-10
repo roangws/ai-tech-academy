@@ -2,6 +2,7 @@ import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-ic
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
 import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
+import { TrustSeal } from "@/components/trust-seal";
 import { cta, hero } from "@/lib/content";
 import { getInstructors } from "@/lib/roster";
 import { getCatalog } from "@/lib/catalog";
@@ -115,8 +116,26 @@ export async function Hero() {
             })}
           </ul>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-1 md:mt-8">
+          {/*
+            ON THE ROW, IMMEDIATELY RIGHT OF THE BUTTON. Roan: "on home, the trust has
+            to be on the right side of the main cta."
+
+            It spent one pass on its own row below the button, on the argument that 92px
+            of badge would push "See how the course works" onto a second line at md.
+            That is true and it is the wrong trade: the badge only does its job while a
+            reader is looking at the control, and a row below it is a row they have
+            already scrolled past. The text action wrapping is what `flex-wrap` is for.
+
+            `gap-y-3`, up from `gap-y-1`. With three items the row genuinely wraps at
+            some widths, and 4px of vertical gap between two wrapped lines reads as a
+            mistake rather than as a second line.
+
+            ORDER IS BUTTON, BADGE, LINK. The badge sits against the control it vouches
+            for, and the secondary affordance goes after both rather than between them.
+          */}
+          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 md:mt-8">
             <EnrollButton withDate />
+            <TrustSeal />
             {/* `#method` since the merge: the module band and the method band
                 are one section now, and this link always meant the one that
                 answers "how does this work". */}

@@ -43,7 +43,9 @@ export const metadata: Metadata = {
  *   2. Needs you    at most four imperatives, each a link that resolves itself
  *   3. Results      judge scores — which existed in Postgres and were read by
  *                   nothing, so a learner could be scored and never told
- *   4. Your courses the old grid, demoted to what it is: a place to start another
+ *   4. Two shelves   the courses already begun, each with a progress bar, then the
+ *                   ones not started yet. One grid held both until 9 Aug and the
+ *                   only thing telling them apart was a line of grey text.
  *
  * No streaks. On a self-paced course measured in weeks, a streak mostly reports
  * failure, and the correct behaviour here includes spending two weeks waiting for
@@ -121,7 +123,28 @@ export default async function DashboardPage() {
   const actions = nextActions(enrolled);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
+  /*
+    TWO SHELVES, not one, split on 9 Aug at Roan's instruction: "you need to have a
+    difference between the one the student started, so the progress is through a bar
+    and very clear, and the others they can start later."
+
+    He is describing a real defect. Every course the reader had not finished sat in
+    one grid, and the only thing separating a course they were nine lessons into from
+    one they had never opened was a line of small grey text: "9 of 39 lessons" against
+    "Intermediate · 8 weeks". Two different kinds of fact in the same slot, in the same
+    colour, at the same size. A reader scanning for where they left off had to read
+    every row.
+
+    `started` is `done > 0` rather than "has an enrolment", and the difference matters:
+    pressing Enroll writes an enrolment row, so enrolment is not evidence of having
+    begun. A finished lesson is.
+
+    The `current` course is excluded from both, because it is already the card at the
+    top of the page.
+  */
   const rest = (await getCatalog()).filter((c) => c.id !== current?.course.id);
+  const restStarted = rest.filter((c) => (byCourseId.get(c.id)?.done ?? 0) > 0);
+  const restFresh = rest.filter((c) => (byCourseId.get(c.id)?.done ?? 0) === 0);
 
   return (
     <Container className="py-10 md:py-12">
@@ -304,55 +327,107 @@ export default async function DashboardPage() {
       ) : null}
 
       {/* ------------------------------------------------------- your courses */}
+      {/*
+        Two sections, because they answer two different questions: "where was I" and
+        "what else is there". One grid answering both is what Roan reported.
+      */}
+      {restStarted.length ? (
+        <section aria-labelledby="in-progress-heading" className="mt-10">
+          <h2 id="in-progress-heading" className="t-h3 text-ink">
+            Also in progress
+          </h2>
+          <p className="t-body-sm mt-1.5 text-ink-secondary">
+            Courses you have started. Every one opens at the lesson you stopped on.
+          </p>
+
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {restStarted.map((course) => {
+              const row = byCourseId.get(course.id);
+              const done = row?.done ?? 0;
+              const total = row?.total || totalLessons(course);
+
+              return (
+                <li key={course.id}>
+                  {/* The same resolver every forward control on the site uses. */}
+                  <Link
+                    href={`/courses/${course.slug}/start`}
+                    className="flex gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5 no-underline transition-colors hover:border-line-strong"
+                  >
+                    <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">
+                      <CoursePhoto course={course} sizes="56px" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
+                      {/*
+                        THE BAR IS THE POINT, and it is the one thing the old shelf did
+                        not have: `Meter` prints the count, the percentage and a filled
+                        track, so how far in somebody is takes no reading. It is the
+                        same component the module page and the course rail use, so a
+                        learner meets one progress bar everywhere rather than three.
+                      */}
+                      <Meter className="mt-2" done={done} total={total} />
+                    </span>
+                    <ArrowRightIcon
+                      size={14}
+                      weight="bold"
+                      aria-hidden="true"
+                      className="mt-1 flex-none text-ink-muted"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
       <section aria-labelledby="courses-heading" className="mt-10">
         <h2 id="courses-heading" className="t-h3 text-ink">
-          {current ? "The other courses" : "Every course, free"}
+          {current || restStarted.length ? "Start one of these next" : "Every course, free"}
         </h2>
+        <p className="t-body-sm mt-1.5 text-ink-secondary">
+          Not started yet. Module 1 of each is open, and none of them expire.
+        </p>
 
         {/*
             A shelf, not five more cards. Photographs at card size here competed
             with the course above them for the same attention, which is the thing
             this layout exists to stop.
+
+            No progress bar on these rows, deliberately: a track at 0% on five courses
+            is five reminders of nothing, and it is exactly what made the old single
+            grid unreadable. These carry the two facts a reader chooses on instead,
+            which are the level and the length.
         */}
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {rest.map((course) => {
-            const row = byCourseId.get(course.id);
-            const done = row?.done ?? 0;
-            const total = row?.total || totalLessons(course);
-            const isStarted = done > 0;
-
-            return (
-              <li key={course.id}>
-                {/* The same resolver as the card above, for the same reason. */}
-                <Link
-                  href={`/courses/${course.slug}/start`}
-                  className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
-                >
-                  <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">
-                    <CoursePhoto course={course} sizes="56px" />
+          {restFresh.map((course) => (
+            <li key={course.id}>
+              <Link
+                href={`/courses/${course.slug}/start`}
+                className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
+              >
+                <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">
+                  <CoursePhoto course={course} sizes="56px" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
+                  <span className="t-meta block text-ink-muted">
+                    {[course.level, course.duration].filter(Boolean).join(" · ")}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
-                    <span className="t-meta block text-ink-muted">
-                      {isStarted
-                        ? `${done} of ${total} lessons`
-                        : [course.level, course.duration].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                  <ArrowRightIcon
-                    size={14}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="flex-none text-ink-muted"
-                  />
-                </Link>
-              </li>
-            );
-          })}
+                </span>
+                <ArrowRightIcon
+                  size={14}
+                  weight="bold"
+                  aria-hidden="true"
+                  className="flex-none text-ink-muted"
+                />
+              </Link>
+            </li>
+          ))}
         </ul>
 
-        {rest.length === 0 ? (
-          <Empty title="You are in every course.">
+        {restFresh.length === 0 ? (
+          <Empty title="You have started every course.">
             Every course is open and none of them expire. Finish one, then pick the next.
           </Empty>
         ) : null}

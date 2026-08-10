@@ -8,11 +8,9 @@ import { GroundPicker, ImageField } from "@/components/lms/roster-fields";
 import { getRosterEntry } from "@/lib/roster";
 import { listPeople, listSeats } from "@/lib/lms/admin";
 import {
-  bindRosterUser,
   deleteRosterEntry,
   saveRosterEntry,
   setRosterLead,
-  setRosterSeat,
   setRosterStatus,
 } from "@/app/actions/roster";
 
@@ -124,7 +122,7 @@ export default async function AdminRosterEntry({
             </Field>
             <Field
               label="Role"
-              hint="Their own headline, verbatim. Never a title written here: a job description under a real person's photograph is a claim about their employment."
+              hint="Their own headline, verbatim. Never a title written here. A job description under a real person's photograph is a claim about their employment."
             >
               <Text name="role" defaultValue={entry.role} placeholder="Staff AI engineer" />
             </Field>
@@ -206,7 +204,7 @@ export default async function AdminRosterEntry({
               <Field
                 label="Wordmark"
                 className="sm:col-span-2"
-                hint="For an employer that publishes no logo file at all. Their name set in type, rather than a mark invented for them."
+                hint="For an employer that publishes no logo file at all: their name set in type, rather than a mark invented for them."
               >
                 <Text name="wordmark" defaultValue={entry.wordmark} placeholder="a1mobile" />
               </Field>
@@ -237,81 +235,72 @@ export default async function AdminRosterEntry({
           </div>
         </div>
 
-        <div className="mt-4">
-          <Save>Save this card</Save>
-        </div>
-      </ActionForm>
+        {/* ------------------------------------------------- account and seat */}
+        {/*
+          INSIDE THE FORM, and drawn like every other field group on the page.
 
-      {/* ----------------------------------------------------- the account */}
-      <section aria-labelledby="bind" className="mt-8 rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-4">
-        <h2 id="bind" className="t-card-title text-ink">
-          The account this card belongs to
-        </h2>
-        <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
-          Optional, and it grants nothing. Linking says the person on the website and the person
-          with this account are the same human being, which is what lets their console know which
-          card is theirs. Roles are granted on{" "}
-          <Link href="/admin/people" className="text-accent no-underline hover:underline">
-            People
-          </Link>
-          , and a judge seat is bound on{" "}
-          <Link href="/admin/judging" className="text-accent no-underline hover:underline">
-            Judging
-          </Link>
-          .
-        </p>
+          Roan: "on 'the account this card belongs to' put inside the form, no need to
+          be highlighted."
 
-        <form action={bindRosterUser} className="mt-3 flex flex-wrap items-end gap-3">
-          <input type="hidden" name="id" value={entry.id} />
-          <label className="min-w-[260px] flex-1">
-            <span className="t-label text-ink-muted">Account</span>
-            <select
-              name="userId"
-              defaultValue={entry.user_id ?? ""}
-              className="t-body-sm mt-1 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+          These were two separate `<section>` elements below the form, each wrapping
+          its own `<form>` with its own action and its own button, and each on a tinted
+          ground. Three saves on one screen and two of them looking like warnings, for
+          what is a select and a select.
+
+          HTML cannot nest forms, so "inside the form" meant merging the actions:
+          `saveRosterEntry` writes `user_id` and `seat_id` now, and `bindRosterUser`
+          and `setRosterSeat` are gone. That file has the note on what did NOT change,
+          which is what either field means: linking an account grants no role and
+          assigning a seat is only the public claim.
+        */}
+        <div className="mt-4 rounded-[var(--radius-feature)] border border-line bg-surface p-4">
+          <p className="t-card-title text-ink">Account and seat</p>
+          <p className="t-meta mt-1 max-w-[64ch] text-ink-muted">
+            Both optional, and neither grants anything. Roles are granted on{" "}
+            <Link href="/admin/people" className="text-accent no-underline hover:underline">
+              People
+            </Link>
+            , and what actually lets a judge open their console is a seat bound to their
+            account on{" "}
+            <Link href="/admin/judging" className="text-accent no-underline hover:underline">
+              Judging
+            </Link>
+            .
+          </p>
+
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <Field
+              label="Linked account"
+              hint="Says the person on the website and the person with this account are the same human being. It is what lets their console know which card is theirs."
             >
-              <option value="">Nobody</option>
-              {people.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {[p.first_name, p.last_name].filter(Boolean).join(" ") || p.email} · {p.email}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Quiet>Link</Quiet>
-        </form>
+              <select
+                name="userId"
+                defaultValue={entry.user_id ?? ""}
+                className="t-body-sm mt-1 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+              >
+                <option value="">Nobody</option>
+                {people.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {[person.first_name, person.last_name].filter(Boolean).join(" ") ||
+                      person.email}{" "}
+                    · {person.email}
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-        {/* ------------------------------------------------------------ the seat */}
-        {isJudge ? (
-          <>
-            <h2 className="t-h3 mt-8 text-ink">Board seat</h2>
-            <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
-              Which course this judge reads each term. It prints on their card on
-              /review-judge-board, and the board page showed nothing at all until it
-              did. One seat, one holder.
-            </p>
-            {/* The permission is a separate act, stated here because this is the
-                screen somebody is on when they assume it is not. */}
-            <p className="t-meta mt-1.5 max-w-[64ch] text-ink-muted">
-              This is the public claim only. Letting them open the judge console and
-              read submitted sheets is a role and an account binding, on{" "}
-              <Link href="/admin/judging" className="text-accent no-underline hover:underline">
-                Judging
-              </Link>
-              .
-            </p>
-
-            <form action={setRosterSeat} className="mt-3 flex flex-wrap items-end gap-3">
-              <input type="hidden" name="id" value={entry.id} />
-              <label className="min-w-[260px] flex-1">
-                <span className="t-label text-ink-muted">Seat</span>
+            {isJudge ? (
+              <Field
+                label="Board seat"
+                hint="Which course this judge reads each term. It prints on their card on /review-judge-board. One seat, one holder."
+              >
                 <select
                   name="seatId"
                   defaultValue={entry.seat_id ?? ""}
                   className="t-body-sm mt-1 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
-                  {/* "No seat yet", not "None". The board is still being seated and
-                      an unassigned card is a normal state, not a blank. */}
+                  {/* "No seat yet", not "None". The board is still being seated and an
+                      unassigned card is a normal state, not a blank. */}
                   <option value="">No seat yet</option>
                   {seats.map((seat) => (
                     <option key={seat.id} value={seat.id}>
@@ -322,12 +311,15 @@ export default async function AdminRosterEntry({
                     </option>
                   ))}
                 </select>
-              </label>
-              <Quiet>Assign</Quiet>
-            </form>
-          </>
-        ) : null}
-      </section>
+              </Field>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <Save>Save this card</Save>
+        </div>
+      </ActionForm>
 
       {/* ------------------------------------------------------ lead, then delete */}
       {!isJudge && !entry.lead ? (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 import { GlassFilter } from "@/components/ui/liquid-glass-button";
+import { ThirdPartyScripts } from "@/components/third-party-scripts";
 import { brand, site } from "@/lib/content";
 import { organizationJsonLd } from "@/lib/seo";
 import "./globals.css";
@@ -125,6 +126,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* The refraction filter every glass control references, mounted once
             per document. It renders nothing; ui.tsx has the note. */}
         <GlassFilter />
+        {/*
+          The TrustedSite trustmark and the Google tag, on every route.
+
+          In the root layout because both are site-wide and Google's instruction is
+          one tag per page. At the end of `<body>` rather than in `<head>`, which is
+          what `next/script` wants: the strategy decides when it runs, not where it is
+          written, and the two ordered `afterInteractive` scripts inside need to stay
+          in document order. That file has the strategy argument and the note on the
+          privacy copy this made untrue.
+        */}
+        <ThirdPartyScripts />
       </body>
     </html>
   );

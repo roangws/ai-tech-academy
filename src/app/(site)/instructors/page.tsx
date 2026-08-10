@@ -143,18 +143,22 @@ export default async function InstructorsPage() {
           <div className="mt-3 max-w-[720px]">
             <h1 className="t-display text-ink [text-wrap:balance]">{instructors.headline}</h1>
             <p className="t-body mt-3 max-w-[640px] text-ink-secondary">{instructors.pageIntro}</p>
-            {/* Derived, and the third item is the one fact about this roster a
-                reader cannot get from the cards: every person here has a public
-                profile to check them against, which is the standard the whole
-                page is built to. */}
-            <FactsLine
-              className="mt-4"
-              items={[
-                `${people.length} instructors`,
-                "One lead, four specialists",
-                "Every profile links out",
-              ]}
-            />
+            {/*
+              ONE ITEM, AND IT IS DERIVED. Roan: "remove 'One lead, four
+              specialists·Every profile links out'."
+
+              Both were wrong for the same reason and it is the reason worth keeping:
+              a facts line beside a roster has to hold facts the CARDS do not already
+              show, and neither did. "Every profile links out" describes an affordance
+              a reader can see on every card in the grid below. "One lead, four
+              specialists" is worse than redundant, because it is a hand-typed count
+              of a table: it says four the day a fifth specialist is added and nobody
+              remembers to come here.
+
+              What is left is a count read off the query, which is the one number a
+              reader cannot get without counting the grid themselves.
+            */}
+            <FactsLine className="mt-4" items={[`${people.length} instructors`]} />
           </div>
         </Container>
       </section>

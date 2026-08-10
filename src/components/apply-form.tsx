@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
+import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Avatar } from "@/components/lms/avatar";
 import { saveApplication, type ApplyState } from "@/app/actions/apply";
@@ -154,17 +155,61 @@ export function ApplyForm({
       {/* --------------------------------------------------------- reaching */}
       <Fieldset
         heading="How to reach you"
-        note="Read by the advisory board and by nobody else. It is not published on the site and it is not shown to learners."
+        note="Read by the advisory board alone. It stays off the site and out of every learner's view."
       >
-        <Field label="Phone" name="phone" defaultValue={a?.phone ?? ""} type="tel" required autoComplete="tel" placeholder="+1 555 000 0000" />
         <Field
-          label="WhatsApp"
-          name="whatsapp"
-          defaultValue={a?.whatsapp ?? ""}
+          label="Phone"
+          name="phone"
+          defaultValue={a?.phone ?? ""}
           type="tel"
-          optional
-          hint="Leave blank if it is the same number."
+          required
+          autoComplete="tel"
+          placeholder="+1 555 000 0000"
+          hint="WhatsApp is reachable on this number unless you give a different one below."
         />
+        {/*
+          ONE FIELD, AND A SECOND ONLY IF THE NUMBER DIFFERS.
+
+          Roan: "telephone as wpp is the same." He is describing what the form was
+          actually collecting. Two `type="tel"` inputs sat side by side under one
+          heading, the second labelled "WhatsApp" and hinted "Leave blank if it is the
+          same number" — so the common case was an empty box beside a full one, and an
+          applicant had to read a hint to work out that the right answer was nothing.
+          Asking the same question twice is how a form gets abandoned.
+
+          The phone field now says WhatsApp reaches it, which is true for almost
+          everybody, and this is a disclosure rather than a field: it stays closed
+          unless there IS a second number, and it opens itself for an applicant who
+          already saved one so a returning draft never hides its own data.
+
+          The column is unchanged. `applications.whatsapp` is still nullable and still
+          means "a different number from the phone one", which is what it always meant
+          and what the board reads it as.
+        */}
+        <details
+          open={Boolean(a?.whatsapp)}
+          className="group sm:col-span-2"
+        >
+          <summary className="t-meta inline-flex cursor-pointer list-none items-center gap-1.5 text-accent">
+            <CaretRightIcon
+              size={13}
+              weight="bold"
+              aria-hidden="true"
+              className="transition-transform group-open:rotate-90"
+            />
+            My WhatsApp is a different number
+          </summary>
+          <div className="mt-3">
+            <Field
+              label="WhatsApp"
+              name="whatsapp"
+              defaultValue={a?.whatsapp ?? ""}
+              type="tel"
+              optional
+              placeholder="+1 555 000 0000"
+            />
+          </div>
+        </details>
       </Fieldset>
 
       {/* -------------------------------------------------------- substance */}
