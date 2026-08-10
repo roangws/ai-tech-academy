@@ -286,7 +286,7 @@ export function Certificate({
           whatever the body above it does.
         */}
         <div className="flex-none px-8 pb-8 md:px-12 md:pb-10 print:px-[14mm] print:pb-[11mm]">
-          <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] gap-x-6 gap-y-5 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)]">
+          <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] gap-x-5 gap-y-5 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)]">
             <Field label="Issued">{issued}</Field>
             <Field label="Reference">
               {/* Selectable text rather than an image, so it can be copied out of a
@@ -307,8 +307,16 @@ export function Certificate({
                     from the URL under it — so the URL broke across two lines while a
                     third of the row sat empty. `break-all` and not `truncate`, because
                     a URL that has been cut short is worse than one that wraps: it
-                    looks complete. */}
-                <span className="break-all">{verifyUrl}</span>
+                    looks complete.
+
+                    `tracking-tight` is buying the last six pixels, and it was needed:
+                    the URL fitted on one line locally and wrapped its final character
+                    onto a second line on production, where the webfont loads and
+                    renders a hair wider than the local fallback. A one-character
+                    orphan under a 48-character URL is the sort of thing that only
+                    ever shows up on the deployed page, which is where this was
+                    caught. */}
+                <span className="break-all tracking-tight">{verifyUrl}</span>
               </Field>
             ) : (
               <div />
