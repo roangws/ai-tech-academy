@@ -90,6 +90,64 @@ function slugify(value: string): string {
     .slice(0, 60);
 }
 
+/* ------------------------------------------------------------------ images */
+
+const MAX_BYTES = 2 * 1024 * 1024;
+const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+
+/**
+ * Put an uploaded portrait or mark in the `roster` bucket and return its URL.
+ *
+ * ------------------------------------------------------------------- why upload
+ *
+ * The form asked for a path under `/public`, which is a directory in the git
+ * repository — so changing a judge's photograph meant a commit and a deploy, on
+ * the one screen built so that nothing about the roster would need either. Roan
+ * reported it as "I can't upload a logo", which is exactly what it was.
+ *
+ * ---------------------------------------------------------------- what it returns
+ *
+ * `null` for "nothing was uploaded", which the caller must distinguish from
+ * "clear this field": an absent file input means leave the existing image alone,
+ * and a form that treated the two the same would wipe a portrait every time
+ * somebody edited a name.
+ *
+ * A string beginning `Upload failed:` is an error the caller surfaces. Returning
+ * it rather than throwing keeps the author's other twenty fields on the page —
+ * the same rule the rest of this file follows.
+ *
+ * The old object is NOT deleted here. `avatars` does that because a learner
+ * replacing their own photo is the only writer of their folder; a roster image
+ * can be referenced by a card that is live on a public page while the new upload
+ * is still propagating, and an orphaned 40KB file is cheaper than a broken
+ * portrait on /review-judge-board. They accumulate under the entry's id, so a
+ * cleanup can find them.
+ */
+async function uploadImage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rosterId: string,
+  file: FormDataEntryValue | null,
+): Promise<{ url: string } | { error: string } | null> {
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (file.size > MAX_BYTES) return { error: "That image is over 2MB. Try a smaller one." };
+  if (!IMAGE_TYPES.has(file.type)) {
+    return { error: "Images only: PNG, JPEG, WebP or SVG." };
+  }
+
+  const ext = file.type === "image/svg+xml" ? "svg" : (file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "png");
+  /* The timestamp is what makes a replacement a NEW url. Overwriting one key
+     leaves the previous image on every CDN edge and in every open tab, so an
+     author would upload a new portrait and keep seeing the old one. */
+  const key = `${rosterId}/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("roster")
+    .upload(key, file, { contentType: file.type, upsert: false });
+  if (error) return { error: `Upload failed: ${error.message}` };
+
+  return { url: supabase.storage.from("roster").getPublicUrl(key).data.publicUrl };
+}
+
 /* ------------------------------------------------------------------- create */
 
 export async function createRosterEntry(
@@ -165,6 +223,27 @@ export async function saveRosterEntry(_prev: FormState, formData: FormData): Pro
 
   const supabase = await createClient();
 
+  /*
+    Uploads first, and the save is abandoned if either fails.
+
+    Order matters: writing the row and then failing the upload would leave the
+    card claiming a portrait it does not have. Both images are optional and
+    independent, and `null` means "no file was chosen" — which has to leave the
+    existing image alone rather than clear it, or editing a name would wipe the
+    photograph.
+  */
+  const portrait = await uploadImage(supabase, id, formData.get("photo_file"));
+  if (portrait && "error" in portrait) return { error: portrait.error };
+
+  const mark = await uploadImage(supabase, id, formData.get("logo_file"));
+  if (mark && "error" in mark) return { error: mark.error };
+
+  /* An uploaded file wins over the typed path, because uploading one is the more
+     recent and more deliberate act. The path field still exists for the images
+     that genuinely live in the repository under /public. */
+  const photoSrc = portrait?.url ?? text(formData, "photo_src", 400);
+  const logoSrc = mark?.url ?? text(formData, "logo_src", 400);
+
   const { error } = await supabase
     .from("roster")
     .update({
@@ -182,9 +261,9 @@ export async function saveRosterEntry(_prev: FormState, formData: FormData): Pro
          falls back rather than writing null and failing the constraint with a
          message about a column the author never saw. */
       ground: text(formData, "ground", 60) ?? "var(--accent)",
-      photo_src: text(formData, "photo_src", 300),
+      photo_src: photoSrc,
       photo_alt: text(formData, "photo_alt", 200),
-      logo_src: text(formData, "logo_src", 300),
+      logo_src: logoSrc,
       logo_alt: text(formData, "logo_alt", 120),
       linkedin: text(formData, "linkedin", 300),
       site_label: text(formData, "site_label", 80),

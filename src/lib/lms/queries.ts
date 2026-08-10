@@ -316,6 +316,15 @@ export type DashboardCourse = {
   /** Judge scores on this course's outcome sheet, if any have been filed. */
   judgements: ScoredCriterion[];
   /**
+   * True when every lesson is done and no completion record has been taken.
+   *
+   * The one state that has to be surfaced somewhere a learner will see it. A
+   * certificate nobody knows they can take is the same as no certificate, and
+   * finishing the last lesson is the moment it becomes true — so this feeds the
+   * dashboard's "needs you" list rather than waiting to be discovered on a tab.
+   */
+  certifiable: boolean;
+  /**
    * The lesson to open when they press Continue, already resolved to a URL.
    *
    * Null when nothing has been opened yet, and the caller falls back to the
@@ -339,7 +348,7 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     knows statically and that cannot change without a deploy. `totalLessons(c)`
     is right there in the module this file already imports.
   */
-  const [enrollments, progress, sheets, artifacts, judgements] = await Promise.all([
+  const [enrollments, progress, sheets, completions, artifacts, judgements] = await Promise.all([
     rows<Enrollment>(
       "enrolments",
       /* Most recently touched first. It ordered by `enrolled_at`, which answers
@@ -368,6 +377,12 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         .eq("user_id", userId),
     ),
     rows<OutcomeSheet>("outcome sheets", supabase.from("outcome_sheets").select("*").eq("user_id", userId)),
+    /* Which courses already have a record, so the nudge below stops the moment
+       one is taken. `completion_read_own` scopes it to this reader. */
+    rows<{ course_id: string }>(
+      "completion records",
+      supabase.from("completion_records").select("course_id").eq("user_id", userId),
+    ),
     /* Artifacts an instructor has written back on, and drafts still sitting
        unsent. Both are things the dashboard should be telling the learner about
        and neither had any surface: feedback arrived silently on a module page
@@ -402,6 +417,7 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
   }
 
   const sheetByCourse = new Map(sheets.map((s) => [s.course_id, s]));
+  const certified = new Set(completions.map((c) => c.course_id));
   const sheetIds = new Set(sheets.map((s) => s.id));
 
   /* Resolve every resume pointer in one query rather than one per course. */
@@ -457,6 +473,13 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         drafts: mine.filter((a) => a.status === "draft" && a.body.trim().length > 0),
         judgements: judgements.filter((j) => sheetIds.has(j.sheet_id)
           && sheetByCourse.get(e.course_id)?.id === j.sheet_id),
+        /* `total > 0` guards an un-seeded course, where `0 >= 0` would offer a
+           certificate for a course with nothing in it. `claim_completion`
+           refuses that too, so this only stops the nudge being drawn. */
+        certifiable:
+          totalLessons(course) > 0 &&
+          (doneByCourse.get(e.course_id) ?? 0) >= totalLessons(course) &&
+          !certified.has(e.course_id),
         resume: last
           ? {
               href: `/learn/${course.slug}/${last.modules.n}/${last.slug}`,

@@ -744,3 +744,63 @@ html:has([data-theme="dark"]) {
     background: #10181e;
   }
 }
+
+/*
+  Printing.
+  
+  There is one printable document on this site — the completion record at
+  /dashboard/certifications/<course> — and this exists for it. Before this,
+  pressing Print on that page produced the certificate with a sticky product
+  header on top of it, a twenty-two-link marketing sitemap under it, and the
+  browser's own header and footer around the lot.
+
+  Structural rather than page-scoped: `header` and `footer` are the app chrome
+  wherever they appear, and any page worth printing wants neither. Individual
+  elements opt out with Tailwind's `print:hidden`, which is what the certificate
+  page uses for its back link and its Download control.
+
+  `@page` sets landscape and drops the UA margin to something a document with its
+  own padding can live inside. 10mm rather than 0: most consumer printers cannot
+  reach the last few millimetres of a sheet, and a zero margin silently clips the
+  accent rule at the top of the certificate.
+
+  `print-color-adjust` is what keeps the crest and the course hue on the page.
+  Browsers strip backgrounds when printing to save ink, which would take the
+  entire visual identity of the document with it. Declared here as well as
+  inline on the certificate, because Safari honours the property on the root and
+  Chromium honours it on the element.
+*/
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* The app chrome and the marketing sitemap. Neither belongs on a certificate,
+     and `body > *` would be too blunt — the document itself is nested inside a
+     container that has to survive. The skip link needs no rule: it is `sr-only`
+     until focused, and print has no focus. */
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* The container's horizontal padding is sized for a 1440px viewport and is
+     just wasted margin on paper, where `@page` already provides it. */
+  main {
+    padding: 0 !important;
+  }
+
+  /* A document should not be broken across two sheets by a stray page break. */
+  article,
+  figure {
+    break-inside: avoid;
+  }
+}

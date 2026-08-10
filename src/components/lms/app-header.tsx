@@ -52,6 +52,12 @@ export async function AppHeader() {
   const links = viewer
     ? [
         { href: "/dashboard", label: "Dashboard" },
+        /* The tab Roan asked for. It sits beside Dashboard rather than inside it
+           because a completion record is a thing somebody comes back for
+           specifically — often long after they have stopped taking courses — and
+           a destination you visit on purpose is a nav item, not a section of
+           another page. */
+        { href: "/dashboard/certifications", label: "Certifications" },
 /* Admin only, for now. Both consoles read other people's work, and
            until there are real instructors and seated judges the safest default
            is that only the owner can open them. RLS is still the boundary

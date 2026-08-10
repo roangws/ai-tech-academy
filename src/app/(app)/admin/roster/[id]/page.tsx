@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowSquareOutIcon, StarIcon } from "@phosphor-icons/react/dist/ssr";
 import { StatusChip } from "@/components/ui";
 import { ActionForm, Area, Field, Save, Quiet, Danger, Text } from "@/components/lms/admin-form";
+import { GroundPicker, ImageField } from "@/components/lms/roster-fields";
 import { getRosterEntry } from "@/lib/roster";
 import { listPeople } from "@/lib/lms/admin";
 import {
@@ -169,46 +169,43 @@ export default async function AdminRosterEntry({
         <div className="mt-4 rounded-[var(--radius-feature)] border border-line bg-surface p-4">
           <p className="t-card-title text-ink">Portrait and mark</p>
           <p className="t-meta mt-1 max-w-[64ch] text-ink-muted">
-            Paths under <code>/public</code>, not URLs. A card cannot be published without a
-            portrait: an empty frame on the roster reads as a broken page.
+            Upload straight from here. A card cannot be published without a portrait: an empty
+            frame on the roster reads as a broken page.
           </p>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-[80px_minmax(0,1fr)]">
-            <span className="relative block size-20 overflow-hidden rounded-full bg-surface-sunken ring-1 ring-line">
-              {entry.photo_src ? (
-                <Image
-                  src={entry.photo_src}
-                  alt=""
-                  width={160}
-                  height={160}
-                  className="size-full object-cover"
-                />
-              ) : null}
-            </span>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <ImageField
+              label="Portrait"
+              name="photo_file"
+              pathName="photo_src"
+              current={entry.photo_src}
+              round
+              hint="PNG, JPEG or WebP, under 2MB. A card cannot be published without one."
+            />
+            <ImageField
+              label="Employer mark"
+              name="logo_file"
+              pathName="logo_src"
+              current={entry.logo_src}
+              hint="Their employer's own file, SVG or PNG. Leave empty if they publish none."
+            />
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Portrait path">
-                <Text name="photo_src" defaultValue={entry.photo_src} placeholder="/images/people/liz-zhang.jpg" />
+            <Field label="Portrait alt" hint="Describes the picture. Blank falls back to their name.">
+              <Text name="photo_alt" defaultValue={entry.photo_alt} placeholder="Studio portrait of Liz Zhang" />
+            </Field>
+            <Field label="Mark alt">
+              <Text name="logo_alt" defaultValue={entry.logo_alt} placeholder="NVIDIA" />
+            </Field>
+
+            {isJudge ? (
+              <Field
+                label="Wordmark"
+                className="sm:col-span-2"
+                hint="For an employer that publishes no logo file at all — their name set in type, rather than a mark invented for them."
+              >
+                <Text name="wordmark" defaultValue={entry.wordmark} placeholder="a1mobile" />
               </Field>
-              <Field label="Portrait alt" hint="Describes the picture. Blank falls back to their name.">
-                <Text name="photo_alt" defaultValue={entry.photo_alt} placeholder="Studio portrait of Liz Zhang" />
-              </Field>
-              <Field label="Employer mark path">
-                <Text name="logo_src" defaultValue={entry.logo_src} placeholder="/images/logos/nvidia.svg" />
-              </Field>
-              <Field label="Mark alt">
-                <Text name="logo_alt" defaultValue={entry.logo_alt} placeholder="NVIDIA" />
-              </Field>
-              {isJudge ? (
-                <Field
-                  label="Wordmark"
-                  className="sm:col-span-2"
-                  hint="For an employer that publishes no logo file at all — their name set in type, rather than a mark invented for them."
-                >
-                  <Text name="wordmark" defaultValue={entry.wordmark} placeholder="a1mobile" />
-                </Field>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
 
@@ -219,12 +216,9 @@ export default async function AdminRosterEntry({
             <Field label="LinkedIn" hint="The full profile URL. Every card links out to it.">
               <Text name="linkedin" defaultValue={entry.linkedin} placeholder="https://www.linkedin.com/in/…" />
             </Field>
-            <Field
-              label="Ground"
-              hint="A hue token from globals.css: var(--accent), var(--path-a) … var(--path-e)."
-            >
-              <Text name="ground" defaultValue={entry.ground} placeholder="var(--path-a)" />
-            </Field>
+            <div className="sm:col-span-2">
+              <GroundPicker name="ground" value={entry.ground} />
+            </div>
             {!isJudge ? (
               <>
                 <Field label="Second link, label">
