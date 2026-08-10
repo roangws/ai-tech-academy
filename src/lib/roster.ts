@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { instructors as instructorCopy, board as boardCopy, authoredBooks } from "@/lib/content";
+import { instructors as instructorCopy, board as boardCopy, personCopy } from "@/lib/content";
 import type { Person, Seat } from "@/lib/content";
 
 /**
@@ -131,21 +131,36 @@ function toPerson(r: RosterRow): Person {
     ...(r.linkedin ? { linkedin: r.linkedin } : {}),
     ...(r.site_href && r.site_label ? { site: { label: r.site_label, href: r.site_href } } : {}),
     /*
-      The one field on a card that is editorial rather than a column.
+      The two fields on a card that are editorial rather than columns.
 
-      A book by somebody on this roster is copy, not roster data — content.ts has
-      the argument at `authoredBooks`, and the short version is that five nullable
-      columns and five console fields to carry one hyperlink is a schema built for
-      a hypothetical. It joins on the profile URL, which is the only field on a
-      row that identifies a specific human being.
+      A book somebody wrote and the companies they have invested in are copy, not
+      roster data — content.ts has the argument at `personCopy`, and the short
+      version is that nullable columns and console fields to carry four
+      hyperlinks is a schema built for a hypothetical. The join is on the profile
+      URL, which is the only field on a row that identifies a specific person.
 
-      No match is the normal case: four of these five people have no book here and
-      the card renders without the row.
+      `investments` is here because the move to a table dropped it silently: the
+      field has existed on `Person` since the lead card was built, the table has
+      no column for it, and a card renders the line only when it is present. So
+      "Investor in …" came off the page with nothing failing. That is the second
+      time this shape of bug has landed, and it is why the map is general.
+
+      `linkedin` is checked before the lookup rather than let through as
+      `undefined`: a row with no profile URL must not match an entry, and `find`
+      comparing `undefined === undefined` would hand somebody else's book to the
+      first person without one.
+
+      No match is the normal case — four of the five have neither field — and the
+      spread of an empty object leaves both keys absent, which is what the card's
+      conditionals are written against.
     */
     ...(r.linkedin
       ? (() => {
-          const match = authoredBooks.find((b) => b.authorLinkedin === r.linkedin);
-          return match ? { book: match.book } : {};
+          const copy = personCopy.find((c) => c.linkedin === r.linkedin);
+          return {
+            ...(copy?.book ? { book: copy.book } : {}),
+            ...(copy?.investments?.length ? { investments: copy.investments } : {}),
+          };
         })()
       : {}),
   };

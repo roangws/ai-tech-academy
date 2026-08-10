@@ -1334,53 +1334,75 @@ export type Book = {
 };
 
 /*
-  Books by people on the roster, attached to their author by profile URL.
+  The parts of a roster card that are copy rather than columns, attached to the
+  person by profile URL.
 
   ====================================== why this is not a column on the roster
 
-  Because the roster is a table now and this is not roster data.
+  Because the roster is a table now and these are not roster data.
 
-  For half a day it was neither: the book sat on the `roan` entry in
-  `instructors.people` below, which was the array that rendered the instructor
-  band when it was written. That array stopped rendering anything in the same
-  pass — `lib/roster.ts` reads five rows out of Postgres and builds `Person`
-  objects from them — so a field set in this file reached no card at all. The
-  merge was clean and the feature was gone, which is the quiet way that failure
-  arrives and the reason it is written up here rather than fixed silently.
+  Two fields ended up here and both arrived the same way, which is the reason
+  this is a general map rather than a one-off for the book.
 
-  The fix could have been five more columns on `roster`, and it should not be.
-  roster.ts states the line: rows are the people, and the copy around them stays
-  here because "putting it in a table would mean a migration to fix a comma".
-  One book by one author is squarely on the copy side of that line. It is not
-  something anybody will edit in the console, there is no form for it, and a
-  migration plus five nullable columns plus five admin fields to carry one
-  hyperlink is a schema built for a hypothetical.
+  `book`. For half a day it sat on the `roan` entry in `instructors.people`
+  below, which was the array that rendered the instructor band when it was
+  written. That array stopped rendering anything in the same pass — `lib/roster.ts`
+  reads rows out of Postgres and builds `Person` objects from them — so a field
+  set in this file reached no card at all. The merge was clean and the feature
+  was gone, which is the quiet way that failure arrives.
+
+  `investments`. The same move dropped this one without anybody writing a line
+  of it: `Person.investments` has existed since the lead card was built, the
+  `roster` table has no column for it, and `toPerson` therefore had nothing to
+  build the field from. The card renders the line only when it is present, so
+  "Investor in Destaquei, Produtoras de Video and Bayhaus Creative" simply
+  stopped being on the page. Nothing errored. Roan asked for it back.
+
+  The fix in both cases could have been more columns on `roster`, and it should
+  not be. roster.ts states the line: rows are the people, and the copy around
+  them stays here because "putting it in a table would mean a migration to fix a
+  comma". One book by one author and three companies one person has invested in
+  are squarely on the copy side of it. Nobody edits either in the console, there
+  is no form for them, and a migration plus nullable columns plus admin fields to
+  carry four hyperlinks is a schema built for a hypothetical.
+
+  What would move this to columns is a console: the day somebody who is not a
+  programmer needs to add a book, it needs a form, and a form needs a table.
 
   ============================================================ keyed on linkedin
 
-  `authorLinkedin` matches `roster.linkedin`, and that is a deliberate choice of
-  key rather than the only one available.
+  `linkedin` matches `roster.linkedin`, and that is a deliberate choice of key
+  rather than the only one available.
 
   Not the row id: those are generated uuids, so writing one into this file would
   bind editorial copy to a database primary key that a reseed changes. Not the
   name: two people share a name eventually and nothing stops it. Not `lead`,
   which was the tempting one and the worst — "whatever card is first carries
   Roan's book" is a sentence that stays true until the lead changes and then
-  quietly attributes his book to somebody else.
+  quietly attributes his book, and his investments, to somebody else.
 
   A LinkedIn URL is the one field on a roster row that identifies a specific
   human being, it is already required for the card's profile link, and it is
-  public. If a person leaves the roster the match simply fails and the row does
-  not render, which is the correct failure: no author, no book.
+  public. If a person leaves the roster the match simply fails and nothing
+  renders, which is the correct failure: no person, no copy about them.
+
+  A LIST RATHER THAN A RECORD, and not for style. `personCopy[row.linkedin]` on
+  an object literal answers `__proto__` and `constructor` with something truthy,
+  and the key here comes out of a database column. `find` on a list cannot.
 
   ------------------------------------------------------------- what is claimed
 
-  That this person wrote this book, and nothing else. `title` and `blurb` are
-  the book's own listing copy, supplied by Roan, verbatim apart from the eyebrow.
-  Nothing recommends it or ties it to a course: the media path teaches applied AI
-  for video and this book is about world models in video, and drawing that line
-  into a sentence is exactly the kind of claim this file exists to refuse. A
-  reader who wants the connection can see it.
+  Of the book: that this person wrote it. `title` and `blurb` are the book's own
+  listing copy, supplied by Roan, verbatim apart from the eyebrow. Nothing
+  recommends it or ties it to a course — the media path teaches applied AI for
+  video and this book is about world models in video, and drawing that line into
+  a sentence is exactly the kind of claim this file exists to refuse. A reader
+  who wants the connection can see it.
+
+  Of the investments: named and linked rather than counted. "Investor in three
+  companies" is the kind of line that asks to be believed; three names a reader
+  can open is the kind that can be checked, which is the standard the rest of
+  this page holds itself to.
 
   --------------------------------------------------------------- the cover art
 
@@ -1397,9 +1419,11 @@ export type Book = {
   and a cover set large enough to be legible would be a second, competing
   statement of the same title.
 */
-export const authoredBooks: readonly { authorLinkedin: string; book: Book }[] = [
+export type PersonCopy = Pick<Person, "book" | "investments">;
+
+export const personCopy: readonly ({ linkedin: string } & PersonCopy)[] = [
   {
-    authorLinkedin: "https://www.linkedin.com/in/-roan/",
+    linkedin: "https://www.linkedin.com/in/-roan/",
     book: {
       label: "The book",
       title: "World Models Applied in Video Production",
@@ -1411,6 +1435,11 @@ export const authoredBooks: readonly { authorLinkedin: string; book: Book }[] = 
         alt: "Cover of World Models Applied in Video Production by Roan Weigert",
       },
     },
+    investments: [
+      { label: "Destaquei", href: "https://destaquei.com.br/" },
+      { label: "Produtoras de Video", href: "https://www.produtorasdevideo.com.br/" },
+      { label: "Bayhaus Creative", href: "https://bayhauscreative.com/" },
+    ],
   },
 ];
 
@@ -1539,20 +1568,16 @@ export const instructors = {
       photo: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
       linkedin: "https://www.linkedin.com/in/-roan/",
       site: { label: "roanweigert.com", href: "https://roanweigert.com/" },
-      /*
-        Named and linked rather than counted. "Investor in three companies" is
-        the kind of line that asks to be believed; three names a reader can open
-        is the kind that can be checked, which is the standard the rest of this
-        page holds itself to.
-      */
-      investments: [
-        { label: "Destaquei", href: "https://destaquei.com.br/" },
-        { label: "Produtoras de Video", href: "https://www.produtorasdevideo.com.br/" },
-        { label: "Bayhaus Creative", href: "https://bayhauscreative.com/" },
-      ],
-      /* The book is NOT here. It used to be, for the half a day this array was
-         still what rendered; `authoredBooks` below has it and the note on why it
-         had to move. */
+      /* NEITHER THE BOOK NOR THE INVESTMENTS ARE HERE, and they are the reason
+         to distrust everything else in this array.
+
+         This whole literal stopped rendering when the roster became a table;
+         `lib/roster.ts` builds the cards from Postgres rows now, and the only
+         thing still reading it is one `sameAs` in seo.ts. The investor line sat
+         right here, correct and unreachable, for as long as it took somebody to
+         notice it had left the page. Both fields live in `personCopy` above,
+         joined to this person by profile URL, which is the version that reaches
+         a card. */
       lead: true,
     },
     /*
