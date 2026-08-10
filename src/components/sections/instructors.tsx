@@ -1,6 +1,7 @@
 import { InstructorCard, InstructorLeadCard } from "@/components/instructor-card";
 import { Section, SectionHeader, TextAction } from "@/components/ui";
 import { instructors } from "@/lib/content";
+import { getInstructors } from "@/lib/roster";
 
 /**
  * The roster: one lead card, then four portraits at the size a portrait wants
@@ -105,8 +106,28 @@ import { instructors } from "@/lib/content";
  * a full-bleed snap rail with the cards held at the same 2:3 and a 292px cap.
  * The gesture is right for the content either way: a roster is a set to browse.
  */
-export function Instructors() {
-  const [lead, ...specialists] = instructors.people;
+export async function Instructors() {
+  /*
+    THE ROSTER IS A QUERY NOW, and `instructors` here is only the copy around it.
+
+    The five people used to be `instructors.people`, an `as const` array in
+    content.ts, so adding a sixth was a commit and a deploy. `lib/roster.ts` maps
+    the table into the same `Person[]` this file has always taken, which is why
+    nothing below this line changed — `InstructorCard` does not know either.
+
+    `async` makes this a server component that queries, like `Courses` two files
+    over and for the same reason. The headline, the intro and the section label
+    stay in content.ts: they are editorial, there is no console behind them, and
+    a comma should not need a migration.
+  */
+  const people = await getInstructors();
+  const [lead, ...specialists] = people;
+
+  /* A roster with nobody on it renders nothing rather than an empty band with a
+     heading over it. It is reachable — every entry is a draft, or the query
+     failed — and a section header floating above no cards is worse than the
+     section being absent. */
+  if (!lead) return null;
 
   return (
     <Section id="instructors">
@@ -122,7 +143,7 @@ export function Instructors() {
            result and a shared URL can land on. */
         action={
           <TextAction href="/instructors">
-            {`All ${instructors.people.length} instructors`}
+            {`All ${people.length} instructors`}
           </TextAction>
         }
       />

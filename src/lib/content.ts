@@ -187,6 +187,24 @@ export const site = {
 */
 export const cta = {
   primary: "Enroll for free",
+  /*
+    THE LABEL ON THE COURSE PAGE'S OWN CONTROL, added 9 Aug.
+
+    "Enroll for free" is right everywhere it is a reader's first contact with the
+    program — the header, the homepage, a catalog card — because there the
+    decision being offered is whether to have anything to do with this at all.
+
+    On a course page it is the wrong promise by one step. That reader has already
+    chosen; what they want to know is what the button does, and "enroll" is a
+    word for joining a list. It also described what the control actually did,
+    which was open an account form: pressing the primary action on a course page
+    took you to a form, then to a dashboard, then back to the same course. This
+    label goes with the fix — the control opens a lesson now — and it has to say
+    so, because a button that says "enroll" and starts playing a video is a
+    surprise even when the surprise is the good one.
+  */
+  start: "Start the course",
+  resume: "Resume the course",
   view: "View course",
   compare: "Compare every course",
   howItWorks: "See how the course works",
@@ -388,7 +406,20 @@ export const nav: readonly NavItem[] = [
     tracker, so it is marked from `pathname` instead.
   */
   { label: "Judges", href: "/review-judge-board" },
-  { label: "FAQ", href: "/#faq" },
+  /*
+    FAQ CAME OUT OF THE MAIN MENU on Roan's instruction, 9 Aug.
+
+    It was the one item in the row that pointed at a band rather than at a
+    subject, and the band it pointed at is the last one on the homepage — so the
+    shortcut it offered was "scroll to the bottom of the page you are already
+    on". The questions themselves are unmoved: the homepage band keeps
+    `id="faq"`, `/courses/[slug]` renders its own `Questions` block, and the
+    footer still links the section by name.
+
+    That leaves four items in the bar, which also gives back the 40px of clear
+    air the note above spends four paragraphs accounting for. The next item
+    added here does not have to be measured against a full row.
+  */
 ];
 
 export const hero = {

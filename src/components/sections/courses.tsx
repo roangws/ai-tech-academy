@@ -131,6 +131,8 @@ function FeaturedCard({ course }: { course: Course }) {
             letter={coverLetter(course.badge)}
             build={course.coverBuild}
             image={course.cover}
+            href={`/courses/${course.slug}`}
+            title={course.title}
           />
         </span>
         <span className="hidden h-full md:block">
@@ -139,6 +141,8 @@ function FeaturedCard({ course }: { course: Course }) {
             letter={coverLetter(course.badge)}
             build={course.coverBuild}
             image={course.cover}
+            href={`/courses/${course.slug}`}
+            title={course.title}
             fill
           />
         </span>
@@ -339,6 +343,8 @@ export function CourseCard({ course }: { course: Course }) {
         letter={coverLetter(course.badge)}
         build={course.coverBuild}
         image={course.cover}
+        href={`/courses/${course.slug}`}
+        title={course.title}
       />
 
       <div className="flex flex-1 flex-col p-5">

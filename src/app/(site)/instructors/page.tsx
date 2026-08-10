@@ -5,6 +5,7 @@ import { ApplyBand } from "@/components/apply-band";
 import { InstructorCard, InstructorLeadCard } from "@/components/instructor-card";
 import { Container, FactsLine, Section } from "@/components/ui";
 import { apply, instructors } from "@/lib/content";
+import { getInstructors } from "@/lib/roster";
 import { instructorsJsonLd } from "@/lib/seo";
 
 /**
@@ -103,8 +104,16 @@ export const metadata: Metadata = {
  * an individual here the way the board's do, and a bare fragment lands the
  * target under the 72px sticky header.
  */
-export default function InstructorsPage() {
-  const [lead, ...specialists] = instructors.people;
+export default async function InstructorsPage() {
+  /* The roster is a query. `instructors` keeps the headline, the page intro and
+     the SEO copy — lib/roster.ts has the note on why that half stayed put. */
+  const people = await getInstructors();
+  const [lead, ...specialists] = people;
+
+  /* Nothing published yet renders as nothing rather than as a page with a
+     heading over an empty grid, and `lead.id` two lines down is why it has to
+     be checked here: an undefined lead would crash the render. */
+  if (!lead) return null;
 
   return (
     <>
@@ -116,7 +125,7 @@ export default function InstructorsPage() {
       */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: instructorsJsonLd().replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: instructorsJsonLd(people).replace(/</g, "\\u003c") }}
       />
 
       {/* A bare section rather than `Section`: the h1 block wants tighter air
@@ -141,7 +150,7 @@ export default function InstructorsPage() {
             <FactsLine
               className="mt-4"
               items={[
-                `${instructors.people.length} instructors`,
+                `${people.length} instructors`,
                 "One lead, four specialists",
                 "Every profile links out",
               ]}

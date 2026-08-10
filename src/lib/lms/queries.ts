@@ -357,7 +357,10 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
        bucketed by course without a query per enrolment. A to-one embed comes
        back as an object, not an array — verified against PostgREST rather than
        assumed, because the difference is a silently-zero counter. */
-    rows<{ lessons: { modules: { course_id: string } } }>(
+    /* `lesson_id` was selected and left out of the type, so the column was
+       fetched on every dashboard render and unreachable in TypeScript. It is
+       read now — the resume pointer has to know which lessons are finished. */
+    rows<{ lesson_id: string; lessons: { modules: { course_id: string } } }>(
       "progress",
       supabase
         .from("lesson_progress")
@@ -389,9 +392,13 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
   ]);
 
   const doneByCourse = new Map<string, number>();
+  /* The ids too, not just the count. The resume pointer below has to know
+     whether the lesson it names is already finished — see the note there. */
+  const doneLessonIds = new Set<string>();
   for (const row of progress) {
     const courseId = row.lessons?.modules?.course_id;
     if (courseId) doneByCourse.set(courseId, (doneByCourse.get(courseId) ?? 0) + 1);
+    if (row.lesson_id) doneLessonIds.add(row.lesson_id);
   }
 
   const sheetByCourse = new Map(sheets.map((s) => [s.course_id, s]));
@@ -418,7 +425,26 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
       const course = courseById.get(e.course_id);
       if (!course) return null;
       const mine = artifacts.filter((a) => a.modules?.course_id === e.course_id);
-      const last = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
+      /*
+        THE POINTER IS SKIPPED WHEN IT NAMES A FINISHED LESSON.
+
+        `last_lesson_id` is written by `toggle_lesson` for the lesson that was
+        just TICKED, so immediately after completing lesson 1 it names lesson 1 —
+        and this card's whole promise is "pick up where you left off". Following
+        it sent a learner who had just finished a lesson back to that lesson,
+        with "Next up" printing its name. From their side that is the product
+        losing their progress.
+
+        `lib/lms/start.ts` applies the identical rule for `/courses/<slug>/start`,
+        and the two have to agree: "Continue" here and "Resume the course" there
+        are the same promise made on two screens.
+
+        Falling through to `null` means the card offers "Open course" and the
+        board, which is honest — the next lesson is a resolution this query does
+        not do, and `/start` is the one place that does.
+      */
+      const pointedAt = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
+      const last = pointedAt && !doneLessonIds.has(pointedAt.id) ? pointedAt : undefined;
       return {
         course,
         enrollment: e,

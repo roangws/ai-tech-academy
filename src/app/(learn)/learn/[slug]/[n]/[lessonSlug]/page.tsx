@@ -5,7 +5,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArticleIcon,
-  CheckIcon,
   FlaskIcon,
   FileTextIcon,
   HeadphonesIcon,
@@ -67,7 +66,10 @@ export default async function LessonPage({
   searchParams: Promise<{ from?: string }>;
 }) {
   const { slug, n, lessonSlug } = await params;
-  const { from } = await searchParams;
+  /* Awaited and discarded. `searchParams` still has to be consumed for the route
+     to stay dynamic in the way this page needs; see the note on `?from=` below
+     for why nothing reads it any more. */
+  await searchParams;
 
   /* Lessons were addressed by array index until the slug landed, so links saved
      or shared before then look like `/learn/<course>/04/02`. Those resolve once,
@@ -90,11 +92,26 @@ export default async function LessonPage({
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}/${lessonSlug}`;
 
-  /* The lesson `?from=` claims was just completed, if that claim holds. Both
-     halves matter: it must be a lesson of this module, and it must actually be
-     ticked for this reader. */
-  const claimed = from ? siblings.find((l) => l.slug === from) : undefined;
-  const finished = claimed && doneIds.has(claimed.id) ? claimed : null;
+  /*
+    THE `?from=` ACKNOWLEDGEMENT BANNER IS GONE, 9 Aug.
+
+    It was added because the first two versions of the complete control left
+    nothing on screen saying a lesson had been finished, and that diagnosis was
+    right. What changed is where the acknowledgement lives: the forward control
+    is a link that writes in the background now, so the tick in the syllabus rail
+    appears on the frame the reader presses rather than a second later on the
+    next page, and the rail is visible from lg. That IS the acknowledgement, and
+    it is on the lesson they finished rather than on the one after it.
+
+    It also could not have survived the change honestly. The banner rendered only
+    when the completion was already in `doneIds`, which the async write cannot
+    guarantee by the time the next page renders — so it would have flickered in
+    and out depending on which of two requests won a race, which is worse than
+    not having it.
+
+    `from` stays in the search params for one release so an in-flight link from a
+    cached page does not 404 on an unknown parameter; nothing reads it.
+  */
 
   if (isLocked(module.access, signedIn)) {
     return (
@@ -171,40 +188,6 @@ export default async function LessonPage({
         />
 
         <div className="min-w-0">
-        {/*
-          What just happened, named.
-
-          This is the piece both earlier versions of the complete control were
-          missing, and its absence is why the first one was reported as broken:
-          you pressed a button, the page changed, and nothing anywhere said the
-          lesson you had just finished was finished. A tick moving in the rail
-          300px away — collapsed inside a `<details>` below `lg` — is not an
-          acknowledgement.
-
-          Resolved rather than trusted. `?from=` is a query string and anybody
-          can type one, so it renders only when it names a lesson that is
-          genuinely in this module AND is genuinely marked done for this reader.
-          A hand-edited URL cannot forge a completion.
-
-          No `aria-live`. This is a fresh navigation and a screen reader reads the
-          page on arrival; a live region here would announce it twice.
-        */}
-        {finished ? (
-          <p className="t-body-sm mb-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[var(--radius-card)] border border-line bg-surface-subtle px-3.5 py-2.5 text-ink-secondary">
-            <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
-            <span>
-              <strong className="font-medium text-ink">{finished.name}</strong> is done. {doneIds.size}{" "}
-              of {siblings.length} in module {module.n}.
-            </span>
-            <Link
-              href={`/learn/${slug}/${n}/${finished.slug}`}
-              className="text-accent no-underline hover:underline"
-            >
-              Open it again
-            </Link>
-          </p>
-        ) : null}
-
         <div className="flex flex-wrap items-center gap-3">
           <span className="t-label inline-flex items-center gap-1.5 text-ink-muted">
             <Icon size={14} aria-hidden="true" />
@@ -243,7 +226,7 @@ export default async function LessonPage({
         ) : null}
 
         {blocks.length > 0 ? (
-          <LessonBlocks blocks={blocks} />
+          <LessonBlocks blocks={blocks} coverSrc={course.cover?.src ?? null} />
         ) : (
           <p className="t-body mt-7 text-ink-secondary">This lesson has no written content yet.</p>
         )}
@@ -266,9 +249,13 @@ export default async function LessonPage({
         {signedIn ? (
           <LessonAdvance
             lessonId={lesson.id}
+            /* The route handler the control posts to needs the course, because
+               `toggle_lesson` checks the lesson really belongs to the module
+               named by `n` within it. It used to be resolved server-side from
+               `slug` inside the action; the action is gone. */
+            courseId={course.id}
             slug={slug}
             n={n}
-            lessonSlug={lessonSlug}
             done={done}
             next={next ? { slug: next.slug, name: next.name } : null}
             artifact={module.artifact ?? ""}

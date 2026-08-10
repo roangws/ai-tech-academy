@@ -8,7 +8,7 @@ import type { Icon } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container, FactsLine } from "@/components/ui";
-import { instructors, type Course } from "@/lib/content";
+import { type Course, type Person } from "@/lib/content";
 
 /**
  * The dark fold, text only.
@@ -109,8 +109,11 @@ import { instructors, type Course } from "@/lib/content";
  * it the band renders flat ink for the length of a lazy fetch and then changes
  * under the reader. `sizes="100vw"` because it is full bleed at every width.
  */
-export function CourseHero({ course }: { course: Course }) {
-  const lead = instructors.people[0];
+export function CourseHero({ course, lead }: { course: Course; lead?: Person }) {
+  /* The lead arrives as a prop rather than being read from content.ts. The
+     roster is a table now, this is a synchronous component inside a dark band
+     whose geometry depends on nothing async, and the page above already has the
+     person in hand for its JSON-LD. One query, two consumers. */
 
   return (
     <section className="relative overflow-hidden bg-ink-band pt-8 pb-14 md:pt-12 md:pb-16 lg:pt-14 lg:pb-[88px]">
@@ -250,7 +253,7 @@ export function CourseHero({ course }: { course: Course }) {
             <p className="t-body mt-3 max-w-[620px] text-[#c3d2dc]">{course.tagline}</p>
 
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-              {lead.photo ? (
+              {lead?.photo ? (
                 <span className="flex items-center gap-2.5">
                   <span className="relative block h-8 w-8 flex-none overflow-hidden rounded-full ring-1 ring-white/20">
                     {/*

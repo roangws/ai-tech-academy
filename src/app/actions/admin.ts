@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/lib/supabase/types";
+import type { FormState } from "@/lib/form-state";
 
 /**
  * Every write the admin console does.
@@ -129,7 +130,7 @@ export async function bindSeat(formData: FormData) {
   });
   if (error) throw new Error(`bindSeat: ${error.message}`);
 
-  revalidatePath("/admin/seats");
+  revalidatePath("/admin/judging");
 }
 
 /**
@@ -219,7 +220,7 @@ export async function setModuleAccess(formData: FormData) {
  * existing key updates in place, so a block keeps its id and any
  * `media_positions` or `block_responses` pointing at it survive the edit.
  */
-export async function saveBlock(formData: FormData) {
+export async function saveBlock(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireRole("admin");
 
   const lessonId = String(formData.get("lessonId") ?? "");
@@ -228,9 +229,27 @@ export async function saveBlock(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const position = Number(formData.get("position") ?? 0);
 
-  if (!lessonId || !key) throw new Error("saveBlock: lessonId and key are required");
+  /*
+    ANSWERS, NOT CRASHES, from 9 Aug — and this is most of what "nothing is
+    working at all" meant.
+
+    Every failure below used to `throw`, which routes to the route's error
+    boundary: a full-page replacement that discards the form. So an author who
+    mistyped a key, or pasted a ten-character YouTube id, lost the entire block
+    they had just written and got a generic error screen that does not print
+    `error.message` — by design, because those strings are written for whoever
+    reads the logs.
+
+    A malformed key is not a crash. It is an answer, and `ActionForm` renders it
+    above the form with every field still filled in. The `throw` channel is kept
+    for what genuinely belongs in it: a policy refusal, a dropped connection.
+  */
+  if (!lessonId) throw new Error("saveBlock: lessonId is required");
+  if (!key) return { error: "A key is required. It is how this block is addressed — try “intro-video”." };
   if (!/^[a-z0-9-]+$/.test(key)) {
-    throw new Error("saveBlock: key must be lowercase letters, numbers and hyphens");
+    return {
+      error: `“${key}” cannot be a key. Use lowercase letters, numbers and hyphens only.`,
+    };
   }
 
   let payload: unknown;
@@ -277,7 +296,11 @@ export async function saveBlock(formData: FormData) {
     try {
       payload = JSON.parse(String(formData.get("payload") ?? "{}"));
     } catch {
-      throw new Error("saveBlock: payload is not valid JSON");
+      /* Only reachable for an unrecognised kind now: every kind the console
+         knows is built by `components/lms/block-fields.tsx`, which serialises
+         from state and cannot emit a trailing comma. Kept because a row written
+         by a future schema version still falls through to the raw textarea. */
+      return { error: "That payload is not valid JSON." };
     }
   }
 
@@ -294,10 +317,11 @@ export async function saveBlock(formData: FormData) {
     Surfacing it verbatim is more useful than a generic "could not save" — an
     author who typed a ten-character YouTube id wants to be told that.
   */
-  if (error) throw new Error(`saveBlock: ${error.message}`);
+  if (error) return { error: error.message };
 
   revalidatePath("/admin/courses", "layout");
   revalidatePath("/learn", "layout");
+  return { ok: "Saved." };
 }
 
 /**
@@ -382,7 +406,7 @@ export async function moveBlock(formData: FormData) {
  *
  * Accepting does NOT grant a role. That is on purpose and it is the one thing
  * worth arguing for here: an instructor still has to be put on a course in
- * /admin/people and a judge still has to be bound to a seat in /admin/seats,
+ * /admin/people and a judge still has to be bound to a seat in /admin/judging,
  * because those are the writes that decide what somebody can actually read, and
  * `bind_seat` already grants the judge role in the same transaction. Wiring
  * acceptance straight through to a role would mean a stray click in this queue

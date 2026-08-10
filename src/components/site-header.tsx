@@ -87,6 +87,23 @@ export type HeaderViewer = {
   avatarUrl: string | null;
 };
 
+/**
+ * Is this nav item the section of the site the reader is standing in?
+ *
+ * It was `pathname === item.href`, which is true of `/courses` and false of
+ * `/courses/ai-literacy-ethics-and-data-compliance` — so opening a course
+ * un-lit the nav item that led there, and the chrome stopped saying where you
+ * were at exactly the point a reader has gone deepest. The same held for
+ * `/instructors`, and it will hold for anything else nested under a route item.
+ *
+ * The `/` guard is what stops this being a `startsWith` bug in waiting: without
+ * it a future `/coursesomething` would light Courses.
+ */
+function onRoute(pathname: string, href: string): boolean {
+  if (href.includes("#")) return false;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function SiteHeader({
   viewer = null,
   /* The catalogue, resolved by the (site) layout. See the note on CoursesMenu:
@@ -178,7 +195,7 @@ export function SiteHeader({
   const activeHref = onHome && active
     ? (nav.find((n) => n.href.split("#")[1] === active)?.href ?? null)
     : null;
-  const routeHref = onHome ? null : (nav.find((n) => n.href === pathname)?.href ?? null);
+  const routeHref = onHome ? null : (nav.find((n) => onRoute(pathname, n.href))?.href ?? null);
   const lit = hovered ?? activeHref ?? routeHref;
 
   useEffect(() => {
@@ -475,7 +492,7 @@ export function SiteHeader({
             const fragment = item.href.split("#")[1];
             const current = fragment
               ? onHome && active === fragment
-              : pathname === item.href;
+              : onRoute(pathname, item.href);
             const isLit = lit === item.href;
 
             /* The one item with the five courses under it. Rebuilt after the
@@ -489,6 +506,12 @@ export function SiteHeader({
                   label={item.label}
                   current={current || isLit}
                   courses={courses}
+                  /* The pill follows the pointer across every other item in the
+                     row; without these three it stopped dead at the one item
+                     that has a menu under it. */
+                  onMouseEnter={() => setHovered(item.href)}
+                  onFocus={() => setHovered(item.href)}
+                  onBlur={() => setHovered(null)}
                 />
               );
             }
@@ -566,7 +589,11 @@ export function SiteHeader({
                 href="/account"
                 aria-label="Your account"
                 title={viewer.email ?? "Your account"}
-                className="rounded-full outline-none ring-offset-2 transition-shadow hover:ring-2 hover:ring-line-strong focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
+                /* Same halo as the product chrome, and the same reasoning:
+                   account-menu.tsx has the note. The offset colour was missing
+                   here too, so the 2px gap fell back to Tailwind's white and
+                   punched a light hole in the bar on the dark theme. */
+                className="rounded-full outline-none ring-offset-2 ring-offset-[color:var(--surface)] transition-shadow hover:ring-2 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
               >
                 <Avatar
                   name={viewer.name}
