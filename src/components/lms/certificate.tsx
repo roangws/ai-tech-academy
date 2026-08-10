@@ -184,9 +184,28 @@ export function Certificate({
                 into the body beside the name, which is where it belongs anyway: it
                 identifies the person the document is about, not the issuer.
 
-                `pr` clears the seal below, which still overlaps this corner and would
-                otherwise crowd the reference. */}
-            <div className="pr-[76px] text-right print:pr-[22mm]">
+                `pr` CLEARS THE SEAL, and the number is arithmetic rather than taste.
+
+                It was `pr-[76px]`, which is smaller than the seal is wide — so the
+                disc sat on top of the last characters of the reference, and Roan
+                photographed "AITE-GTM-2026-RMECTH" with its H underneath a white
+                circle. It looked like an overflow bug and it was a subtraction one.
+
+                There is no vertical escape from this. The band is about 124px tall
+                and the seal is 120 and hangs half out of the bottom, so its top edge
+                is roughly 64px down — which is exactly where the second line of this
+                block sits. The two share that band whatever happens, so the clearance
+                has to be horizontal and it has to be the whole seal:
+
+                  offset from the right edge + seal width + a gap
+                  base   32 + 120 + 12 = 164
+                  md     48 + 120 + 12 = 180
+
+                All three numbers are px, including in print — the sheet is 277mm
+                wide, which is past `md`, so the printed document takes the same 180
+                and needs no third value. If `size` on the seal changes, these change
+                with it. */}
+            <div className="pr-[164px] text-right md:pr-[180px]">
               <p className="t-label text-white/85">Completion record</p>
               {/* The reference, in the band as well as in the footer, and this is
                   the one repetition on the document that is deliberate. Both
@@ -201,7 +220,11 @@ export function Certificate({
           {/* The seal, overlapping the band's lower edge by half its height. The
               band is the containing block, so the offset is measured from its own
               bottom rather than from the sheet's. */}
-          <div className="absolute bottom-0 right-8 translate-y-1/2 md:right-12 print:right-[14mm]">
+          {/* `right-8 md:right-12` and no print override: the printed sheet is 277mm
+              wide, so it renders past `md` and takes the same 48px the wide screen
+              does. A separate `print:right-[14mm]` was a third number that had to
+              agree with the clearance above and silently did not. */}
+          <div className="absolute bottom-0 right-8 translate-y-1/2 md:right-12">
             <CertificateSeal courseBadge={course.badge} hue={hue} size={120} />
           </div>
         </div>
