@@ -1321,15 +1321,98 @@ export type Person = {
    * here assesses the book, and nothing claims it is required, recommended, or
    * connected to any course. It is a thing this instructor wrote.
    */
-  book?: {
-    /** The eyebrow over the row. */
-    label: string;
-    title: string;
-    blurb: string;
-    href: string;
-    cover: Img;
-  };
+  book?: Book;
 };
+
+export type Book = {
+  /** The eyebrow over the row. */
+  label: string;
+  title: string;
+  blurb: string;
+  href: string;
+  cover: Img;
+};
+
+/*
+  Books by people on the roster, attached to their author by profile URL.
+
+  ====================================== why this is not a column on the roster
+
+  Because the roster is a table now and this is not roster data.
+
+  For half a day it was neither: the book sat on the `roan` entry in
+  `instructors.people` below, which was the array that rendered the instructor
+  band when it was written. That array stopped rendering anything in the same
+  pass — `lib/roster.ts` reads five rows out of Postgres and builds `Person`
+  objects from them — so a field set in this file reached no card at all. The
+  merge was clean and the feature was gone, which is the quiet way that failure
+  arrives and the reason it is written up here rather than fixed silently.
+
+  The fix could have been five more columns on `roster`, and it should not be.
+  roster.ts states the line: rows are the people, and the copy around them stays
+  here because "putting it in a table would mean a migration to fix a comma".
+  One book by one author is squarely on the copy side of that line. It is not
+  something anybody will edit in the console, there is no form for it, and a
+  migration plus five nullable columns plus five admin fields to carry one
+  hyperlink is a schema built for a hypothetical.
+
+  ============================================================ keyed on linkedin
+
+  `authorLinkedin` matches `roster.linkedin`, and that is a deliberate choice of
+  key rather than the only one available.
+
+  Not the row id: those are generated uuids, so writing one into this file would
+  bind editorial copy to a database primary key that a reseed changes. Not the
+  name: two people share a name eventually and nothing stops it. Not `lead`,
+  which was the tempting one and the worst — "whatever card is first carries
+  Roan's book" is a sentence that stays true until the lead changes and then
+  quietly attributes his book to somebody else.
+
+  A LinkedIn URL is the one field on a roster row that identifies a specific
+  human being, it is already required for the card's profile link, and it is
+  public. If a person leaves the roster the match simply fails and the row does
+  not render, which is the correct failure: no author, no book.
+
+  ------------------------------------------------------------- what is claimed
+
+  That this person wrote this book, and nothing else. `title` and `blurb` are
+  the book's own listing copy, supplied by Roan, verbatim apart from the eyebrow.
+  Nothing recommends it or ties it to a course: the media path teaches applied AI
+  for video and this book is about world models in video, and drawing that line
+  into a sentence is exactly the kind of claim this file exists to refuse. A
+  reader who wants the connection can see it.
+
+  --------------------------------------------------------------- the cover art
+
+  The author's own render, CROPPED TO THE JACKET, and the crop is the point
+  rather than housekeeping. What Roan supplied is an 832 x 1023 photograph of the
+  book standing on a table in front of a film crew: a good image at a good size
+  and worthless at 40px, where the jacket was about a third of a very small
+  rectangle and the rest was blurred studio. The asset is the front face alone —
+  `extract({ left: 203, top: 363, width: 387, height: 628 })` off that render,
+  measured against a 100px grid — which is 0.616, a book's own proportions, so
+  the frame in the card crops nothing.
+
+  Still deliberately too small to read. The row underneath says what the book is,
+  and a cover set large enough to be legible would be a second, competing
+  statement of the same title.
+*/
+export const authoredBooks: readonly { authorLinkedin: string; book: Book }[] = [
+  {
+    authorLinkedin: "https://www.linkedin.com/in/-roan/",
+    book: {
+      label: "The book",
+      title: "World Models Applied in Video Production",
+      blurb:
+        "A comprehensive technical guide to how world models are reshaping video, from concept to production pipeline.",
+      href: "https://roanwe.gumroad.com/l/World-Models",
+      cover: {
+        src: "/images/book/world-models-cover.webp",
+        alt: "Cover of World Models Applied in Video Production by Roan Weigert",
+      },
+    },
+  },
+];
 
 /*
   REAL PEOPLE, as of 7 Aug 2026. This roster is no longer a set of placeholders.
@@ -1467,44 +1550,9 @@ export const instructors = {
         { label: "Produtoras de Video", href: "https://www.produtorasdevideo.com.br/" },
         { label: "Bayhaus Creative", href: "https://bayhauscreative.com/" },
       ],
-      /*
-        Added 9 Aug at Roan's request. The `book` field on `Person` carries the
-        argument for it being here rather than in a band of its own.
-
-        `title` and `blurb` are the book's own listing copy, supplied by Roan,
-        verbatim apart from the eyebrow. Nothing on the card recommends it or
-        ties it to a course: the media path teaches applied AI for video and
-        this book is about world models in video, and the temptation to draw
-        that line into a sentence is exactly the kind of claim this file exists
-        to refuse. A reader who wants the connection can see it.
-
-        The cover is the author's own render, CROPPED TO THE JACKET, and the
-        crop is the point rather than housekeeping.
-
-        What Roan supplied is a 832 x 1023 photograph of the book standing on a
-        table in front of a film crew. That is a good image at a good size and it
-        is worthless at 40px: scaled into the thumbnail whole, the jacket was
-        about a third of a very small rectangle and the rest was blurred studio,
-        so the row's one visual read as a smudge. The asset is now the front face
-        alone — `extract({ left: 203, top: 363, width: 387, height: 628 })` off
-        that render, measured against a 100px grid — which is 0.616, a book's own
-        proportions, so the frame in the card crops nothing.
-
-        Still deliberately too small to read. The row underneath says what the
-        book is, and a cover set large enough to be legible would be a second,
-        competing statement of the same title.
-      */
-      book: {
-        label: "The book",
-        title: "World Models Applied in Video Production",
-        blurb:
-          "A comprehensive technical guide to how world models are reshaping video, from concept to production pipeline.",
-        href: "https://roanwe.gumroad.com/l/World-Models",
-        cover: {
-          src: "/images/book/world-models-cover.webp",
-          alt: "Cover of World Models Applied in Video Production by Roan Weigert",
-        },
-      },
+      /* The book is NOT here. It used to be, for the half a day this array was
+         still what rendered; `authoredBooks` below has it and the note on why it
+         had to move. */
       lead: true,
     },
     /*
@@ -2313,11 +2361,17 @@ export const footer = {
            link to this; the footer is a sitemap, and a sitemap points at routes. */
         { label: "Practitioner Review Judge Board", href: "/review-judge-board" },
         /* The band, because there is no route. Added 9 Aug with the partner
-           section, and it goes here rather than in the header: the nav note at
-           `nav` above measured that row down to 40px of clear air at 1024 and
-           said the next label added to it has to be measured first. A footer has
-           no such budget, and a reader who wants to know who a program runs with
-           looks in the sitemap. */
+           section, and it goes here rather than in the header — which now has the
+           room, since FAQ came out of that row the same day and the note there
+           says the next item no longer has to be measured against a full bar.
+
+           Room is not the argument for taking it. The four labels left in the
+           nav are the four subjects a visitor arrives wanting — the catalog, the
+           method, the outcome, the people — and a partner list is not one of
+           them. It is something a reader checks about a program rather than
+           something they came for, and the footer is where that reader looks. It
+           also earns its line here on the footer's own rule: a sitemap names
+           every destination, and this one has an id. */
         { label: "Community partners", href: "/#partners" },
       ],
     },
