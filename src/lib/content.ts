@@ -2803,7 +2803,20 @@ export const legal = {
       {
         heading: "The short version",
         body: [
-          "We do not run advertising, we do not sell or share data with anyone for their own purposes, and there is no third-party analytics or tracking script on this site. Browsing the course pages does not require an account and is not tied to you.",
+          /*
+            REWRITTEN 9 Aug, and it had to be. This read "there is no third-party
+            analytics or tracking script on this site", which was true for as long as
+            it was true and stopped being true the moment the Google tag and the
+            TrustedSite trustmark went into the root layout. A privacy page describing
+            a site that no longer exists is worse than no privacy page, because it is
+            the one page a reader consults precisely when they have decided to be
+            careful.
+
+            Stated forwards, per the copy rule, and it costs nothing here: naming the
+            two scripts and what they are for is a stronger sentence than claiming an
+            absence, and it is the sentence a sceptical reader wanted anyway.
+          */
+          "This site runs two third-party scripts and no advertising. Google Analytics counts visits so we know which courses people actually open, and TrustedSite shows the trust badge in the corner. Neither is used to build a profile of you, we sell nothing to anybody, and reading the course pages needs no account.",
         ],
       },
       {
@@ -2820,15 +2833,24 @@ export const legal = {
         ],
       },
       {
-        heading: "What we do not do",
+        heading: "The limits we hold to",
         body: [
-          "We do not sell your data. We do not share it with advertisers or data brokers. We do not use your saved work to train a model, and we do not read it except where you have asked us to look at something. We do not send marketing email you did not ask for.",
+          /* Five negations in one paragraph, under a heading that was a sixth. Roan's
+             rule is that copy states things forwards, and a policy is the hardest place
+             to hold that: the promises here ARE abstentions. Each one is turned into
+             the commitment it stands for, which reads as a stronger sentence and says
+             exactly the same thing. */
+          "Your data stays with us. It goes to no advertiser and no data broker, it trains no model, and your saved work is read only where you have asked somebody to look at it. Email from us is about your account or something you asked for.",
         ],
       },
       {
         heading: "Who else touches it",
         body: [
-          "Running a service means using other companies to host it and to send email. They process data on our instructions and for no purpose of their own. The specific providers will be named here before accounts open.",
+          /* Named, 9 Aug. This said the providers "will be named here before accounts
+             open" and accounts have been open for a while, so it was a promise the page
+             had already broken. Analytics made it urgent rather than untidy: a reader
+             who is told a third-party script runs is owed the name of the third party. */
+          "Running a service means using other companies for parts of it. Supabase holds the database and the accounts, Vercel serves the site, and Google Analytics receives the page views described above. Each processes data on our instructions for the purpose it is named for here.",
         ],
       },
       {
@@ -2846,10 +2868,22 @@ export const legal = {
       {
         heading: "Cookies",
         body: [
-          /* Present tense now. The session cookies are being set today, and a
-             cookies section written in the future tense about them is wrong in
-             the direction that matters. */
-          "There is no cookie banner because there are no tracking cookies. If you have an account we set cookies to keep you signed in, and those are the only ones we set.",
+          /*
+            Present tense, and honest about the analytics cookies as of 9 Aug.
+
+            This said "There is no cookie banner because there are no tracking
+            cookies", which was the true and rather good version until the Google tag
+            landed. gtag sets `_ga` and a `_ga_<id>` per property, and those are
+            measurement cookies by any reading. Two sentences that contradict the
+            document they sit in is the failure this page cannot have.
+
+            THE BANNER IS STILL A DECISION ROAN HAS TO MAKE, and this copy neither
+            promises one nor pretends the question is closed. Google's own setup page
+            flags it: with visitors in the European Economic Area, consent mode is what
+            keeps measurement lawful, and that needs a banner and a consent default
+            fired before the tag. See third-party-scripts.tsx.
+          */
+          "Two kinds. If you have an account we set cookies to keep you signed in. Google Analytics sets its own to count a visit once rather than twice, and you can refuse them with any browser setting or extension that blocks analytics without losing anything on this site.",
         ],
       },
       {
