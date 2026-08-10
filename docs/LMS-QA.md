@@ -27,77 +27,79 @@ else needs a human with a browser.
 
 ---
 
-## 0c. Certificates, verified end to end in a headless browser, 12 Aug 2026
+## 0c. Certifications, verified end to end in a headless browser, 12 Aug 2026
 
 Run against a dev server on the live database, driving the real UI as a new
 learner and then as an admin, with the resulting rows checked in Postgres. The QA
 account and every row it created were deleted afterwards; `completion_records` is
 back to 0 rows and `enrollments` back to 5.
 
+Two sessions built certifications in parallel and this is the reconciliation of
+both. The learner and admin surfaces, the printable document and the claim
+action are from the branch that landed first. What this pass adds is the
+migration those functions never had, the public verification page, the portrait
+on the document, and the homepage band.
+
 **As a learner, from nothing** — signed up through the three-step form → landed
 signed in on `/dashboard` → ticked all 27 lessons of AI starter for small
-business through the real lesson player, one page load and one press each → the
-27th tick issued `AITE-STARTER-2026-D32HWC` with no further action → `/certificate`
-listed it, `/dashboard` showed it in "Waiting on you" and beside the Complete
-chip, `/learn/<slug>` replaced Continue with it, and the account menu carried it.
+business through the real lesson player, one page load and one press each →
+claimed the record → `AITE-STARTER-2026-D32HWC` issued and the document rendered
+with the name, the course, the date and the reference on it.
 
-**The document** — `/certificate/<reference>` served a 2000x1414 PNG and printed
-the same four facts as selectable text under it. `?download=1` returned the same
-bytes with a `Content-Disposition`. The PDF route returned 198KB that `file(1)`
-reads as "PDF document, version 1.4, 1 pages" and that renders identically to the
-PNG. Uploaded a portrait through `/account` and re-rendered: the photograph
-appears, and the layout holds in both states.
-
-**As a stranger** — `/verify/<reference>` signed out showed the certificate, the
+**As a stranger** — `/verify/<reference>` signed out shows the same document, the
 name, the course and the date. A well-formed reference that does not exist shows
-the "no certificate with that reference" state rather than a 404 or an error.
-
-**As an admin** — `/admin/certificates` listed the record with its verification
-link. `/admin/learners` force-issued a second record, which is the first time
-that button has ever worked (see defect 1).
+the "no completion record with that reference" state rather than a 404.
 
 **Against the anonymous key, on the live database** — `select` on
 `completion_records` is `42501 permission denied`, `claim_completion` is denied,
 `issue_completion` is denied, and `verify_completion` returns exactly its seven
-public fields.
+public fields. As an authenticated learner, `claim_completion` on an unfinished
+course raises `23514 completed 0 of 27 lessons`, `issue_completion` raises "only
+an admin may issue a completion record", and `select` on `completion_records`
+returns `[]`.
 
-Zero console errors and zero failed requests across the whole run.
+Zero console errors across the whole run. The 27 `ERR_ABORTED` on
+`/api/lesson-progress` are the harness navigating away the instant it presses
+"Mark done"; the writes all landed, which is why the course reads 27 of 27 and
+the record could be taken. Every page navigation the run made succeeded.
 
 **Found and fixed by this pass, in order:**
 
-1. `issue_completion` had never worked. It is declared `set search_path = ''` and
-   called `gen_random_bytes(8)` unqualified; pgcrypto installs into `extensions`
-   on this project, so the function raised `42883` the moment it reached that
-   line. A plpgsql body is not parsed at CREATE time, so it was accepted, and the
-   only caller was a button nobody had pressed — hence a table with zero rows and
-   no error to show for it. Found because the same expression, moved into a
-   `language sql` function, is parsed at CREATE time and was refused.
-2. `next/og` cannot render at all in this app. `@vercel/og` rasterises satori's
-   SVG with sharp whenever `import("sharp")` resolves, and sharp is one of Next's
-   own optional dependencies; meanwhile `getSharp` in Next's image optimizer runs
+1. `issue_completion` had never worked, which is why the table had zero rows and
+   nothing to show for it. It is declared `set search_path = ''` and called
+   `gen_random_bytes(8)` unqualified; pgcrypto installs into `extensions` on this
+   project, so the function raised `42883` the moment it reached that line. A
+   plpgsql body is not parsed at CREATE time, so it was accepted. Found because
+   the same expression, moved into a `language sql` function, is parsed at CREATE
+   time and was refused.
+2. `completion_records`, `claim_completion`, `issue_completion` and
+   `mint_completion_reference` were being called by shipped code with **no
+   migration file in the repo for any of them**. `20260812100000_certificates.sql`
+   is that file.
+3. `completion_records` had no `revoke ... from anon`. RLS was the only thing
+   stopping an anonymous holder of the publishable key reading it, and this
+   project's `ALTER DEFAULT PRIVILEGES` grants `anon` everything on every new
+   table — so one `create policy` stood between that table and the public.
+4. `enrollments_guard` raised "only an admin may complete an enrolment" on any
+   non-admin transition, which is the rule `claim_completion` has to cross. It now
+   allows the transition when a `completion_records` row exists for the pair,
+   which is a row no learner can write.
+5. `next/og` cannot render in this app at all, which is why the certificate is
+   markup rather than a rendered image. `@vercel/og` rasterises satori's SVG with
+   sharp whenever `import("sharp")` resolves — sharp is one of Next's own optional
+   dependencies — while `getSharp` in Next's image optimizer runs
    `sharp.block({operation:['VipsForeignLoad']})` and unblocks six loaders by
-   name, SVG excluded. libvips holds that per process. Every ImageResponse fails
-   with `Input buffer contains unsupported image format`. `allowSvgRasterisation`
-   in certificate-image.tsx unblocks the one operation, and says at length why
-   that does not re-expose the optimiser.
-3. The certificate's attestation line read "A course completes when the workflow
-   built on it runs live and the result has been measured", which is the
-   program's canonical sentence and a claim about a deployment the document has
-   not seen. It now says what was actually checked and points at the outcome
-   sheet for the rest.
-4. With a portrait the layout overflowed its frame, and satori reports nothing
-   when that happens: the letterhead and the title collapsed into one block. The
-   vertical budget is now written down in the file.
-5. satori refuses a `<div>` with more than one child unless it is told its
-   display, and `Check this certificate at {url}` is two children.
-6. The homepage band left a third of itself empty: a 1fr/600px grid with three
-   lines in the left column.
-7. Two lines of the instructor bar still said "path", which the 7 Aug rename
+   name, SVG excluded. libvips holds that per process, so from the first optimised
+   `next/image` onwards every `ImageResponse` fails with `Input buffer contains
+   unsupported image format`, an error naming neither SVG nor sharp. Worth
+   knowing before anybody reaches for an OG image route.
+6. Two lines of the instructor bar still said "path", which the 7 Aug rename
    retired from visible copy.
 
-**Left behind, knowingly:** the QA account's avatar object is still in the
+**Left behind, knowingly:** a QA account's avatar object is still in the
 `avatars` bucket. Deleting a storage object needs the Storage API and a
-service-role key, which is deliberately absent here. Same gap as §8.
+service-role key, which is deliberately absent here. Same gap as the account
+deletion note in section 8.
 
 ## 0a. Verified end to end in a headless browser, 11 Aug 2026
 
@@ -391,11 +393,12 @@ This is the site's central promise and it is stated on six surfaces.
 - **[FILL: events]** — the board copy promises a panel judging events where
   learners present. No event exists anywhere in the product. Either the copy or
   the feature has to give; nothing here invents one.
-- **[FILL: completion record]** — `completion_records` is admin-write only and
-  nothing issues one. `enrollments.status='completed'` is likewise never set. So
-  the third of the three artifacts `outcomes.leaveWith` promises does not exist
-  yet, and the learner-facing view of `judgements` is not built either — a
-  learner can be scored without being shown the score.
+- ~~[FILL: completion record]~~ **Answered 12 Aug.** A learner claims their own
+  record from `/dashboard/certifications`, an admin can still issue one early
+  from `/admin/learners`, and `/verify/<reference>` resolves it for anybody
+  holding the printed reference. The learner-facing view of `judgements` is
+  still not built, and that half of this note stands: a learner can be scored
+  without being shown the score.
 - ~~[FILL: lesson bodies]~~ **Superseded 10 Aug.** `lesson_blocks` carries video,
   audio, docs, quizzes, embeds, exercises and checklists, gated in Postgres. The
   prose is still being written and a lesson with no blocks says so at the top of

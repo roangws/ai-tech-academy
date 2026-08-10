@@ -7,10 +7,11 @@ import { Hero } from "@/components/sections/hero";
 import { Instructors } from "@/components/sections/instructors";
 import { Outcomes } from "@/components/sections/outcomes";
 import { Courses } from "@/components/sections/courses";
+import { Partners } from "@/components/sections/partners";
 import { Teams } from "@/components/sections/teams";
 
 /*
-  Nine sections, from fourteen.
+  Ten sections, from fourteen.
 
   ORDER. The catalog is the first thing under the fold, and the method is the
   section directly under it.
@@ -85,21 +86,29 @@ import { Teams } from "@/components/sections/teams";
   `rail` was a three-column list of the same five paths two sections from the
   catalog that lists them.
 
-  And five blocks in mockups/learning-marketplace-blocks.html need a fact this
+  WHAT CAME BACK, 9 Aug: a partner band, under the board. It is the tenth
+  section and the first addition since the cut.
+
+  Four blocks in mockups/learning-marketplace-blocks.html still need a fact this
   program does not have, which is the failure mode the brief guards against:
-  `logostrip` needs partners, `quotes` needs named learners, `plusband` needs a
-  subscription, `statband` needs a second oversized figure, and `careers` needs
-  salary and open-role counts.
+  `quotes` needs named learners, `plusband` needs a subscription, `statband`
+  needs a second oversized figure, and `careers` needs salary and open-role
+  counts. `logostrip` was the fifth until Roan named two community partners, and
+  the band that answers it is not a logo strip — sections/partners.tsx has the
+  note on why two marks alone were not enough to build one from, and on why it
+  sits under the board rather than under the fold where every capture puts one.
 
   Ground rhythm, in order: white, tint, white, tint, white, white, tint, white,
-  white. The lock is that no two tinted bands sit next to each other, and that
-  holds — but only after the FAQ went white in the same pass that merged the
+  white, white. The lock is that no two tinted bands sit next to each other, and
+  that holds — but only after the FAQ went white in the same pass that merged the
   method, since removing a white band from between the board and the FAQ left
   two tints touching. faq.tsx has that note. Teams and Closing are white grounds
-  carrying a dark panel. Two sections take `hairlineTop`, each because it
+  carrying a dark panel. Three sections take `hairlineTop`, each because it
   follows a section that draws no bottom border of its own: Teams after
-  Instructors, and Closing after the now-white FAQ. A tinted band already draws
-  its own, so asking for a hairline under one stacks two rules into a 2px line.
+  Instructors, the FAQ after the new white partner band, and Closing after the
+  FAQ. A tinted band already draws its own, so asking for a hairline under one
+  stacks two rules into a 2px line — which is why Partners takes none, sitting
+  as it does directly under the tinted board.
 */
 /**
  * One hour, and the enrol button is the only reason for it.
@@ -134,6 +143,7 @@ export default function HomePage() {
       <Instructors />
       <Teams />
       <Board />
+      <Partners />
       <Faq />
       <Closing />
     </>

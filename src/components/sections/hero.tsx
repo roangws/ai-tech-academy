@@ -2,7 +2,8 @@ import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-ic
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
 import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
-import { cta, hero, instructors } from "@/lib/content";
+import { cta, hero } from "@/lib/content";
+import { getInstructors } from "@/lib/roster";
 import { getCatalog } from "@/lib/catalog";
 
 /**
@@ -36,6 +37,11 @@ const glyphs: Record<string, Icon> = {
 };
 
 export async function Hero() {
+  /* The five portraits and the count come from the roster table, not from
+     content.ts. `hero.instructor.name` stays — that is the copy naming who
+     teaches, and it lives with the rest of the hero's words. */
+  const people = await getInstructors();
+
   /*
     The collage links into the lead course's curriculum. It used to call
     `courseHref("gtm")`, which hardcoded one course id in a client component and
@@ -163,7 +169,7 @@ export async function Hero() {
             <div className="min-w-0">
               <p className="t-meta text-ink-muted">
                 <span className="block font-semibold text-ink-secondary">
-                  Taught by {hero.instructor.name} and {instructors.people.length - 1} guest
+                  Taught by {hero.instructor.name} and {Math.max(people.length - 1, 0)} guest
                   instructors
                 </span>
                 {hero.instructor.rosterNote}
@@ -191,7 +197,7 @@ export async function Hero() {
                 column and `auto` on the inline-start margin would push it to the
                 right edge on its own line, away from the text it belongs to. */}
             <ul aria-hidden="true" className="flex flex-none items-center sm:ml-auto">
-              {instructors.people.map((person) => (
+              {people.map((person) => (
                 <li key={person.id} className="-ml-3 first:ml-0">
                   <span className="block h-[47px] w-[47px] overflow-hidden rounded-full bg-surface-sunken ring-2 ring-surface">
                     {person.photo ? (

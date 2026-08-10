@@ -5,6 +5,7 @@ import { ApplyBand } from "@/components/apply-band";
 import { BoardCard } from "@/components/board-card";
 import { Container, FactsLine, Section } from "@/components/ui";
 import { apply, board, brand } from "@/lib/content";
+import { getJudges } from "@/lib/roster";
 
 /**
  * `openGraph` REPLACES the root block, it does not merge into it.
@@ -86,7 +87,11 @@ export const metadata: Metadata = {
  * location behind a hover; that hover is gone on both surfaces, so the flag went
  * with it. board-card.tsx has the argument.
  */
-export default function ReviewJudgeBoardPage() {
+export default async function ReviewJudgeBoardPage() {
+  /* The judges are rows. `board` is still the headline, the intro and the SEO
+     copy — see lib/roster.ts on why the editorial half stayed in content.ts. */
+  const members = await getJudges();
+
   return (
     <>
       {/* A bare section rather than `Section`: the h1 block wants tighter air
@@ -117,7 +122,7 @@ export default function ReviewJudgeBoardPage() {
             <FactsLine
               className="mt-4"
               items={[
-                `${board.members.length} judges`,
+                `${members.length} judges`,
                 "Curriculum read each term",
                 "Event panels",
               ]}
@@ -161,7 +166,7 @@ export default function ReviewJudgeBoardPage() {
           it is invisible in code review because a wrong `sizes` never errors.
         */}
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {board.members.map((m) => (
+          {members.map((m) => (
             <li key={m.id} className="aspect-[3/4]">
               {/* `id` is passed here and nowhere else: this page is the one the
                   homepage teaser deep-links into, so this is the only render

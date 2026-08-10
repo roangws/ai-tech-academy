@@ -6,7 +6,6 @@ import {
   CaretDownIcon,
   CheckCircleIcon,
   CircleIcon,
-  SealCheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
@@ -14,7 +13,6 @@ import { Meter, ModuleState } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
 import { getCourseBoard, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
-import { certificatePaths, getMyCertificate } from "@/lib/lms/certificates";
 import { enroll } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
@@ -66,13 +64,6 @@ export default async function CourseBoardPage({
 
   const { course, modules, totalLessons, doneLessons, enrollment } = board;
   const signedIn = Boolean(viewer);
-
-  /* Only asked for once the meter says the course is finished. It is one extra
-     query on the last page load of a course and none of the ones before it. */
-  const certificate =
-    signedIn && totalLessons > 0 && doneLessons >= totalLessons
-      ? await getMyCertificate(course.id)
-      : null;
 
   /* The first module that is open to this reader and not finished. It is what
      "Continue" means, and the answer for a signed-out reader is always module 1.
@@ -138,20 +129,6 @@ export default async function CourseBoardPage({
           {signedIn ? (
             <>
               <Meter done={doneLessons} total={totalLessons} />
-
-              {/* A full meter with a "Continue" button under it is a course
-                  telling somebody who has finished it to keep going. When the
-                  certificate exists it is the answer to "what now", so it takes
-                  the position the resume link holds the rest of the time. */}
-              {certificate ? (
-                <Link
-                  href={certificatePaths.page(certificate.reference)}
-                  className="t-button mt-5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-accent text-on-accent no-underline transition-colors hover:bg-accent-hover"
-                >
-                  <SealCheckIcon size={15} weight="fill" aria-hidden="true" />
-                  Your certificate
-                </Link>
-              ) : null}
               {/*
                 Enrolment is a button and not a side effect of arriving. A reader
                 browsing the contents of a course they have not committed to
@@ -160,19 +137,7 @@ export default async function CourseBoardPage({
                 Once enrolled the control becomes the resume link, so the same
                 corner of the page always answers "what do I do next".
               */}
-              {certificate ? (
-                /* Two accent buttons in one 300px rail is two primaries, and the
-                   certificate is the one that belongs there now. Revisiting a
-                   finished course is still one press, from the module list
-                   directly below this. */
-                <Link
-                  href={`/learn/${slug}/${resumeN}`}
-                  className="t-button mt-4 inline-flex w-full items-center justify-center gap-1.5 text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
-                >
-                  Read it again
-                  <ArrowRightIcon size={14} weight="bold" aria-hidden="true" />
-                </Link>
-              ) : enrollment ? (
+              {enrollment ? (
                 <Link
                   href={`/learn/${slug}/${resumeN}`}
                   className="t-button mt-5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-accent text-on-accent no-underline transition-colors hover:bg-accent-hover"

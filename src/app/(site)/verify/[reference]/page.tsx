@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SealCheckIcon, WarningCircleIcon } from "@phosphor-icons/react/dist/ssr";
 
+import { Certificate } from "@/components/lms/certificate";
 import { Container, Section } from "@/components/ui";
-import { CERTIFICATE_SIZE } from "@/lib/lms/certificate-image";
-import { certificatePaths, issuedOn, verifyCompletion } from "@/lib/lms/certificates";
+import { getCourseById } from "@/lib/catalog";
 import { brand } from "@/lib/content";
+import { verifyCompletion, verifyPath } from "@/lib/lms/certifications";
 
 /**
  * The page a stranger lands on.
@@ -15,8 +16,16 @@ import { brand } from "@/lib/content";
  * A reference printed on a document that nobody outside this site can check is
  * decoration. This is the page that makes it evidence, and it is the reason
  * `verify_completion` exists as a SECURITY DEFINER function rather than as an
- * anon policy: it answers "is this document real" and it cannot be asked "who
- * else has one".
+ * anon policy on `completion_records`: it answers "is this document real" and it
+ * cannot be asked "who else has one".
+ *
+ * ------------------------------------------------- the same document, not a copy
+ *
+ * It renders `<Certificate>` — the component the holder's own page renders. A
+ * second drawing of a certificate for the public page would be two things that
+ * have to be kept looking alike, and the first CSS change would separate them.
+ * What a verifier sees here is what the holder printed, because it is the same
+ * component with the same props.
  *
  * ----------------------------------------------------------------- indexable
  *
@@ -28,9 +37,9 @@ import { brand } from "@/lib/content";
  *
  * ------------------------------------------------------------------- caching
  *
- * `revalidate = 3600`. The record is immutable once issued; the portrait on it is
- * the only thing that can change, and an hour of staleness on a photograph is a
- * fair price for a page that is mostly read by machines.
+ * `revalidate = 3600`. The record is immutable once issued; the name and the
+ * portrait on it are the only things that can change under it, and an hour of
+ * staleness on those is a fair price for a page mostly read by machines.
  */
 
 export const revalidate = 3600;
@@ -48,30 +57,18 @@ export async function generateMetadata({
   }
 
   const title = `${record.holder ?? "Completion record"} · ${record.course_title}`;
-  const description = `${record.reference} was issued on ${issuedOn(
+  const description = `${record.reference} was issued on ${new Date(
     record.issued_at,
-  )} for completing ${record.course_title} at ${brand.name}.`;
+  ).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })} for completing ${record.course_title} at ${brand.name}.`;
 
   return {
     title,
     description,
-    alternates: { canonical: certificatePaths.verify(record.reference) },
-    /* The certificate itself is the preview. It is the one page on this site
-       where the OG image is the subject of the page rather than a photograph of
-       something adjacent to it. */
-    openGraph: {
-      title,
-      description,
-      url: certificatePaths.verify(record.reference),
-      images: [
-        {
-          url: certificatePaths.image(record.reference),
-          width: CERTIFICATE_SIZE.width,
-          height: CERTIFICATE_SIZE.height,
-          alt: title,
-        },
-      ],
-    },
+    alternates: { canonical: verifyPath(record.reference) },
   };
 }
 
@@ -103,7 +100,7 @@ export default async function VerifyPage({
               className="mt-1 flex-none text-ink-muted"
             />
             <div>
-              <h1 className="t-h2 text-ink">No certificate with that reference</h1>
+              <h1 className="t-h2 text-ink">No completion record with that reference</h1>
               <p className="t-body mt-3 text-ink-secondary">
                 Nothing has been issued under{" "}
                 <span className="break-all text-ink">{reference}</span>. A reference from
@@ -120,9 +117,19 @@ export default async function VerifyPage({
     );
   }
 
+  /* The full `Course`, because that is what the document takes. `getCourseById`
+     reads the published catalogue with the anonymous key, so this stays a page
+     that works signed out and caches for everybody. */
+  const course = await getCourseById(record.course_id);
+  const issued = new Date(record.issued_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <Section ariaLabel="Certificate">
-      <Container className="max-w-[900px]">
+    <Section ariaLabel="Completion record">
+      <Container className="max-w-[960px]">
         <div className="flex items-center gap-2">
           <SealCheckIcon
             size={20}
@@ -137,37 +144,33 @@ export default async function VerifyPage({
           {record.holder ?? "This learner"} completed {record.course_title}
         </h1>
         <p className="t-body mt-3 max-w-[62ch] text-ink-secondary">
-          Reference {record.reference} was issued by {brand.name} on{" "}
-          {issuedOn(record.issued_at)}. It records that every lesson of the course was
-          completed by the person named on it.
+          Reference {record.reference} was issued by {brand.name} on {issued}. It records
+          that every lesson, lab and template in the course was finished by the person
+          named on it.
         </p>
 
-        <div className="mt-8 rounded-[var(--radius-feature)] border border-line bg-surface p-2 shadow-e2 md:p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element -- a route that
-              renders its own PNG at a fixed size. See the note on the same tag in
-              (app)/certificate/[reference]/page.tsx. */}
-          <img
-            src={certificatePaths.image(record.reference)}
-            width={CERTIFICATE_SIZE.width}
-            height={CERTIFICATE_SIZE.height}
-            alt={`Certificate of completion for ${record.course_title}, issued to ${
-              record.holder ?? "this learner"
-            } on ${issuedOn(record.issued_at)}, reference ${record.reference}.`}
-            className="block h-auto w-full rounded-[var(--radius-card)]"
-          />
-        </div>
+        {course ? (
+          <div className="mt-8">
+            <Certificate
+              name={record.holder ?? "A learner"}
+              course={course}
+              reference={record.reference}
+              issuedAt={record.issued_at}
+              photoUrl={record.avatar_url}
+            />
+          </div>
+        ) : null}
 
         {/*
           What it says, and what it does not.
 
           Stated on the page rather than left to the reader, because the whole
-          value of a record is that its claim is exact. This one certifies
-          attendance through every lesson. The thing the program actually judges —
-          a workflow running live, measured — is the outcome sheet, and a
-          certificate that let itself be read as that judgement would be the site
-          claiming something it has not checked.
+          value of a record is that its claim is exact. The result a learner
+          produced is a separate document that a judge scores, and a record that
+          let itself be read as that judgement would be the site claiming
+          something it has not checked.
         */}
-        <dl className="mt-8 grid gap-x-8 gap-y-5 border-t border-line pt-7 sm:grid-cols-3">
+        <dl className="mt-9 grid gap-x-8 gap-y-5 border-t border-line pt-7 sm:grid-cols-3">
           <div>
             <dt className="t-field text-ink-muted uppercase">Issued to</dt>
             <dd className="t-body mt-1 text-ink">{record.holder ?? "A learner"}</dd>
@@ -180,14 +183,14 @@ export default async function VerifyPage({
           </div>
           <div>
             <dt className="t-field text-ink-muted uppercase">Issued on</dt>
-            <dd className="t-body mt-1 text-ink">{issuedOn(record.issued_at)}</dd>
+            <dd className="t-body mt-1 text-ink">{issued}</dd>
           </div>
         </dl>
 
         <p className="t-body-sm mt-7 max-w-[62ch] text-ink-secondary">
-          This record covers the course: every lesson and every lab in it. The result
-          a learner produced with it is a separate document, the outcome sheet, which
-          a judge scores against a published rubric.{" "}
+          This record covers the course. The result a learner produced with it is a
+          separate document, the outcome sheet, which a judge scores against a published
+          rubric.{" "}
           <Link
             href="/courses"
             className="text-accent no-underline underline-offset-4 hover:underline"

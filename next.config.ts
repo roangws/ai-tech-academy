@@ -37,11 +37,29 @@ const LEGACY_COURSE_IDS: readonly (readonly [string, string])[] = [
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return LEGACY_COURSE_IDS.map(([id, slug]) => ({
-      source: `/courses/${id}`,
-      destination: `/courses/${slug}`,
-      permanent: true,
-    }));
+    return [
+      ...LEGACY_COURSE_IDS.map(([id, slug]) => ({
+        source: `/courses/${id}`,
+        destination: `/courses/${slug}`,
+        permanent: true,
+      })),
+      /*
+        /admin/seats became /admin/judging on 9 Aug.
+
+        The old page showed one of the three things being a judge is made of and
+        called that "Judge seats", which is why Roan read it as confusing — the
+        page's own name was a description of the fragment it showed. The new
+        route carries all three; the note at the head of that file has the
+        reasoning.
+
+        `permanent: false`, and it is the one entry here that is. The list above
+        is public URLs that were once indexed and must transfer their signals;
+        this is an admin route that nothing outside the console links to and
+        that is `robots: noindex` anyway. A 307 keeps a bookmark working without
+        asking a browser to cache the rule forever.
+      */
+      { source: "/admin/seats", destination: "/admin/judging", permanent: false },
+    ];
   },
 
   // The dev overlay badge sits on top of the closing CTA in review captures.
@@ -59,31 +77,30 @@ const nextConfig: NextConfig = {
   images: {
     // Placeholder photography only. Remove once real assets land in /public
     // or a media host. See IMAGE_MANIFEST in src/lib/content.ts.
-    remotePatterns: [{ protocol: "https", hostname: "picsum.photos" }],
-  },
+    remotePatterns: [
+      { protocol: "https", hostname: "picsum.photos" },
+      /*
+        Supabase Storage, for roster portraits and employer marks uploaded in the
+        console rather than committed to /public.
+        
+        Scoped to the storage object path rather than the whole host, so this
+        entry cannot be used to proxy something else on the project's domain
+        through the image optimiser.
 
-  /**
-   * `sharp` is a native binding, so it has to stay a require rather than be
-   * bundled. The certificate PDF route is the only thing that imports it, and it
-   * imports it for one call: PNG in, JPEG out, so the PDF can embed the bytes
-   * verbatim under /DCTDecode.
-   */
-  serverExternalPackages: ["sharp"],
-
-  /**
-   * The certificate typefaces, read from disk at module scope by
-   * src/lib/lms/certificate-image.tsx.
-   *
-   * Next traces what a function needs by following imports, and a `readFile` of a
-   * path built with `join(process.cwd(), ...)` is not an import. Without this the
-   * certificate renders in dev, where the repo is on disk, and 500s in production,
-   * where only the traced files are. Named here rather than moved into `public/`
-   * because a static asset directory is served to browsers, and these are inputs
-   * to a renderer rather than downloads.
-   */
-  outputFileTracingIncludes: {
-    "/certificate/[reference]/image": ["./assets/fonts/**"],
-    "/certificate/[reference]/pdf": ["./assets/fonts/**"],
+        The hostname is derived from the project URL rather than written out, so
+        a project move is one environment variable rather than a code change —
+        and so this file cannot disagree with the client the rest of the app
+        builds. `next.config.ts` runs in Node at build and start, so reading the
+        env var here is legitimate in a way it would not be in a component.
+      */
+      {
+        protocol: "https",
+        hostname: new URL(
+          process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://localhost",
+        ).hostname,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 
   /**

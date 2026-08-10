@@ -338,14 +338,17 @@ Real gaps, carried as placeholders rather than invented:
 - **[FILL: events]** — `content.ts:2550` already flags this: the board copy
   promises a panel judging events, and no event exists anywhere else on the site.
   Not modelled. Either the copy or the feature has to give.
-- ~~[FILL: completion record]~~ **Answered 12 Aug. All three.** The row is drawn
-  once, by `src/lib/lms/certificate-image.tsx`, as a 2000x1414 PNG through
-  `next/og`. `/certificate/<reference>` is the holder's page and embeds that PNG;
-  `/certificate/<reference>/image` and `/certificate/<reference>/pdf` are the two
-  downloads, the PDF being that same PNG as a JPEG inside a hand-written
-  single-page A4 wrapper (`src/lib/pdf.ts`); `/verify/<reference>` is the public,
-  indexable page a stranger checks it on, reading `verify_completion` rather than
-  the table. Issued by `claim_completion` on the tick that finishes a course.
+- ~~[FILL: completion record]~~ **Answered 12 Aug. A page, a print and a
+  verifiable URL.** `components/lms/certificate.tsx` is the document, sized in
+  millimetres at A4 landscape so what is on screen is what prints; the browser's
+  own dialogue is the PDF. `/dashboard/certifications` is the learner's list and
+  `/dashboard/certifications/[courseId]` the document. `/admin/certifications` is
+  the register. `/verify/<reference>` is the public page a stranger checks it on,
+  reading `verify_completion` rather than the table, so the reference resolves
+  without `completion_records` ever being readable by `anon`. Issued by
+  `claim_completion` when the learner asks and every lesson is done, or by
+  `issue_completion` when an admin overrides; both mint through
+  `mint_completion_reference` so the two can never drift.
 - **[FILL: teams]** — `content.ts:2421` describes groups with a shared launch
   date. Out of scope; individual enrolment only, which matches the current copy.
 - ~~[FILL: file uploads]~~ **Answered 10 Aug.** Two buckets exist — `course-media`

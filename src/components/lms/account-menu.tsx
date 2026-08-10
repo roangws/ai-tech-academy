@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SealCheckIcon, SignOutIcon, UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowSquareOutIcon, SignOutIcon, UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { Avatar } from "@/components/lms/avatar";
 import { cn } from "@/lib/utils";
 
@@ -111,7 +111,27 @@ export function AccountMenu({
            the address, and this control is where somebody checks which account
            they are signed in to. */
         aria-label={`Account menu for ${email ?? name}`}
-        className="flex items-center rounded-full outline-none transition-shadow hover:ring-2 hover:ring-line-strong focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
+        /*
+          THE HOVER RING HAD NO OFFSET AND NO OFFSET COLOUR.
+
+          `ring-2 ring-line-strong` painted a 2px band flush against the
+          portrait's own `border-line`, so hovering produced a second edge
+          touching the first — a muddy double outline hugging a 34px circle,
+          which is what Roan photographed and called wrong. It read as a
+          rendering artefact rather than as a state, because two adjacent
+          hairlines in two near-identical greys is what an artefact looks like.
+
+          The offset is what makes it a halo instead: 2px of the bar's own
+          surface between the portrait and the ring, so the two edges are
+          separated and the ring reads as something drawn deliberately around
+          the picture. `ring-offset-color` has to be named — Tailwind's default
+          is white, which is wrong on the dark theme and wrong on the tinted
+          bar, and it is the reason an offset was not simply added before.
+
+          The accent, at 30%, rather than `line-strong`: hover is an invitation,
+          and every other invitation in this chrome is the accent.
+        */
+        className="flex items-center rounded-full outline-none ring-offset-2 ring-offset-[color:var(--surface)] transition-shadow hover:ring-2 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
       >
         <Avatar name={name} email={email} url={avatarUrl} size={34} />
       </button>
@@ -142,17 +162,16 @@ export function AccountMenu({
               Your account
             </Link>
 
-            {/* The second door, and the one thing in this menu that is a result
-                rather than a setting. It is here rather than only on the
-                dashboard because a certificate is what somebody comes back for
-                months after they have stopped taking courses. */}
+            {/* The same exit the bar carries, for the widths where the bar
+                cannot. Under md the header drops it for room, and this menu is
+                the one control that is present at every width. */}
             <Link
-              href="/certificate"
+              href="/"
               role="menuitem"
-              className={cn(item, "t-body-sm text-ink-secondary hover:bg-surface-subtle hover:text-ink")}
+              className={cn(item, "t-body-sm text-ink-secondary hover:bg-surface-subtle hover:text-ink md:hidden")}
             >
-              <SealCheckIcon size={17} aria-hidden="true" />
-              Your certificates
+              <ArrowSquareOutIcon size={17} aria-hidden="true" />
+              Visit website
             </Link>
 
             <form action={signOut} className="mt-1 border-t border-line pt-1.5">

@@ -4,6 +4,7 @@ import {
   EnvelopeSimpleIcon,
   GavelIcon,
   GraduationCapIcon,
+  IdentificationCardIcon,
   SealCheckIcon,
   StackIcon,
   UsersThreeIcon,
@@ -37,14 +38,22 @@ import { requireRole } from "@/lib/auth";
 const SECTIONS = [
   { href: "/admin", label: "Overview", Icon: ChartLineUpIcon },
   { href: "/admin/people", label: "People", Icon: UsersThreeIcon },
-  /* Above Judge seats, because it is the step before one: somebody is accepted
-     here and then bound to a seat there. */
+  /* Above Judging, because it is the step before one: somebody is accepted here
+     and then bound to a seat there. */
   { href: "/admin/applications", label: "Applications", Icon: EnvelopeSimpleIcon },
-  { href: "/admin/seats", label: "Judge seats", Icon: GavelIcon },
+  /* The two public rosters. Directly above Judging, because half of what that
+     page reconciles is edited here — a judge's card and a judge's seat are two
+     of the three facts, and putting them apart in the rail is what let the
+     third one go unnoticed. */
+  { href: "/admin/roster", label: "Instructors and judges", Icon: IdentificationCardIcon },
+  /* Was "Judge seats", and was one page showing one of the three things being a
+     judge consists of. See the note at the head of admin/judging/page.tsx. */
+  { href: "/admin/judging", label: "Judging", Icon: GavelIcon },
   { href: "/admin/learners", label: "Learners", Icon: GraduationCapIcon },
-  /* Directly under Learners, because it is what a learner row turns into: the
-     one page that answers "who has finished" without reading thirty meters. */
-  { href: "/admin/certificates", label: "Certificates", Icon: SealCheckIcon },
+  /* Directly under Learners, because it is the same people seen through the one
+     question the learners table cannot answer: who holds a completion record
+     and who has earned one without taking it. */
+  { href: "/admin/certifications", label: "Certifications", Icon: SealCheckIcon },
   { href: "/admin/courses", label: "Courses", Icon: StackIcon },
 ];
 

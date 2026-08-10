@@ -2,20 +2,12 @@
 - Local:         http://127.0.0.1:3111
 - Network:       http://127.0.0.1:3111
 - Environments: .env.local
-✓ Ready in 170ms
-✓ Running next.config.ts took 670ms
+✓ Ready in 180ms
+✓ Running next.config.ts took 12ms
 - Experiments (use with caution):
   · optimizePackageImports
 
- GET / 200 in 1825ms (next.js: 1365ms, proxy.ts: 89ms, application-code: 371ms)
- GET / 200 in 274ms (next.js: 52ms, proxy.ts: 3ms, application-code: 219ms)
- GET /instructors 200 in 389ms (next.js: 295ms, proxy.ts: 2ms, application-code: 91ms)
- GET /review-judge-board 200 in 215ms (next.js: 103ms, proxy.ts: 1.8ms, application-code: 110ms)
- GET /courses/ai-starter-for-small-business 200 in 715ms (next.js: 147ms, proxy.ts: 1.8ms, generate-params: 354ms, application-code: 212ms)
- GET /verify/AITE-GTM-2026-NOPE99 200 in 383ms (next.js: 295ms, proxy.ts: 1.6ms, application-code: 87ms)
- GET /sign-up 200 in 153ms (next.js: 119ms, proxy.ts: 2ms, application-code: 32ms)
- GET /sign-up 200 in 21ms (next.js: 1.1ms, proxy.ts: 1.8ms, application-code: 19ms)
- GET /sign-up 200 in 26ms (next.js: 2ms, proxy.ts: 3ms, application-code: 21ms)
+ GET /sign-up 200 in 1020ms (next.js: 809ms, proxy.ts: 85ms, application-code: 125ms)
 [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
@@ -158,153 +150,41 @@ https://react.dev/link/hydration-mismatch
                 ...
       ...
  
- GET /sign-up 200 in 24ms (next.js: 1.6ms, proxy.ts: 1.8ms, application-code: 21ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-up/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-up" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-up/pa...">
-                    <SegmentTrieNode>
-                    <SignUpPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <nav>
-                              <p>
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div hidden={false}>
-                                  <div className="grid gap-4...">
-                                    <div className="">
-                                      <label>
-                                      <input
-                                        id="first-name"
-                                        name="first-name"
-                                        type="text"
-                                        autoComplete="given-name"
-                                        value=""
-                                        onChange={function onChange}
-                                        aria-invalid={undefined}
-                                        data-invalid={undefined}
-                                        aria-describedby={undefined}
-                                        className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bg..."
--                                       data-ab-ref="e2"
-                                      >
-                                    <div className="">
-                                      <label>
-                                      <input
-                                        id="last-name"
-                                        name="last-name"
-                                        type="text"
-                                        autoComplete="family-name"
-                                        value=""
-                                        onChange={function onChange}
-                                        aria-invalid={undefined}
-                                        data-invalid={undefined}
-                                        aria-describedby={undefined}
-                                        className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bg..."
--                                       data-ab-ref="e3"
-                                      >
-                                    <div className="sm:col-span-2">
-                                      <label>
-                                      <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        value=""
-                                        onChange={function onChange}
-                                        aria-invalid={undefined}
-                                        data-invalid={undefined}
-                                        aria-describedby={undefined}
-                                        className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bg..."
--                                       data-ab-ref="e4"
-                                      >
-                                    <div className="sm:col-span-2">
-                                      <label>
-                                      <input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        autoComplete="new-password"
-                                        value=""
-                                        onChange={function onChange}
-                                        aria-invalid={undefined}
-                                        data-invalid={undefined}
-                                        aria-describedby={undefined}
-                                        className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bg..."
--                                       data-ab-ref="e5"
-                                      >
-                                <div>
-                                <div>
-                                <div className="mt-7 flex ...">
-                                  <div className="min-w-[180...">
-                                    <LiquidButton type="button" variant="accent" size="lg" disabled={false} ...>
-                                      <button
-                                        data-slot="button"
-                                        className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer item..."}
-                                        style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                        onPointerMove={function onPointerMove}
-                                        onPointerLeave={function onPointerLeave}
-                                        onPointerCancel={function onPointerCancel}
-                                        type="button"
-                                        disabled={false}
-                                        onClick={function}
--                                       data-ab-ref="e6"
-                                      >
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-in" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-in"
--                                   data-ab-ref="e7"
-                                  >
-+                                   Sign in
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 448ms (next.js: 133ms, proxy.ts: 34ms, application-code: 282ms)
- POST /sign-up 200 in 648ms (next.js: 2ms, proxy.ts: 3ms, application-code: 644ms)
-  └─ ƒ signUp(null, {}) in 181ms src/app/actions/auth.ts
- GET /sign-in 200 in 322ms (next.js: 299ms, proxy.ts: 1.6ms, application-code: 21ms)
+ GET /dashboard 200 in 479ms (next.js: 166ms, proxy.ts: 25ms, application-code: 288ms)
+ POST /sign-up 200 in 694ms (next.js: 2ms, proxy.ts: 4ms, application-code: 688ms)
+  └─ ƒ signUp(null, {}) in 196ms src/app/actions/auth.ts
+ GET /account 200 in 275ms (next.js: 161ms, proxy.ts: 7ms, application-code: 107ms)
+ POST /account 200 in 416ms (next.js: 1.6ms, proxy.ts: 4ms, application-code: 411ms)
+  └─ ƒ updateProfile(null, {}) in 326ms src/app/actions/profile.ts
+ GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 714ms (next.js: 402ms, proxy.ts: 5ms, application-code: 307ms)
+ GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 283ms (next.js: 5ms, proxy.ts: 5ms, application-code: 273ms)
+ GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 386ms (next.js: 4ms, proxy.ts: 3ms, application-code: 379ms)
+ GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 359ms (next.js: 5ms, proxy.ts: 5ms, application-code: 349ms)
+ GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 310ms (next.js: 5ms, proxy.ts: 7ms, application-code: 298ms)
+ GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 289ms (next.js: 4ms, proxy.ts: 4ms, application-code: 281ms)
+ GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 372ms (next.js: 5ms, proxy.ts: 5ms, application-code: 362ms)
+ GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 361ms (next.js: 4ms, proxy.ts: 5ms, application-code: 351ms)
+ GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 251ms (next.js: 4ms, proxy.ts: 4ms, application-code: 242ms)
+ GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 277ms (next.js: 4ms, proxy.ts: 5ms, application-code: 267ms)
+ GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 317ms (next.js: 5ms, proxy.ts: 5ms, application-code: 308ms)
+ GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 353ms (next.js: 5ms, proxy.ts: 4ms, application-code: 344ms)
+ GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 317ms (next.js: 4ms, proxy.ts: 3ms, application-code: 310ms)
+ GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 284ms (next.js: 4ms, proxy.ts: 3ms, application-code: 277ms)
+ GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 278ms (next.js: 4ms, proxy.ts: 4ms, application-code: 270ms)
+ GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 305ms (next.js: 6ms, proxy.ts: 4ms, application-code: 295ms)
+ GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 373ms (next.js: 3ms, proxy.ts: 2ms, application-code: 368ms)
+ GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 316ms (next.js: 4ms, proxy.ts: 2ms, application-code: 310ms)
+ GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 298ms (next.js: 4ms, proxy.ts: 4ms, application-code: 290ms)
+ GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 315ms (next.js: 4ms, proxy.ts: 6ms, application-code: 305ms)
+ GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 287ms (next.js: 3ms, proxy.ts: 2ms, application-code: 281ms)
+ GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 352ms (next.js: 4ms, proxy.ts: 3ms, application-code: 345ms)
+ GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 383ms (next.js: 4ms, proxy.ts: 4ms, application-code: 375ms)
+ GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 281ms (next.js: 3ms, proxy.ts: 4ms, application-code: 273ms)
+ GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 325ms (next.js: 4ms, proxy.ts: 3ms, application-code: 319ms)
+ GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 353ms (next.js: 3ms, proxy.ts: 3ms, application-code: 347ms)
+ GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 353ms (next.js: 5ms, proxy.ts: 4ms, application-code: 344ms)
+ GET /dashboard/certifications 200 in 310ms (next.js: 98ms, proxy.ts: 3ms, application-code: 209ms)
+ GET /sign-in 200 in 93ms (next.js: 72ms, proxy.ts: 1.5ms, application-code: 20ms)
 [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
@@ -417,38 +297,11 @@ https://react.dev/link/hydration-mismatch
                 ...
       ...
  
- GET /dashboard 200 in 256ms (next.js: 6ms, proxy.ts: 3ms, application-code: 247ms)
- POST /sign-in 200 in 447ms (next.js: 0.9ms, proxy.ts: 1.5ms, application-code: 444ms)
-  └─ ƒ signIn(null, {}) in 182ms src/app/actions/auth.ts
- GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 697ms (next.js: 449ms, proxy.ts: 6ms, application-code: 243ms)
- GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 298ms (next.js: 3ms, proxy.ts: 2ms, application-code: 293ms)
- GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 236ms (next.js: 3ms, proxy.ts: 3ms, application-code: 229ms)
- GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 281ms (next.js: 1.6ms, proxy.ts: 1.9ms, application-code: 277ms)
- GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 223ms (next.js: 2ms, proxy.ts: 1.9ms, application-code: 219ms)
- GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 289ms (next.js: 3ms, proxy.ts: 1.7ms, application-code: 284ms)
- GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 234ms (next.js: 3ms, proxy.ts: 3ms, application-code: 228ms)
- GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 294ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 290ms)
- GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 230ms (next.js: 2ms, proxy.ts: 2ms, application-code: 225ms)
- GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 277ms (next.js: 3ms, proxy.ts: 1.7ms, application-code: 272ms)
- GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 291ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 287ms)
- GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 245ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 241ms)
- GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 301ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 297ms)
- GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 233ms (next.js: 2ms, proxy.ts: 2ms, application-code: 228ms)
- GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 293ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 288ms)
- GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 221ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 216ms)
- GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 335ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 331ms)
- GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 219ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 215ms)
- GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 262ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 258ms)
- GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 224ms (next.js: 3ms, proxy.ts: 1.7ms, application-code: 220ms)
- GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 277ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 273ms)
- GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 223ms (next.js: 3ms, proxy.ts: 1.7ms, application-code: 219ms)
- GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 237ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 233ms)
- GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 219ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 215ms)
- GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 282ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 278ms)
- GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 226ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 222ms)
- GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 248ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 244ms)
- GET /certificate 200 in 313ms (next.js: 81ms, proxy.ts: 1.9ms, application-code: 230ms)
- GET /sign-in 200 in 21ms (next.js: 2ms, proxy.ts: 1.5ms, application-code: 18ms)
+ GET /dashboard 200 in 258ms (next.js: 1.8ms, proxy.ts: 2ms, application-code: 254ms)
+ POST /sign-in 200 in 442ms (next.js: 1.1ms, proxy.ts: 1.9ms, application-code: 439ms)
+  └─ ƒ signIn(null, {}) in 174ms src/app/actions/auth.ts
+ GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 254ms (next.js: 3ms, proxy.ts: 3ms, application-code: 248ms)
+ GET /sign-in 200 in 20ms (next.js: 0.9ms, proxy.ts: 2ms, application-code: 17ms)
 [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
@@ -561,11 +414,205 @@ https://react.dev/link/hydration-mismatch
                 ...
       ...
  
- GET /dashboard 200 in 281ms (next.js: 6ms, proxy.ts: 3ms, application-code: 273ms)
- POST /sign-in 200 in 468ms (next.js: 1.1ms, proxy.ts: 1.6ms, application-code: 465ms)
-  └─ ƒ signIn(null, {}) in 177ms src/app/actions/auth.ts
- GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 243ms (next.js: 3ms, proxy.ts: 3ms, application-code: 236ms)
- GET /sign-in 200 in 19ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 15ms)
+ GET /dashboard 200 in 227ms (next.js: 1.3ms, proxy.ts: 2ms, application-code: 223ms)
+ POST /sign-in 200 in 438ms (next.js: 1.2ms, proxy.ts: 1.6ms, application-code: 435ms)
+  └─ ƒ signIn(null, {}) in 200ms src/app/actions/auth.ts
+ GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 239ms (next.js: 3ms, proxy.ts: 6ms, application-code: 229ms)
+ POST /api/lesson-progress 204 in 257ms (next.js: 161ms, proxy.ts: 2ms, application-code: 93ms)
+ GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 107ms (next.js: 5ms, proxy.ts: 2ms, application-code: 100ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 397ms (next.js: 22ms, proxy.ts: 2ms, application-code: 373ms)
+ POST /api/lesson-progress 204 in 96ms (next.js: 1.3ms, proxy.ts: 5ms, application-code: 90ms)
+ GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 106ms (next.js: 6ms, proxy.ts: 2ms, application-code: 98ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 237ms (next.js: 22ms, proxy.ts: 2ms, application-code: 213ms)
+ POST /api/lesson-progress 204 in 61ms (next.js: 1.2ms, proxy.ts: 2ms, application-code: 58ms)
+ GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 97ms (next.js: 5ms, proxy.ts: 3ms, application-code: 89ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 219ms (next.js: 22ms, proxy.ts: 3ms, application-code: 195ms)
+ POST /api/lesson-progress 204 in 86ms (next.js: 0.9ms, proxy.ts: 3ms, application-code: 82ms)
+ GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 91ms (next.js: 5ms, proxy.ts: 3ms, application-code: 84ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 217ms (next.js: 20ms, proxy.ts: 1.9ms, application-code: 195ms)
+ POST /api/lesson-progress 204 in 78ms (next.js: 1.4ms, proxy.ts: 4ms, application-code: 72ms)
+ GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 100ms (next.js: 5ms, proxy.ts: 2ms, application-code: 92ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 220ms (next.js: 23ms, proxy.ts: 3ms, application-code: 194ms)
+ POST /api/lesson-progress 204 in 77ms (next.js: 1.1ms, proxy.ts: 4ms, application-code: 72ms)
+ GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 103ms (next.js: 6ms, proxy.ts: 2ms, application-code: 95ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 230ms (next.js: 22ms, proxy.ts: 3ms, application-code: 205ms)
+ POST /api/lesson-progress 204 in 70ms (next.js: 1.0ms, proxy.ts: 2ms, application-code: 67ms)
+ GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 99ms (next.js: 5ms, proxy.ts: 3ms, application-code: 91ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 211ms (next.js: 20ms, proxy.ts: 2ms, application-code: 188ms)
+ POST /api/lesson-progress 204 in 90ms (next.js: 1.7ms, proxy.ts: 2ms, application-code: 85ms)
+ GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 96ms (next.js: 5ms, proxy.ts: 3ms, application-code: 88ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 228ms (next.js: 23ms, proxy.ts: 2ms, application-code: 203ms)
+ POST /api/lesson-progress 204 in 72ms (next.js: 0.9ms, proxy.ts: 1.9ms, application-code: 70ms)
+ GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 103ms (next.js: 4ms, proxy.ts: 3ms, application-code: 96ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 255ms (next.js: 19ms, proxy.ts: 1.9ms, application-code: 234ms)
+ POST /api/lesson-progress 204 in 48ms (next.js: 1.1ms, proxy.ts: 2ms, application-code: 44ms)
+ GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 95ms (next.js: 5ms, proxy.ts: 2ms, application-code: 87ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 203ms (next.js: 22ms, proxy.ts: 2ms, application-code: 179ms)
+ POST /api/lesson-progress 204 in 90ms (next.js: 3ms, proxy.ts: 2ms, application-code: 85ms)
+ GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 98ms (next.js: 4ms, proxy.ts: 2ms, application-code: 92ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 198ms (next.js: 18ms, proxy.ts: 1.8ms, application-code: 177ms)
+ POST /api/lesson-progress 204 in 93ms (next.js: 0.9ms, proxy.ts: 2ms, application-code: 90ms)
+ GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 96ms (next.js: 6ms, proxy.ts: 3ms, application-code: 88ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 214ms (next.js: 23ms, proxy.ts: 3ms, application-code: 187ms)
+ POST /api/lesson-progress 204 in 86ms (next.js: 1.1ms, proxy.ts: 3ms, application-code: 82ms)
+ GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 136ms (next.js: 5ms, proxy.ts: 3ms, application-code: 128ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 259ms (next.js: 20ms, proxy.ts: 2ms, application-code: 236ms)
+ POST /api/lesson-progress 204 in 41ms (next.js: 1.0ms, proxy.ts: 2ms, application-code: 38ms)
+ GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 89ms (next.js: 5ms, proxy.ts: 2ms, application-code: 81ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 209ms (next.js: 22ms, proxy.ts: 2ms, application-code: 185ms)
+ POST /api/lesson-progress 204 in 91ms (next.js: 1.1ms, proxy.ts: 3ms, application-code: 87ms)
+ GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 106ms (next.js: 5ms, proxy.ts: 3ms, application-code: 99ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 243ms (next.js: 5ms, proxy.ts: 18ms, application-code: 220ms)
+ POST /api/lesson-progress 204 in 58ms (next.js: 1.0ms, proxy.ts: 2ms, application-code: 55ms)
+ GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 108ms (next.js: 5ms, proxy.ts: 3ms, application-code: 100ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 209ms (next.js: 23ms, proxy.ts: 2ms, application-code: 184ms)
+ POST /api/lesson-progress 204 in 91ms (next.js: 1.3ms, proxy.ts: 3ms, application-code: 86ms)
+ GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 117ms (next.js: 3ms, proxy.ts: 2ms, application-code: 111ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 211ms (next.js: 2ms, proxy.ts: 2ms, application-code: 207ms)
+ POST /api/lesson-progress 204 in 66ms (next.js: 1.2ms, proxy.ts: 2ms, application-code: 63ms)
+ GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 109ms (next.js: 7ms, proxy.ts: 3ms, application-code: 99ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 219ms (next.js: 23ms, proxy.ts: 4ms, application-code: 193ms)
+ POST /api/lesson-progress 204 in 77ms (next.js: 0.8ms, proxy.ts: 2ms, application-code: 74ms)
+ GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 100ms (next.js: 5ms, proxy.ts: 2ms, application-code: 92ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 242ms (next.js: 23ms, proxy.ts: 2ms, application-code: 217ms)
+ POST /api/lesson-progress 204 in 58ms (next.js: 1.1ms, proxy.ts: 3ms, application-code: 55ms)
+ GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 101ms (next.js: 5ms, proxy.ts: 3ms, application-code: 93ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 216ms (next.js: 23ms, proxy.ts: 2ms, application-code: 191ms)
+ POST /api/lesson-progress 204 in 80ms (next.js: 1.0ms, proxy.ts: 2ms, application-code: 77ms)
+ GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 96ms (next.js: 7ms, proxy.ts: 3ms, application-code: 86ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 217ms (next.js: 22ms, proxy.ts: 5ms, application-code: 189ms)
+ POST /api/lesson-progress 204 in 69ms (next.js: 1.0ms, proxy.ts: 2ms, application-code: 66ms)
+ GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 92ms (next.js: 5ms, proxy.ts: 2ms, application-code: 84ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 211ms (next.js: 23ms, proxy.ts: 2ms, application-code: 186ms)
+ POST /api/lesson-progress 204 in 88ms (next.js: 1.1ms, proxy.ts: 4ms, application-code: 83ms)
+ GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 99ms (next.js: 5ms, proxy.ts: 2ms, application-code: 91ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 208ms (next.js: 24ms, proxy.ts: 2ms, application-code: 181ms)
+ POST /api/lesson-progress 204 in 93ms (next.js: 1.2ms, proxy.ts: 2ms, application-code: 90ms)
+ GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 100ms (next.js: 7ms, proxy.ts: 3ms, application-code: 90ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 223ms (next.js: 20ms, proxy.ts: 4ms, application-code: 198ms)
+ POST /api/lesson-progress 204 in 66ms (next.js: 0.9ms, proxy.ts: 2ms, application-code: 62ms)
+ GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 93ms (next.js: 5ms, proxy.ts: 3ms, application-code: 86ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 213ms (next.js: 5ms, proxy.ts: 20ms, application-code: 188ms)
+ POST /api/lesson-progress 204 in 85ms (next.js: 1.4ms, proxy.ts: 5ms, application-code: 79ms)
+ GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 95ms (next.js: 4ms, proxy.ts: 2ms, application-code: 89ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 196ms (next.js: 4ms, proxy.ts: 2ms, application-code: 191ms)
+ POST /api/lesson-progress 204 in 83ms (next.js: 1.2ms, proxy.ts: 2ms, application-code: 80ms)
+ GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 120ms (next.js: 8ms, proxy.ts: 3ms, application-code: 109ms)
+⨯ Error: The destination stream closed early.
+    at ignore-listed frames {
+  digest: '4053686274'
+}
+ GET /dashboard/certifications 200 in 151ms (next.js: 2ms, proxy.ts: 3ms, application-code: 146ms)
+ GET /dashboard/certifications/starter?earned=1 200 in 527ms (next.js: 281ms, proxy.ts: 2ms, application-code: 244ms)
+ POST /dashboard/certifications 200 in 597ms (next.js: 1.3ms, proxy.ts: 3ms, application-code: 593ms)
+  └─ ƒ claimCompletion(null, {}) in 59ms src/app/actions/certifications.ts
+ GET /verify/AITE-STARTER-2026-QPF9G5 200 in 657ms (next.js: 473ms, proxy.ts: 1.6ms, application-code: 183ms)
+ GET /verify/AITE-GTM-2026-NOPE99 200 in 85ms (next.js: 3ms, proxy.ts: 1.4ms, application-code: 81ms)
+ GET /sign-in 200 in 20ms (next.js: 4ms, proxy.ts: 1.5ms, application-code: 15ms)
 [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
@@ -678,810 +725,12 @@ https://react.dev/link/hydration-mismatch
                 ...
       ...
  
- POST /sign-in 200 in 442ms (next.js: 1.2ms, proxy.ts: 1.5ms, application-code: 439ms)
-  └─ ƒ signIn(null, {}) in 160ms src/app/actions/auth.ts
- GET /dashboard 200 in 278ms (next.js: 1.1ms, proxy.ts: 2ms, application-code: 275ms)
- GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 283ms (next.js: 3ms, proxy.ts: 3ms, application-code: 277ms)
- GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 228ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 224ms)
- GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 218ms (next.js: 2ms, proxy.ts: 1.9ms, application-code: 214ms)
- GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 228ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 224ms)
- GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 271ms (next.js: 3ms, proxy.ts: 2.0ms, application-code: 266ms)
- GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 219ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 215ms)
- GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 247ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 243ms)
- GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 202ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 198ms)
- GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 259ms (next.js: 3ms, proxy.ts: 2ms, application-code: 254ms)
- GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 181ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 177ms)
- GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 253ms (next.js: 1.5ms, proxy.ts: 1.7ms, application-code: 250ms)
- GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 198ms (next.js: 2ms, proxy.ts: 1.9ms, application-code: 194ms)
- GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 261ms (next.js: 4ms, proxy.ts: 2ms, application-code: 254ms)
- GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 208ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 204ms)
- GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 292ms (next.js: 3ms, proxy.ts: 1.6ms, application-code: 288ms)
- GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 202ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 198ms)
- GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 243ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 239ms)
- GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 184ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 180ms)
- GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 257ms (next.js: 1.5ms, proxy.ts: 1.7ms, application-code: 254ms)
- GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 190ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 185ms)
- GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 208ms (next.js: 1.6ms, proxy.ts: 2ms, application-code: 205ms)
- GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 215ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 211ms)
- GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 178ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 174ms)
- GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 274ms (next.js: 1.6ms, proxy.ts: 1.9ms, application-code: 270ms)
- GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 204ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 200ms)
- GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 233ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 229ms)
- GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 184ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 180ms)
- GET /certificate 200 in 213ms (next.js: 1.2ms, proxy.ts: 1.7ms, application-code: 210ms)
- GET /sign-in 200 in 17ms (next.js: 1.2ms, proxy.ts: 1.4ms, application-code: 14ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-in/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-in" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-in/pa...">
-                    <SegmentTrieNode>
-                    <SignInPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div className="grid gap-4...">
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="email"
-                                      name="email"
-                                      type="email"
-                                      autoComplete="email"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e2"
-                                    >
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="password"
-                                      name="password"
-                                      type="password"
-                                      autoComplete="current-password"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e3"
-                                    >
-                                <p>
-                                <LiquidButton type="submit" variant="accent" size="lg" disabled={false} ...>
-                                  <button
-                                    data-slot="button"
-                                    className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer items-ce..."}
-                                    style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                    onPointerMove={function onPointerMove}
-                                    onPointerLeave={function onPointerLeave}
-                                    onPointerCancel={function onPointerCancel}
-                                    type="submit"
-                                    disabled={false}
--                                   data-ab-ref="e4"
-                                  >
-                                <p className="t-micro mt...">
-                                  <LinkComponent href="/courses" className="text-accen...">
-                                    <a
-                                      className="text-accent no-underline hover:underline"
-                                      ref={function}
-                                      onClick={function onClick}
-                                      onMouseEnter={function onMouseEnter}
-                                      onTouchStart={function onTouchStart}
-                                      href="/courses"
--                                     data-ab-ref="e5"
-                                    >
-+                                     pick a course
-                                  ...
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-up" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-up"
--                                   data-ab-ref="e6"
-                                  >
-+                                   Create a free account
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 188ms (next.js: 1.4ms, proxy.ts: 2ms, application-code: 184ms)
- POST /sign-in 200 in 354ms (next.js: 1.0ms, proxy.ts: 1.8ms, application-code: 352ms)
-  └─ ƒ signIn(null, {}) in 158ms src/app/actions/auth.ts
- GET /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 277ms (next.js: 5ms, proxy.ts: 2ms, application-code: 270ms)
- POST /learn/ai-starter-for-small-business/01/list-where-your-week-actually-goes 200 in 282ms (next.js: 3ms, proxy.ts: 2ms, application-code: 277ms)
-  └─ ƒ toggleLesson(null, {}) in 108ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 212ms (next.js: 3ms, proxy.ts: 2ms, application-code: 207ms)
- POST /learn/ai-starter-for-small-business/01/time-and-cost-your-busiest-task 200 in 328ms (next.js: 3ms, proxy.ts: 2ms, application-code: 322ms)
-  └─ ƒ toggleLesson(null, {}) in 99ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 196ms (next.js: 3ms, proxy.ts: 2ms, application-code: 192ms)
- POST /learn/ai-starter-for-small-business/01/shortlist-the-high-value-use-cases 200 in 338ms (next.js: 3ms, proxy.ts: 3ms, application-code: 332ms)
-  └─ ƒ toggleLesson(null, {}) in 106ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 195ms (next.js: 5ms, proxy.ts: 1.8ms, application-code: 189ms)
- POST /learn/ai-starter-for-small-business/02/verify-before-you-send 200 in 331ms (next.js: 4ms, proxy.ts: 3ms, application-code: 325ms)
-  └─ ƒ toggleLesson(null, {}) in 150ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 292ms (next.js: 3ms, proxy.ts: 4ms, application-code: 285ms)
- POST /learn/ai-starter-for-small-business/02/your-brand-voice-written-down 200 in 304ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 299ms)
-  └─ ƒ toggleLesson(null, {}) in 135ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 227ms (next.js: 3ms, proxy.ts: 2ms, application-code: 222ms)
- POST /learn/ai-starter-for-small-business/02/reusable-prompt-patterns 200 in 267ms (next.js: 3ms, proxy.ts: 2ms, application-code: 261ms)
-  └─ ƒ toggleLesson(null, {}) in 101ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 205ms (next.js: 3ms, proxy.ts: 2ms, application-code: 200ms)
- POST /learn/ai-starter-for-small-business/02/working-with-your-own-files-and-data 200 in 370ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 366ms)
-  └─ ƒ toggleLesson(null, {}) in 112ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 188ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 184ms)
- POST /learn/ai-starter-for-small-business/03/customer-research-and-the-offer 200 in 365ms (next.js: 4ms, proxy.ts: 2ms, application-code: 359ms)
-  └─ ƒ toggleLesson(null, {}) in 192ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 191ms (next.js: 2ms, proxy.ts: 1.9ms, application-code: 187ms)
- POST /learn/ai-starter-for-small-business/03/content-email-and-social 200 in 319ms (next.js: 3ms, proxy.ts: 2ms, application-code: 314ms)
-  └─ ƒ toggleLesson(null, {}) in 154ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 245ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 241ms)
- POST /learn/ai-starter-for-small-business/03/local-discovery-and-reuse 200 in 279ms (next.js: 3ms, proxy.ts: 2.0ms, application-code: 274ms)
-  └─ ƒ toggleLesson(null, {}) in 113ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 218ms (next.js: 3ms, proxy.ts: 2ms, application-code: 213ms)
- POST /learn/ai-starter-for-small-business/04/lead-response-and-qualification 200 in 270ms (next.js: 3ms, proxy.ts: 3ms, application-code: 263ms)
-  └─ ƒ toggleLesson(null, {}) in 107ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 218ms (next.js: 3ms, proxy.ts: 5ms, application-code: 210ms)
- POST /learn/ai-starter-for-small-business/04/proposals-and-quotes 200 in 326ms (next.js: 3ms, proxy.ts: 2ms, application-code: 320ms)
-  └─ ƒ toggleLesson(null, {}) in 111ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 207ms (next.js: 3ms, proxy.ts: 2ms, application-code: 202ms)
- POST /learn/ai-starter-for-small-business/04/common-questions-and-support-drafts 200 in 344ms (next.js: 3ms, proxy.ts: 2ms, application-code: 339ms)
-  └─ ƒ toggleLesson(null, {}) in 173ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 251ms (next.js: 3ms, proxy.ts: 1.9ms, application-code: 246ms)
- POST /learn/ai-starter-for-small-business/05/meeting-notes-and-procedures 200 in 269ms (next.js: 4ms, proxy.ts: 2.0ms, application-code: 263ms)
-  └─ ƒ toggleLesson(null, {}) in 101ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 251ms (next.js: 3ms, proxy.ts: 2ms, application-code: 246ms)
- POST /learn/ai-starter-for-small-business/05/document-drafting-and-vendor-comparison 200 in 278ms (next.js: 4ms, proxy.ts: 2ms, application-code: 272ms)
-  └─ ƒ toggleLesson(null, {}) in 93ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 183ms (next.js: 3ms, proxy.ts: 2ms, application-code: 179ms)
- POST /learn/ai-starter-for-small-business/05/reporting-and-finding-what-you-wrote-before 200 in 348ms (next.js: 4ms, proxy.ts: 2ms, application-code: 342ms)
-  └─ ƒ toggleLesson(null, {}) in 118ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 183ms (next.js: 3ms, proxy.ts: 2ms, application-code: 178ms)
- POST /learn/ai-starter-for-small-business/06/triggers-and-actions-without-code 200 in 339ms (next.js: 3ms, proxy.ts: 3ms, application-code: 333ms)
-  └─ ƒ toggleLesson(null, {}) in 161ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 191ms (next.js: 3ms, proxy.ts: 2ms, application-code: 186ms)
- POST /learn/ai-starter-for-small-business/06/the-human-approval-step 200 in 335ms (next.js: 4ms, proxy.ts: 3ms, application-code: 328ms)
-  └─ ƒ toggleLesson(null, {}) in 156ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 255ms (next.js: 3ms, proxy.ts: 2ms, application-code: 250ms)
- POST /learn/ai-starter-for-small-business/06/exceptions-and-logging 200 in 298ms (next.js: 3ms, proxy.ts: 2ms, application-code: 292ms)
-  └─ ƒ toggleLesson(null, {}) in 105ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 202ms (next.js: 3ms, proxy.ts: 2ms, application-code: 197ms)
- POST /learn/ai-starter-for-small-business/06/put-it-to-work 200 in 275ms (next.js: 3ms, proxy.ts: 3ms, application-code: 270ms)
-  └─ ƒ toggleLesson(null, {}) in 97ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 192ms (next.js: 3ms, proxy.ts: 2ms, application-code: 187ms)
- POST /learn/ai-starter-for-small-business/07/time-saved-and-output-quality 200 in 343ms (next.js: 4ms, proxy.ts: 3ms, application-code: 337ms)
-  └─ ƒ toggleLesson(null, {}) in 99ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 196ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 192ms)
- POST /learn/ai-starter-for-small-business/07/operating-cost-tool-cost-and-privacy-risk 200 in 329ms (next.js: 3ms, proxy.ts: 2.0ms, application-code: 324ms)
-  └─ ƒ toggleLesson(null, {}) in 101ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 203ms (next.js: 2ms, proxy.ts: 1.9ms, application-code: 199ms)
- POST /learn/ai-starter-for-small-business/07/the-keep-change-or-stop-decision 200 in 309ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 305ms)
-  └─ ƒ toggleLesson(null, {}) in 141ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 258ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 254ms)
- POST /learn/ai-starter-for-small-business/08/deploy-the-second-workflow 200 in 292ms (next.js: 4ms, proxy.ts: 2ms, application-code: 287ms)
-  └─ ƒ toggleLesson(null, {}) in 121ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 225ms (next.js: 2ms, proxy.ts: 1.8ms, application-code: 221ms)
- POST /learn/ai-starter-for-small-business/08/a-one-page-ai-use-policy-for-your-business 200 in 342ms (next.js: 4ms, proxy.ts: 2ms, application-code: 335ms)
-  └─ ƒ toggleLesson(null, {}) in 101ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 233ms (next.js: 3ms, proxy.ts: 2ms, application-code: 228ms)
- POST /learn/ai-starter-for-small-business/08/maintenance-calendar-and-next-quarter 200 in 351ms (next.js: 3ms, proxy.ts: 2ms, application-code: 345ms)
-  └─ ƒ toggleLesson(null, {}) in 108ms src/app/actions/lms.ts
- GET /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 217ms (next.js: 3ms, proxy.ts: 2ms, application-code: 212ms)
- POST /learn/ai-starter-for-small-business/08/assemble-the-completion-record 200 in 339ms (next.js: 3ms, proxy.ts: 2ms, application-code: 333ms)
-  └─ ƒ toggleLesson(null, {}) in 157ms src/app/actions/lms.ts
- GET /certificate 200 in 244ms (next.js: 5ms, proxy.ts: 1.9ms, application-code: 236ms)
- GET /certificate/AITE-STARTER-2026-D32HWC 200 in 406ms (next.js: 288ms, proxy.ts: 2ms, application-code: 116ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 866ms (next.js: 553ms, proxy.ts: 1.7ms, application-code: 312ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 51ms (next.js: 2ms, proxy.ts: 1.7ms, application-code: 47ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 47ms (next.js: 1.2ms, proxy.ts: 1.6ms, application-code: 44ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 43ms (next.js: 1.4ms, proxy.ts: 1.6ms, application-code: 40ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 43ms (next.js: 1.1ms, proxy.ts: 1.6ms, application-code: 40ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 115ms (next.js: 1.1ms, proxy.ts: 1.5ms, application-code: 113ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 43ms (next.js: 1.3ms, proxy.ts: 1.8ms, application-code: 40ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 112ms (next.js: 6ms, proxy.ts: 3ms, application-code: 103ms)
- GET /certificate/__probe?mode=nofont 200 in 152ms (next.js: 10ms, proxy.ts: 1.7ms, application-code: 140ms)
- GET /certificate/__probe?mode=plain 200 in 150ms (next.js: 1.9ms, proxy.ts: 3ms, application-code: 145ms)
- GET /certificate/__probe?mode=img 200 in 77ms (next.js: 3ms, proxy.ts: 1.2ms, application-code: 73ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Input buffer contains unsupported image format
-      at ignore-listed frames
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 108ms (next.js: 3ms, proxy.ts: 1.6ms, application-code: 104ms)
- GET /certificate/__probe?mode=three 200 in 189ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 184ms)
- GET /certificate/__probe?ref=AITE-STARTER-2026-D32HWC 200 in 215ms (next.js: 4ms, proxy.ts: 1.6ms, application-code: 209ms)
- GET /__probe?ref=AITE-STARTER-2026-D32HWC 404 in 349ms (next.js: 323ms, proxy.ts: 1.7ms, application-code: 24ms)
- GET /api/probe?ref=AITE-STARTER-2026-D32HWC 200 in 225ms (next.js: 66ms, proxy.ts: 58ms, application-code: 101ms)
- GET /api/probe 200 in 15ms (next.js: 10ms, proxy.ts: 2ms, application-code: 3ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 281ms (next.js: 16ms, proxy.ts: 3ms, application-code: 261ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 138ms (next.js: 2ms, proxy.ts: 1.6ms, application-code: 134ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Expected <div> to have explicit "display: flex", "display: contents", or "display: none" if it has more than one child node.
-      at rr.next (<anonymous>)
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 126ms (next.js: 4ms, proxy.ts: 2ms, application-code: 119ms)
-⨯ Error: failed to pipe response
-    at ignore-listed frames {
-  [cause]: Error: Expected <div> to have explicit "display: flex", "display: contents", or "display: none" if it has more than one child node.
-      at rr.next (<anonymous>)
-}
- GET /certificate/AITE-STARTER-2026-D32HWC/image 500 in 101ms (next.js: 13ms, proxy.ts: 2ms, application-code: 86ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 131ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 126ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/pdf 200 in 638ms (next.js: 501ms, proxy.ts: 1.9ms, application-code: 135ms)
- GET /sign-in 200 in 165ms (next.js: 68ms, proxy.ts: 2ms, application-code: 95ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-in/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-in" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-in/pa...">
-                    <SegmentTrieNode>
-                    <SignInPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div className="grid gap-4...">
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="email"
-                                      name="email"
-                                      type="email"
-                                      autoComplete="email"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e2"
-                                    >
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="password"
-                                      name="password"
-                                      type="password"
-                                      autoComplete="current-password"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e3"
-                                    >
-                                <p>
-                                <LiquidButton type="submit" variant="accent" size="lg" disabled={false} ...>
-                                  <button
-                                    data-slot="button"
-                                    className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer items-ce..."}
-                                    style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                    onPointerMove={function onPointerMove}
-                                    onPointerLeave={function onPointerLeave}
-                                    onPointerCancel={function onPointerCancel}
-                                    type="submit"
-                                    disabled={false}
--                                   data-ab-ref="e4"
-                                  >
-                                <p className="t-micro mt...">
-                                  <LinkComponent href="/courses" className="text-accen...">
-                                    <a
-                                      className="text-accent no-underline hover:underline"
-                                      ref={function}
-                                      onClick={function onClick}
-                                      onMouseEnter={function onMouseEnter}
-                                      onTouchStart={function onTouchStart}
-                                      href="/courses"
--                                     data-ab-ref="e5"
-                                    >
-+                                     pick a course
-                                  ...
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-up" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-up"
--                                   data-ab-ref="e6"
-                                  >
-+                                   Create a free account
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 337ms (next.js: 26ms, proxy.ts: 34ms, application-code: 276ms)
- POST /sign-in 200 in 585ms (next.js: 1.4ms, proxy.ts: 1.8ms, application-code: 581ms)
-  └─ ƒ signIn(null, {}) in 183ms src/app/actions/auth.ts
- GET /account 200 in 248ms (next.js: 138ms, proxy.ts: 3ms, application-code: 108ms)
- POST /account 200 in 482ms (next.js: 1.1ms, proxy.ts: 2ms, application-code: 478ms)
-  └─ ƒ updateProfile(null, {}) in 393ms src/app/actions/profile.ts
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 218ms (next.js: 3ms, proxy.ts: 1.6ms, application-code: 214ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 291ms (next.js: 6ms, proxy.ts: 6ms, application-code: 279ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 359ms (next.js: 9ms, proxy.ts: 2ms, application-code: 348ms)
- GET / 200 in 468ms (next.js: 61ms, proxy.ts: 46ms, application-code: 361ms)
- GET /verify/AITE-STARTER-2026-D32HWC 200 in 163ms (next.js: 9ms, proxy.ts: 1.4ms, application-code: 152ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 53ms (next.js: 22ms, proxy.ts: 3ms, application-code: 28ms)
- GET / 200 in 205ms (next.js: 1.2ms, proxy.ts: 1.7ms, application-code: 203ms)
- GET / 200 in 231ms (next.js: 1.1ms, proxy.ts: 3ms, application-code: 227ms)
- GET / 200 in 165ms (next.js: 1.2ms, proxy.ts: 1.9ms, application-code: 162ms)
- GET /instructors 200 in 110ms (next.js: 15ms, proxy.ts: 2ms, application-code: 93ms)
- GET /verify/AITE-STARTER-2026-D32HWC 200 in 171ms (next.js: 3ms, proxy.ts: 2.0ms, application-code: 166ms)
- GET /certificate/AITE-STARTER-2026-D32HWC/image 200 in 286ms (next.js: 3ms, proxy.ts: 2ms, application-code: 281ms)
- GET / 200 in 212ms (next.js: 2ms, proxy.ts: 1.5ms, application-code: 209ms)
- GET / 200 in 168ms (next.js: 1.2ms, proxy.ts: 1.6ms, application-code: 166ms)
- GET /instructors 200 in 94ms (next.js: 1.3ms, proxy.ts: 1.8ms, application-code: 91ms)
-[browser] Image with src "/images/people/roan-weigert-studio.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
- GET /sign-in 200 in 53ms (next.js: 15ms, proxy.ts: 1.5ms, application-code: 37ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-in/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-in" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-in/pa...">
-                    <SegmentTrieNode>
-                    <SignInPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div className="grid gap-4...">
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="email"
-                                      name="email"
-                                      type="email"
-                                      autoComplete="email"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e2"
-                                    >
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="password"
-                                      name="password"
-                                      type="password"
-                                      autoComplete="current-password"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e3"
-                                    >
-                                <p>
-                                <LiquidButton type="submit" variant="accent" size="lg" disabled={false} ...>
-                                  <button
-                                    data-slot="button"
-                                    className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer items-ce..."}
-                                    style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                    onPointerMove={function onPointerMove}
-                                    onPointerLeave={function onPointerLeave}
-                                    onPointerCancel={function onPointerCancel}
-                                    type="submit"
-                                    disabled={false}
--                                   data-ab-ref="e4"
-                                  >
-                                <p className="t-micro mt...">
-                                  <LinkComponent href="/courses" className="text-accen...">
-                                    <a
-                                      className="text-accent no-underline hover:underline"
-                                      ref={function}
-                                      onClick={function onClick}
-                                      onMouseEnter={function onMouseEnter}
-                                      onTouchStart={function onTouchStart}
-                                      href="/courses"
--                                     data-ab-ref="e5"
-                                    >
-+                                     pick a course
-                                  ...
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-up" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-up"
--                                   data-ab-ref="e6"
-                                  >
-+                                   Create a free account
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 372ms (next.js: 29ms, proxy.ts: 86ms, application-code: 257ms)
- POST /sign-in 200 in 565ms (next.js: 1.0ms, proxy.ts: 1.6ms, application-code: 563ms)
-  └─ ƒ signIn(null, {}) in 182ms src/app/actions/auth.ts
- GET /dashboard 200 in 226ms (next.js: 1.3ms, proxy.ts: 4ms, application-code: 221ms)
- GET /learn/ai-starter-for-small-business 200 in 630ms (next.js: 328ms, proxy.ts: 3ms, application-code: 300ms)
- GET /certificate 200 in 256ms (next.js: 15ms, proxy.ts: 10ms, application-code: 231ms)
- GET /certificate/AITE-GTM-2026-ZZZZZZ 200 in 194ms (next.js: 17ms, proxy.ts: 4ms, application-code: 172ms)
- GET /certificate/AITE-STARTER-2026-D32HWC 200 in 132ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 127ms)
- GET /certificate/AITE-GTM-2026-ZZZZZZ 200 in 87ms (next.js: 1.5ms, proxy.ts: 1.3ms, application-code: 84ms)
- GET /sign-in 200 in 19ms (next.js: 0.9ms, proxy.ts: 1.3ms, application-code: 16ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-in/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-in" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-in/pa...">
-                    <SegmentTrieNode>
-                    <SignInPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div className="grid gap-4...">
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="email"
-                                      name="email"
-                                      type="email"
-                                      autoComplete="email"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e2"
-                                    >
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="password"
-                                      name="password"
-                                      type="password"
-                                      autoComplete="current-password"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e3"
-                                    >
-                                <p>
-                                <LiquidButton type="submit" variant="accent" size="lg" disabled={false} ...>
-                                  <button
-                                    data-slot="button"
-                                    className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer items-ce..."}
-                                    style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                    onPointerMove={function onPointerMove}
-                                    onPointerLeave={function onPointerLeave}
-                                    onPointerCancel={function onPointerCancel}
-                                    type="submit"
-                                    disabled={false}
--                                   data-ab-ref="e4"
-                                  >
-                                <p className="t-micro mt...">
-                                  <LinkComponent href="/courses" className="text-accen...">
-                                    <a
-                                      className="text-accent no-underline hover:underline"
-                                      ref={function}
-                                      onClick={function onClick}
-                                      onMouseEnter={function onMouseEnter}
-                                      onTouchStart={function onTouchStart}
-                                      href="/courses"
--                                     data-ab-ref="e5"
-                                    >
-+                                     pick a course
-                                  ...
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-up" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-up"
--                                   data-ab-ref="e6"
-                                  >
-+                                   Create a free account
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 451ms (next.js: 1.6ms, proxy.ts: 4ms, application-code: 446ms)
- POST /sign-in 200 in 640ms (next.js: 1.0ms, proxy.ts: 1.5ms, application-code: 637ms)
-  └─ ƒ signIn(null, {}) in 176ms src/app/actions/auth.ts
- GET /admin/certificates 200 in 308ms (next.js: 92ms, proxy.ts: 2ms, application-code: 214ms)
- GET /admin/learners 200 in 296ms (next.js: 86ms, proxy.ts: 2ms, application-code: 208ms)
- GET /sign-in 200 in 19ms (next.js: 1.1ms, proxy.ts: 1.3ms, application-code: 17ms)
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerScrollHandlerNew focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
-      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
-        <LoadingBoundary name="sign-in/" loading={null}>
-          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
-            <RedirectBoundary>
-              <RedirectErrorBoundary router={{...}}>
-                <InnerLayoutRouter url="/sign-in" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
-                  <SegmentViewNode type="page" pagePath="sign-in/pa...">
-                    <SegmentTrieNode>
-                    <SignInPage>
-                      <AuthScreen>
-                        <div className="flex min-h...">
-                          <header className="px-4 pt-6 ...">
-                            <Logo>
-                              <LinkComponent>
-                                <LinkComponent href="/" className="group flex..." aria-label="AI Tech Ed...">
-                                  <a
-                                    className="group flex flex-none items-center gap-2.5 no-underline"
-                                    aria-label="AI Tech Education Academy, home"
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/"
--                                   data-ab-ref="e1"
-                                  >
-                          ...
-                            <div className="max-w-[440px]">
-                              <h1>
-                              <p>
-                              <form className="mt-7" noValidate={true} action={function bound dispatchActionState}>
-                                <input>
-                                <div className="grid gap-4...">
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="email"
-                                      name="email"
-                                      type="email"
-                                      autoComplete="email"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e2"
-                                    >
-                                  <div className="sm:col-span-2">
-                                    <label>
-                                    <input
-                                      id="password"
-                                      name="password"
-                                      type="password"
-                                      autoComplete="current-password"
-                                      aria-invalid={undefined}
-                                      aria-describedby={undefined}
-                                      className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border bord..."
--                                     data-ab-ref="e3"
-                                    >
-                                <p>
-                                <LiquidButton type="submit" variant="accent" size="lg" disabled={false} ...>
-                                  <button
-                                    data-slot="button"
-                                    className={"group/glass relative z-0 inline-flex shrink-0 cursor-pointer items-ce..."}
-                                    style={{--gx:"50%",--gy:"50%",--glow:"0"}}
-                                    onPointerMove={function onPointerMove}
-                                    onPointerLeave={function onPointerLeave}
-                                    onPointerCancel={function onPointerCancel}
-                                    type="submit"
-                                    disabled={false}
--                                   data-ab-ref="e4"
-                                  >
-                                <p className="t-micro mt...">
-                                  <LinkComponent href="/courses" className="text-accen...">
-                                    <a
-                                      className="text-accent no-underline hover:underline"
-                                      ref={function}
-                                      onClick={function onClick}
-                                      onMouseEnter={function onMouseEnter}
-                                      onTouchStart={function onTouchStart}
-                                      href="/courses"
--                                     data-ab-ref="e5"
-                                    >
-+                                     pick a course
-                                  ...
-                              <p className="t-body-sm ...">
-                                <LinkComponent href="/sign-up" className="t-button t...">
-                                  <a
-                                    className="t-button text-accent no-underline transition-colors hover:text-accent-h..."
-                                    ref={function}
-                                    onClick={function onClick}
-                                    onMouseEnter={function onMouseEnter}
-                                    onTouchStart={function onTouchStart}
-                                    href="/sign-up"
--                                   data-ab-ref="e6"
-                                  >
-+                                   Create a free account
-                  ...
-                ...
-      ...
- 
- GET /dashboard 200 in 255ms (next.js: 1.8ms, proxy.ts: 4ms, application-code: 249ms)
- POST /sign-in 200 in 416ms (next.js: 1.2ms, proxy.ts: 1.5ms, application-code: 414ms)
-  └─ ƒ signIn(null, {}) in 153ms src/app/actions/auth.ts
- GET /learn/applied-ai-for-video-and-media/01 200 in 521ms (next.js: 287ms, proxy.ts: 4ms, application-code: 231ms)
- GET /learn/applied-ai-for-video-and-media/01/audience-platform-message-format 200 in 195ms (next.js: 18ms, proxy.ts: 3ms, application-code: 174ms)
- POST /learn/applied-ai-for-video-and-media/01/audience-platform-message-format 200 in 209ms (next.js: 2ms, proxy.ts: 2ms, application-code: 204ms)
- GET /admin/learners 200 in 259ms (next.js: 1.1ms, proxy.ts: 5ms, application-code: 253ms)
- POST /admin/learners 200 in 298ms (next.js: 1.3ms, proxy.ts: 2ms, application-code: 295ms)
-  └─ ƒ issueCompletion({}) in 76ms src/app/actions/admin.ts
+ GET /dashboard 200 in 300ms (next.js: 3ms, proxy.ts: 3ms, application-code: 294ms)
+ POST /sign-in 200 in 522ms (next.js: 1.2ms, proxy.ts: 1.5ms, application-code: 519ms)
+  └─ ƒ signIn(null, {}) in 214ms src/app/actions/auth.ts
+ GET /admin/certifications 200 in 493ms (next.js: 161ms, proxy.ts: 4ms, application-code: 328ms)
+ GET / 200 in 475ms (next.js: 142ms, proxy.ts: 1.3ms, application-code: 331ms)
+ GET /instructors 200 in 212ms (next.js: 103ms, proxy.ts: 1.6ms, application-code: 108ms)
+ GET /review-judge-board 200 in 196ms (next.js: 94ms, proxy.ts: 1.4ms, application-code: 100ms)
+ GET /courses/ai-starter-for-small-business 200 in 595ms (next.js: 117ms, proxy.ts: 1.3ms, generate-params: 289ms, application-code: 188ms)
 [?25h

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowSquareOutIcon } from "@phosphor-icons/react/dist/ssr";
 import { Logo } from "@/components/logo";
+import { brand } from "@/lib/content";
 import { Container } from "@/components/ui";
 import { AccountMenu } from "@/components/lms/account-menu";
 import { getViewer } from "@/lib/auth";
@@ -50,6 +52,12 @@ export async function AppHeader() {
   const links = viewer
     ? [
         { href: "/dashboard", label: "Dashboard" },
+        /* The tab Roan asked for. It sits beside Dashboard rather than inside it
+           because a completion record is a thing somebody comes back for
+           specifically — often long after they have stopped taking courses — and
+           a destination you visit on purpose is a nav item, not a section of
+           another page. */
+        { href: "/dashboard/certifications", label: "Certifications" },
 /* Admin only, for now. Both consoles read other people's work, and
            until there are real instructors and seated judges the safest default
            is that only the owner can open them. RLS is still the boundary
@@ -82,7 +90,26 @@ export async function AppHeader() {
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-surface/85 backdrop-blur-md" />
       <Container className="flex h-[72px] items-center justify-between gap-6">
         <div className="flex items-center gap-7">
-          <Logo size={36} descriptor compact />
+          {/*
+            THE MARK GOES TO THE DASHBOARD HERE, and it went to `/` until now.
+
+            Inside a product the lockup is the way back to the top of the
+            product. Pointing it at the marketing site made the one control
+            every reader presses without thinking the one control that threw
+            them out — and there was nothing in this chrome that admitted the
+            marketing site existed either, so the two were exactly backwards.
+            "Visit website" below is the other half of the fix: an explicit exit
+            rather than a mark that silently is one.
+
+            Signed out, the product has no home, so it keeps `/`.
+          */}
+          <Logo
+            size={36}
+            descriptor
+            compact
+            href={viewer ? "/dashboard" : "/"}
+            label={viewer ? `${brand.name}, dashboard` : undefined}
+          />
           {/*
             `aria-label="Main"`. It was "Your courses", which is not what this
             nav contains — a screen-reader user listing landmarks heard the app's
@@ -100,6 +127,28 @@ export async function AppHeader() {
 
         {viewer ? (
           <div className="flex items-center gap-3">
+            {/*
+              The way out, stated.
+
+              The footer carried this as one link among twenty-two in a marketing
+              sitemap, which is not a door — it is a place a door might be. With
+              the mark now pointing at the dashboard, a reader who wants the
+              public site has to be given somewhere to press, and it has to say
+              which of the two things it is: "Dashboard" and "website" are the
+              pair of words Roan used to describe the confusion, so they are the
+              pair of words the chrome uses.
+
+              `ArrowSquareOut` rather than a plain arrow: it is the same tab, but
+              it is a different site, and the glyph is the only thing in the row
+              saying so.
+            */}
+            <Link
+              href="/"
+              className="t-meta hidden items-center gap-1.5 rounded-[var(--radius-control)] border border-line-control px-2.5 py-1.5 text-ink-secondary no-underline transition-colors hover:border-line-strong hover:text-ink md:inline-flex"
+            >
+              <ArrowSquareOutIcon size={14} aria-hidden="true" />
+              Visit website
+            </Link>
             {/* Hidden under sm so the 72px bar stays one row on a phone; the
                 mobile nav row below carries it instead. */}
             <ThemeToggle theme={theme} className="hidden sm:inline-flex" />

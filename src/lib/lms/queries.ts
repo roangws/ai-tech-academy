@@ -316,6 +316,15 @@ export type DashboardCourse = {
   /** Judge scores on this course's outcome sheet, if any have been filed. */
   judgements: ScoredCriterion[];
   /**
+   * True when every lesson is done and no completion record has been taken.
+   *
+   * The one state that has to be surfaced somewhere a learner will see it. A
+   * certificate nobody knows they can take is the same as no certificate, and
+   * finishing the last lesson is the moment it becomes true — so this feeds the
+   * dashboard's "needs you" list rather than waiting to be discovered on a tab.
+   */
+  certifiable: boolean;
+  /**
    * The lesson to open when they press Continue, already resolved to a URL.
    *
    * Null when nothing has been opened yet, and the caller falls back to the
@@ -339,7 +348,7 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
     knows statically and that cannot change without a deploy. `totalLessons(c)`
     is right there in the module this file already imports.
   */
-  const [enrollments, progress, sheets, artifacts, judgements] = await Promise.all([
+  const [enrollments, progress, sheets, completions, artifacts, judgements] = await Promise.all([
     rows<Enrollment>(
       "enrolments",
       /* Most recently touched first. It ordered by `enrolled_at`, which answers
@@ -357,7 +366,10 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
        bucketed by course without a query per enrolment. A to-one embed comes
        back as an object, not an array — verified against PostgREST rather than
        assumed, because the difference is a silently-zero counter. */
-    rows<{ lessons: { modules: { course_id: string } } }>(
+    /* `lesson_id` was selected and left out of the type, so the column was
+       fetched on every dashboard render and unreachable in TypeScript. It is
+       read now — the resume pointer has to know which lessons are finished. */
+    rows<{ lesson_id: string; lessons: { modules: { course_id: string } } }>(
       "progress",
       supabase
         .from("lesson_progress")
@@ -365,6 +377,12 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         .eq("user_id", userId),
     ),
     rows<OutcomeSheet>("outcome sheets", supabase.from("outcome_sheets").select("*").eq("user_id", userId)),
+    /* Which courses already have a record, so the nudge below stops the moment
+       one is taken. `completion_read_own` scopes it to this reader. */
+    rows<{ course_id: string }>(
+      "completion records",
+      supabase.from("completion_records").select("course_id").eq("user_id", userId),
+    ),
     /* Artifacts an instructor has written back on, and drafts still sitting
        unsent. Both are things the dashboard should be telling the learner about
        and neither had any surface: feedback arrived silently on a module page
@@ -389,12 +407,17 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
   ]);
 
   const doneByCourse = new Map<string, number>();
+  /* The ids too, not just the count. The resume pointer below has to know
+     whether the lesson it names is already finished — see the note there. */
+  const doneLessonIds = new Set<string>();
   for (const row of progress) {
     const courseId = row.lessons?.modules?.course_id;
     if (courseId) doneByCourse.set(courseId, (doneByCourse.get(courseId) ?? 0) + 1);
+    if (row.lesson_id) doneLessonIds.add(row.lesson_id);
   }
 
   const sheetByCourse = new Map(sheets.map((s) => [s.course_id, s]));
+  const certified = new Set(completions.map((c) => c.course_id));
   const sheetIds = new Set(sheets.map((s) => s.id));
 
   /* Resolve every resume pointer in one query rather than one per course. */
@@ -418,7 +441,26 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
       const course = courseById.get(e.course_id);
       if (!course) return null;
       const mine = artifacts.filter((a) => a.modules?.course_id === e.course_id);
-      const last = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
+      /*
+        THE POINTER IS SKIPPED WHEN IT NAMES A FINISHED LESSON.
+
+        `last_lesson_id` is written by `toggle_lesson` for the lesson that was
+        just TICKED, so immediately after completing lesson 1 it names lesson 1 —
+        and this card's whole promise is "pick up where you left off". Following
+        it sent a learner who had just finished a lesson back to that lesson,
+        with "Next up" printing its name. From their side that is the product
+        losing their progress.
+
+        `lib/lms/start.ts` applies the identical rule for `/courses/<slug>/start`,
+        and the two have to agree: "Continue" here and "Resume the course" there
+        are the same promise made on two screens.
+
+        Falling through to `null` means the card offers "Open course" and the
+        board, which is honest — the next lesson is a resolution this query does
+        not do, and `/start` is the one place that does.
+      */
+      const pointedAt = e.last_lesson_id ? resumeById.get(e.last_lesson_id) : undefined;
+      const last = pointedAt && !doneLessonIds.has(pointedAt.id) ? pointedAt : undefined;
       return {
         course,
         enrollment: e,
@@ -431,6 +473,13 @@ export async function getDashboard(userId: string): Promise<DashboardCourse[]> {
         drafts: mine.filter((a) => a.status === "draft" && a.body.trim().length > 0),
         judgements: judgements.filter((j) => sheetIds.has(j.sheet_id)
           && sheetByCourse.get(e.course_id)?.id === j.sheet_id),
+        /* `total > 0` guards an un-seeded course, where `0 >= 0` would offer a
+           certificate for a course with nothing in it. `claim_completion`
+           refuses that too, so this only stops the nudge being drawn. */
+        certifiable:
+          totalLessons(course) > 0 &&
+          (doneByCourse.get(e.course_id) ?? 0) >= totalLessons(course) &&
+          !certified.has(e.course_id),
         resume: last
           ? {
               href: `/learn/${course.slug}/${last.modules.n}/${last.slug}`,

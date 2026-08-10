@@ -664,10 +664,35 @@ export function CourseCover({
   build,
   image,
   fill = false,
+  href,
+  title,
 }: {
   ground: string;
   letter: string;
   build: string;
+  /**
+   * Where the picture goes when it is pressed.
+   *
+   * It went nowhere, on every card on the site. The largest, most obviously
+   * pressable element on a course card — a photograph with the course's own
+   * colour washed over it — was inert, and the only way into the course was a
+   * title link a third of its size sitting underneath. People press pictures;
+   * this one answered by doing nothing, which reads as a broken card rather
+   * than as a deliberate omission.
+   *
+   * A stretched link INSIDE the cover rather than over the whole card. The note
+   * on `CourseCard` records why the card-wide version had to be removed — it
+   * covered the card's own controls and made them unreachable — and that
+   * reasoning still holds. The cover is a separate box above the content with
+   * no controls in it, so a link filling it takes nothing away.
+   *
+   * `aria-hidden` plus `tabIndex={-1}`: the card's title already links to the
+   * same place with the same name, and a second tab stop announcing the same
+   * destination is noise for a keyboard reader, not an affordance.
+   */
+  href?: string;
+  /** Names the destination for the one case where nothing else does. */
+  title?: string;
   /**
    * The photograph under the cover's graphic treatment. Absent leaves the flat
    * ground the covers shipped with, so a path with no picture yet degrades to
@@ -738,11 +763,25 @@ export function CourseCover({
       already set by a sibling card in the same grid row.
     */
     <div
-      className={`relative isolate grid grid-cols-1 overflow-hidden ${
+      className={`group/cover relative isolate grid grid-cols-1 overflow-hidden ${
         fill ? "h-full min-h-[260px]" : ""
       }`}
       style={{ background: ground }}
     >
+      {/* Last in paint order would be tidier and is wrong: the treatment layers
+          below are `absolute` siblings, so a link declared after them would sit
+          on top of the type as well as the photograph. It is declared here with
+          an explicit `z-20` instead, which is inside this element's own
+          `isolate` and so cannot reach anything outside the cover. */}
+      {href ? (
+        <Link
+          href={href}
+          aria-hidden="true"
+          tabIndex={-1}
+          title={title}
+          className="absolute inset-0 z-20"
+        />
+      ) : null}
       {/*
         The photograph, and three layers of treatment over it.
 

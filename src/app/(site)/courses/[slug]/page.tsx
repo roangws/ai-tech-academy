@@ -15,6 +15,7 @@ import { CourseTabs } from "@/components/course/tabs";
 import { Container } from "@/components/ui";
 import { brand } from "@/lib/content";
 import { getCatalog, getCourseBySlug, totalLessons } from "@/lib/catalog";
+import { getInstructors } from "@/lib/roster";
 import { courseJsonLd } from "@/lib/seo";
 
 /**
@@ -169,6 +170,12 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
 
+  /* The lead instructor, for the structured data below. A query rather than
+     `instructors.people[0]`: the roster moved into Postgres, so the person this
+     page names as the course's instructor has to come from the same place the
+     roster page names them from, or the two can disagree. */
+  const [lead] = await getInstructors();
+
   return (
     <>
       {/*
@@ -203,10 +210,10 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
            JSON.stringify, so there is no user input anywhere in it. The `<`
            escape is the standard guard against a `</script>` sequence inside a
            string field closing the tag early. */
-        dangerouslySetInnerHTML={{ __html: courseJsonLd(course).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: (lead ? courseJsonLd(course, lead) : "{}").replace(/</g, "\\u003c") }}
       />
 
-      <CourseHero course={course} />
+      <CourseHero course={course} lead={lead} />
 
       {/*
         The body, and the two negative margins here are the whole structure of the
@@ -304,18 +311,23 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               carry different facts; ours did not, so this one is gone.
             */}
             <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
-              <Curriculum modules={course.curriculum} totalLessons={totalLessons(course)} />
-              {/* The first lesson's video and the one control that starts the
-                  course, directly under the contents a reader has just scanned.
-                  Renders nothing when the course has no video yet. */}
-              <CoursePreview course={course} />
+              {/* The preview goes INSIDE module 01's panel rather than under the
+                  whole accordion — curriculum.tsx has the note on why, and on
+                  why it has to arrive as a rendered element rather than as an
+                  import. It renders nothing when the course has no video yet, in
+                  which case the panel is unchanged. */}
+              <Curriculum
+                modules={course.curriculum}
+                totalLessons={totalLessons(course)}
+                preview={<CoursePreview course={course} />}
+              />
             </div>
           </div>
         </Container>
       </div>
 
       <About course={course} />
-      <Questions />
+      <Questions lead={lead} />
       <MoreCourses currentId={course.id} />
       <CourseClosing course={course} />
     </>

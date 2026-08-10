@@ -7,6 +7,7 @@ import {
   PlayCircleIcon,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
+import type { ReactNode } from "react";
 import { AccordionItem, useDisclosureSet } from "@/components/ui/accordion";
 import { StatusChip, TextButton } from "@/components/ui";
 import { lessonCount, method, type CourseModule } from "@/lib/content";
@@ -57,9 +58,34 @@ import { lessonCount, method, type CourseModule } from "@/lib/content";
 export function Curriculum({
   modules,
   totalLessons: total,
+  preview,
 }: {
   modules: readonly CourseModule[];
   totalLessons: number;
+  /**
+   * The free module's video and the control that starts the course, rendered
+   * inside that module's own panel.
+   *
+   * ---------------------------------------------------------------- why a prop
+   *
+   * It used to be a sibling section titled "Watch the first lesson", sitting
+   * under the whole accordion. That put the strongest thing on the page — the
+   * one lesson anybody can watch without an account — below eight collapsed
+   * rows, describing a module the reader had to scroll back up to find. The
+   * offer and the thing being offered were 600px apart and neither mentioned
+   * the other.
+   *
+   * Inside module 01's panel they are one object: the module is open on first
+   * paint, so a reader arriving at `#curriculum` sees the module, its lessons,
+   * its video and its start button without opening anything.
+   *
+   * As a `ReactNode` prop rather than built here, because this is a client
+   * component — it owns the disclosure state — and the preview is an async
+   * server component that queries `lesson_blocks`. Passing the rendered element
+   * down is what lets a server component live inside a client one; importing it
+   * would drag a database query into the browser bundle and fail.
+   */
+  preview?: ReactNode;
 }) {
   const ids = modules.map((m) => m.n);
   const { isOpen, toggle, openAll, closeAll, allOpen } = useDisclosureSet({
@@ -173,6 +199,13 @@ export function Curriculum({
               <p className="t-meta mt-3 border-t border-line pt-3 text-ink-muted">
                 You finish with <span className="text-ink">{m.artifact}</span>
               </p>
+
+              {/* The free module carries the video and the start control. `i === 0`
+                  rather than `m.access === "open"`: a course with two open modules
+                  would otherwise print the same first-lesson player twice. */}
+              {i === 0 && preview ? (
+                <div className="mt-4 border-t border-line pt-4">{preview}</div>
+              ) : null}
             </AccordionItem>
           );
         })}

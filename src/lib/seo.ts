@@ -1,4 +1,4 @@
-import { brand, catalog, instructors, site } from "@/lib/content";
+import { brand, catalog, instructors, site, type Person } from "@/lib/content";
 import { getCatalog, type Course } from "@/lib/catalog";
 
 /**
@@ -30,8 +30,15 @@ import { getCatalog, type Course } from "@/lib/catalog";
  * durations, because only one lesson on this site has a recorded duration.
  * content.ts has that note at length.
  */
-export function courseJsonLd(course: Course): string {
-  const lead = instructors.people[0];
+export function courseJsonLd(course: Course, lead: Person): string {
+  /*
+    THE LEAD ARRIVES AS AN ARGUMENT, and it was `instructors.people[0]`.
+
+    The roster lives in Postgres now, and this module is imported by pages that
+    are synchronous string builders — making it query would turn every JSON-LD
+    call site into an await for one name. The caller is already an async server
+    component with the roster in hand, so it passes the person in.
+  */
 
   const graph = {
     "@context": "https://schema.org",
@@ -192,7 +199,7 @@ function durationToIso(duration: string): string | undefined {
  * inventing a person's expertise in a place they cannot see it, which is the
  * same failure as an invented job title with the audience swapped.
  */
-export function instructorsJsonLd(): string {
+export function instructorsJsonLd(people: readonly Person[]): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -200,9 +207,9 @@ export function instructorsJsonLd(): string {
     name: `Instructors at ${brand.name}`,
     description: instructors.seoDescription,
     url: `${site.url}/instructors`,
-    numberOfItems: instructors.people.length,
+    numberOfItems: people.length,
     itemListOrder: "https://schema.org/ItemListOrderAscending",
-    itemListElement: instructors.people.map((person, i) => ({
+    itemListElement: people.map((person, i) => ({
       "@type": "ListItem",
       position: i + 1,
       item: {

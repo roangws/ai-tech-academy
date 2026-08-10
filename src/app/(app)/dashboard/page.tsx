@@ -12,11 +12,6 @@ import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
-import {
-  certificatePaths,
-  listMyCertificates,
-  type MyCertificate,
-} from "@/lib/lms/certificates";
 import { getCatalog, totalLessons } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -61,21 +56,8 @@ export const metadata: Metadata = {
 type Action = { key: string; href: string; label: string; detail: string; Icon: typeof ArrowRightIcon };
 
 /** The handful of things actually waiting on this learner, most useful first. */
-function nextActions(rows: DashboardCourse[], certificates: MyCertificate[]): Action[] {
+function nextActions(rows: DashboardCourse[]): Action[] {
   const out: Action[] = [];
-
-  /* First, and above the instructor replies, because it is the only row in this
-     list that is a result rather than a chore. A learner who finishes a course
-     and is told nothing has been given the thing and not shown it. */
-  for (const c of certificates) {
-    out.push({
-      key: `cert-${c.reference}`,
-      href: certificatePaths.page(c.reference),
-      label: "Your certificate is ready",
-      detail: c.course_title,
-      Icon: SealCheckIcon,
-    });
-  }
 
   for (const row of rows) {
     for (const a of row.feedback) {
@@ -101,6 +83,24 @@ function nextActions(rows: DashboardCourse[], certificates: MyCertificate[]): Ac
     }
   }
 
+  /*
+    FIRST, because it is the only one of these that is a reward rather than a
+    chore, and because it is the moment the whole certification feature either
+    lands or is never discovered. Everything else in this list is work still to
+    do; this is work already done and not yet collected.
+  */
+  for (const row of rows) {
+    if (row.certifiable) {
+      out.push({
+        key: `cert-${row.course.id}`,
+        href: "/dashboard/certifications",
+        label: `Take your completion record for ${row.course.title}`,
+        detail: "Every lesson finished",
+        Icon: SealCheckIcon,
+      });
+    }
+  }
+
   for (const row of rows) {
     if (row.sheet?.status === "draft") {
       out.push({
@@ -120,16 +120,12 @@ function nextActions(rows: DashboardCourse[], certificates: MyCertificate[]): Ac
 
 export default async function DashboardPage() {
   const viewer = await requireUser("/dashboard");
-  const [enrolled, certificates] = await Promise.all([
-    getDashboard(viewer.id),
-    listMyCertificates(),
-  ]);
+  const enrolled = await getDashboard(viewer.id);
 
   const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
-  const certificateFor = new Map(certificates.map((c) => [c.course_id, c]));
   const started = enrolled.filter((e) => e.done > 0);
   const current = started[0] ?? null;
-  const actions = nextActions(enrolled, certificates);
+  const actions = nextActions(enrolled);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
   const rest = (await getCatalog()).filter((c) => c.id !== current?.course.id);
@@ -161,27 +157,35 @@ export default async function DashboardPage() {
             list under it.
           */}
           <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[300px]">
+            {/*
+              The picture is the way in, like every other course picture on the
+              site now. It was inert here — a 50%-wide photograph of the one
+              course this learner is actually doing, on the one card the whole
+              page is built around, that did nothing when pressed.
+
+              A `<Link>` rather than a div with a stretched child: this box has
+              nothing else in it, so the link can simply be the box. It goes
+              where the primary control beside it goes, so a reader who presses
+              the picture and a reader who presses "Continue" land in the same
+              lesson.
+
+              `aria-hidden` and out of the tab order for the same reason as the
+              catalog covers: "Continue" is two inches away with a better name.
+            */}
+            <Link
+              href={`/courses/${current.course.slug}/start`}
+              aria-hidden="true"
+              tabIndex={-1}
+              className="relative block aspect-[16/10] lg:aspect-auto lg:min-h-[300px]"
+            >
               <CoursePhoto course={current.course} sizes="(min-width: 1024px) 50vw, 100vw" priority />
-            </div>
+            </Link>
 
             <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
               <div className="flex flex-wrap items-center gap-3">
                 <p className="t-label text-ink-muted">{current.course.badge}</p>
                 {current.enrollment.status === "completed" ? (
                   <StatusChip>Complete</StatusChip>
-                ) : null}
-                {/* The chip says the course is finished. This says what the
-                    learner got for finishing it, which is the part the chip has
-                    never been able to carry. */}
-                {certificateFor.get(current.course.id) ? (
-                  <Link
-                    href={certificatePaths.page(certificateFor.get(current.course.id)!.reference)}
-                    className="t-meta inline-flex items-center gap-1.5 text-accent no-underline underline-offset-4 hover:underline"
-                  >
-                    <SealCheckIcon size={15} weight="fill" aria-hidden="true" />
-                    Your certificate
-                  </Link>
                 ) : null}
               </div>
               <h2 className="t-h2 mt-1 text-ink">{current.course.title}</h2>
@@ -197,11 +201,27 @@ export default async function DashboardPage() {
               ) : null}
 
               <div className="mt-5">
+                {/*
+                  THROUGH `/start`, not at a lesson URL computed here.
+
+                  This was `current.resume?.href ?? /learn/<slug>`, which is the
+                  enrolment's `last_lesson_id` — the lesson that was last TICKED.
+                  Straight after finishing one, that pointer names the lesson
+                  just completed, so the card's primary control sent a learner
+                  backwards; and once the pointer is skipped for being finished
+                  (see `getDashboard`), the fallback is the module list, which is
+                  two more clicks than "continue" should ever be.
+
+                  `/courses/<slug>/start` is the one place that resolves where a
+                  reader belongs: the pointer if it is live, otherwise the front
+                  of the unread part. One resolver, so this card and the course
+                  page's own control cannot disagree about what "resume" means.
+                */}
                 <Link
-                  href={current.resume?.href ?? `/learn/${current.course.slug}`}
+                  href={`/courses/${current.course.slug}/start`}
                   className="t-button inline-flex min-h-[48px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-6 text-on-accent no-underline transition-colors hover:bg-accent-hover"
                 >
-                  {current.resume ? "Continue" : "Open course"}
+                  {current.done > 0 ? "Continue" : "Start the course"}
                   <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
                 </Link>
                 <Link
@@ -310,8 +330,9 @@ export default async function DashboardPage() {
 
             return (
               <li key={course.id}>
+                {/* The same resolver as the card above, for the same reason. */}
                 <Link
-                  href={row?.resume?.href ?? `/learn/${course.slug}`}
+                  href={`/courses/${course.slug}/start`}
                   className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
                 >
                   <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">

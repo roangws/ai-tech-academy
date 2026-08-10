@@ -1,4 +1,6 @@
+import Link from "next/link";
 import {
+  ArrowRightIcon,
   ClipboardTextIcon,
   FlaskIcon,
   IdentificationBadgeIcon,
@@ -8,8 +10,8 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
-import { EnrollButton, TextAction } from "@/components/ui";
-import { moduleFormat, type Course } from "@/lib/content";
+import { ButtonLink, TextAction } from "@/components/ui";
+import { cta, moduleFormat, type Course } from "@/lib/content";
 
 /**
  * The reference's purchase card, with every commerce slot replaced by a fact.
@@ -72,10 +74,49 @@ export function EnrollRail({ course }: { course: Course }) {
           <p className="t-h3 text-ink">Free</p>
           <p className="t-meta mt-1 text-ink-muted">Module 1 opens with no account</p>
 
-          {/* The page's one filled accent control. */}
+          {/*
+            THE PAGE'S ONE FILLED ACCENT CONTROL, AND IT OPENS A LESSON.
+
+            It was `EnrollButton withDate href="/sign-up"`, and that is the single
+            highest-friction decision on the site. A reader who has read this
+            whole page, decided, and reached for the one obvious control was
+            answered with an account form — and after the form, a dashboard, which
+            is a list of courses shown to somebody who has just picked one. Six
+            steps between deciding and watching, on a program whose entire pitch
+            is that the first module needs nothing.
+
+            `/courses/<slug>/start` is one GET and a 302 into a real lesson. It
+            works signed out, because module 1 does; it enrols and resumes for
+            somebody signed in; and it is a URL, so the sign-up form below can
+            carry it as `next` and finish an account inside the lesson instead of
+            on a dashboard.
+
+            The start date came off with the sign-up href. "Starts <today>" was
+            answering "when does this begin" for a reader who was about to join a
+            cohort. There is no cohort and the button is now literally the thing
+            that begins it, so a date under it is a countdown to a press that has
+            already happened.
+          */}
           <div className="mt-4">
-            <EnrollButton withDate href="/sign-up" className="w-full" />
+            <ButtonLink href={`/courses/${course.slug}/start`} className="w-full">
+              {cta.start}
+              <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+            </ButtonLink>
           </div>
+
+          {/* The account, offered second and as a reason rather than as a gate.
+              This is where "Enroll for free" belongs on this page: after the
+              reader has been told they do not need it. */}
+          <p className="t-meta mt-2.5 text-center text-ink-muted">
+            No account needed to begin.{" "}
+            <Link
+              href={`/sign-up?next=${encodeURIComponent(`/courses/${course.slug}/start`)}`}
+              className="text-accent no-underline hover:underline"
+            >
+              Create one
+            </Link>{" "}
+            to save your progress.
+          </p>
 
           {/*
             "or start module 1 without one" was here and is gone on Roan's
