@@ -1,16 +1,17 @@
-import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRightIcon, SealCheckIcon } from "@phosphor-icons/react/dist/ssr";
 import { CourseCard } from "@/components/sections/courses";
 import {
   CheckList,
   EnrollButton,
+  FactsLine,
   Panel,
   Section,
   SectionHeader,
   SkillChip,
   TextAction,
 } from "@/components/ui";
-import { cta } from "@/lib/content";
-import { getCatalog, type Course } from "@/lib/catalog";
+import { certificate, cta } from "@/lib/content";
+import { getCatalog, totalLessons, type Course } from "@/lib/catalog";
 
 /**
  * The four bands under the two-column body, plus the "What you'll learn" box that
@@ -109,6 +110,104 @@ export function About({ course }: { course: Course }) {
           </div>
         </div>
       </div>
+    </Section>
+  );
+}
+
+/**
+ * The completion record, on the course page, on the tinted band.
+ *
+ * ---------------------------------------------------------- where it came from
+ *
+ * The homepage, and Roan moved it: "remove this block […] of the homepage. on the
+ * individual course add this individual information there, best way possible.
+ * change the background of this area to be the blue styule, so it makes sence the
+ * cololor sections."
+ *
+ * Two instructions, and the second is a real constraint rather than a preference.
+ * This page alternates white and `--surface-subtle` bands and no two tinted bands
+ * may touch, so a tint here is not a free choice: it had to come off `About`
+ * directly above, which is why that band is now white with a hairline. See the note
+ * on it.
+ *
+ * ----------------------------------------------------- what "individual" means
+ *
+ * Every line of the homepage version was written in the general, because there was
+ * no course to be specific about — "Finish a course", "Which of the five". Here the
+ * headline names this course and the course field names it and counts its lessons,
+ * so a reader can see what theirs would actually say rather than what the form of
+ * it is.
+ *
+ * ---------------------------------------------------------- no specimen image
+ *
+ * The four fields are the whole visual, carried over from the homepage band
+ * unchanged. A picture of a completion record on a public page is either somebody's
+ * real one published as an advertisement or an invented one printed with an
+ * invented name, and there is no third option. The imagery policy in the design
+ * spec bans the second outright; the first is worse.
+ */
+export function CourseCertificate({ course }: { course: Course }) {
+  const lessons = totalLessons(course);
+
+  return (
+    <Section id="certificate" tint ariaLabelledBy="certificate-heading">
+      <SectionHeader
+        id="certificate-heading"
+        label={certificate.label}
+        heading={certificate.headline(course.title)}
+        intro={certificate.intro}
+        action={<TextAction href={certificate.action.href}>{certificate.action.label}</TextAction>}
+      />
+
+      {/*
+        Full width, in two rows, rather than a two-column split. The first draft of
+        the homepage band put the heading beside the fields in a 1fr/600px grid,
+        which left the left column three lines long against a four-item block and a
+        third of the band empty under it. The four fields are the content and they
+        want the measure.
+      */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 border-t border-line pt-6">
+        <h3 className="t-h3 flex items-center gap-2.5 text-ink">
+          <SealCheckIcon
+            size={22}
+            weight="fill"
+            aria-hidden="true"
+            className="flex-none text-state-open"
+          />
+          {certificate.fields.label}
+        </h3>
+        <FactsLine items={[...certificate.facts]} />
+      </div>
+
+      {/*
+        A definition list, because that is what these four are: a term and the thing
+        it means on the document. Rendering them as `<dl>` costs nothing and is the
+        difference between a screen reader announcing four pairs and announcing eight
+        unrelated lines.
+      */}
+      <dl className="mt-7 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+        {certificate.fields.items.map((f) => (
+          <div key={f.id}>
+            <dt className="t-card-title text-ink">{f.title}</dt>
+            <dd className="t-body-sm mt-1.5 text-ink-secondary">
+              {/*
+                The one field specialised per course, keyed by `id` rather than
+                matched on its title — a string comparison against copy is a silent
+                break the first time somebody edits the copy.
+
+                The shared text reads "Which course, and confirmation that every
+                lesson in it is complete", which is what a surface with no single
+                course to name has to say. This page has one, and printing its title
+                and its real lesson count is the difference between describing a
+                document and showing what yours would say.
+              */}
+              {f.id === "course"
+                ? `${course.title}, and confirmation that all ${lessons} lessons in it are complete.`
+                : f.text}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </Section>
   );
 }
@@ -264,8 +363,16 @@ export function CourseClosing({ course }: { course: Course }) {
           </div>
 
           <div>
-            <EnrollButton withDate tone="onDark" href="/sign-up" />
-            <p className="t-meta mt-2.5 text-white/60">A free account opens the rest.</p>
+            {/* This course's own start URL, not `/sign-up`. A panel headed "Start
+                with module 1", naming module 1 in the line above the button, sent
+                the reader to an account form — and this is the last control on the
+                page, so it was the last impression too. Roan's instruction covers
+                the label: every call to action on a course page reads "Enroll for
+                free / Starts <today>". */}
+            <EnrollButton withDate tone="onDark" href={`/courses/${course.slug}/start`} />
+            <p className="t-meta mt-2.5 text-white/60">
+              Opens lesson 1 with no account. A free account opens the rest.
+            </p>
           </div>
         </div>
       </Panel>

@@ -60,7 +60,7 @@ export function LessonAdvance({
   n,
   done,
   next,
-  artifact,
+  nextModule,
 }: {
   lessonId: string;
   courseId: string;
@@ -69,8 +69,8 @@ export function LessonAdvance({
   done: boolean;
   /** The next lesson in this module, or null on the last one. */
   next: { slug: string; name: string } | null;
-  /** What this module produces, for the last lesson's hand-off. */
-  artifact: string;
+  /** The next module in the course, or null at the end of it. */
+  nextModule: { n: string; name: string } | null;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -89,14 +89,36 @@ export function LessonAdvance({
   const [ticked, setTicked] = useState(done);
   const [failed, setFailed] = useState(false);
 
-  /* Where "next" goes. On the last lesson of a module that is the hand-in rather
-     than the following module: every module ends in an artifact, and a learner
-     who never writes one reaches the end of the course with nothing for the
-     outcome sheet to be built from. */
+  /*
+    Where "next" goes, and on the last lesson of a module it is THE NEXT MODULE.
+
+    It used to be the hand-in — `#artifact-heading` on the module page — on the
+    argument that every module ends in an artifact and a learner who writes none
+    reaches the end of the course with nothing for the outcome sheet to be built
+    from. That argument is about the product's bookkeeping, and Roan met it as a
+    reader: finishing the last lesson of module 01 dropped him onto a heading
+    reading "What to hand in for module 01" over three paragraphs about pasting a
+    document, with no way forward. "so bad experience that need to be fixed. I
+    want to have a better flow between one module to other."
+
+    Reading a course is a sequence of modules. The forward control follows that
+    sequence, and the hand-in is offered on the module page as its own thing
+    rather than standing in the doorway. See the module page for where it went.
+
+    Three destinations, in order: the next lesson, the next module, and — at the
+    end of the last module — the certifications page, which is where a finished
+    course is claimed. Never a dead end.
+  */
   const forwardHref = next
     ? `/learn/${slug}/${n}/${next.slug}`
-    : `/learn/${slug}/${n}#artifact-heading`;
-  const forwardLabel = next ? `Next: ${next.name}` : artifact ? `Write your ${artifact.toLowerCase()}` : "Finish the module";
+    : nextModule
+      ? `/learn/${slug}/${nextModule.n}`
+      : "/dashboard/certifications";
+  const forwardLabel = next
+    ? `Next: ${next.name}`
+    : nextModule
+      ? `Next module: ${nextModule.n} ${nextModule.name}`
+      : "Finish the course";
 
   const save = useCallback(
     (wasDone: boolean) => {
@@ -136,7 +158,50 @@ export function LessonAdvance({
 
   return (
     <div className="mt-10 border-t border-line pt-6">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+      {/*
+        THE FORWARD CONTROL IS ON THE FAR RIGHT, and the tick is on the left.
+
+        Roan: "the 'Next: Persona and account research' needs to be on the far
+        right so i know how to move, the done needs to be bettter possitioned."
+
+        Both controls used to sit in one left-aligned row, the accent one first and
+        the outlined one immediately beside it — two adjacent buttons of similar
+        width, reading as a pair of options rather than as an action and its
+        bookkeeping. Pushed to opposite ends they are unambiguous: forward is where
+        forward always is on this page, and the quiet control is a thing you can
+        reach for rather than a thing you have to get past.
+
+        `flex-col-reverse` under sm, so on a phone the primary is the first thing
+        under the lesson and the tick is below it. A row that merely wrapped put
+        the primary on the second line, which is the one place it must never be.
+      */}
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {/*
+          Marking done without leaving, for the reader who wants to stay — and
+          the undo, for the one who ticked by accident. One control, because it
+          is one fact with two directions, and it is never the button the primary
+          just was: an impatient double-press on the primary navigates twice
+          rather than un-ticking anything.
+        */}
+        <button
+          type="button"
+          aria-pressed={ticked}
+          onClick={() => {
+            setTicked(!ticked);
+            save(ticked);
+          }}
+          className={quiet}
+        >
+          {ticked ? (
+            <>
+              <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
+              Done
+            </>
+          ) : (
+            "Mark done"
+          )}
+        </button>
+
         {/*
           ONE CONTROL, AND IT IS A LINK.
 
@@ -164,32 +229,6 @@ export function LessonAdvance({
           {forwardLabel}
           <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
         </Link>
-
-        {/*
-          Marking done without leaving, for the reader who wants to stay — and
-          the undo, for the one who ticked by accident. One control, because it
-          is one fact with two directions, and it is never the button the primary
-          just was: an impatient double-press on the primary navigates twice
-          rather than un-ticking anything.
-        */}
-        <button
-          type="button"
-          aria-pressed={ticked}
-          onClick={() => {
-            setTicked(!ticked);
-            save(ticked);
-          }}
-          className={quiet}
-        >
-          {ticked ? (
-            <>
-              <CheckIcon size={15} weight="bold" aria-hidden="true" className="text-accent" />
-              Done
-            </>
-          ) : (
-            "Mark done"
-          )}
-        </button>
       </div>
 
       {/* Only ever shown when the write actually failed. Success says nothing,

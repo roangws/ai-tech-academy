@@ -72,6 +72,10 @@ export async function AppHeader() {
       ]
     : [{ href: "/courses", label: "Courses" }];
 
+  /* Resolved once and handed to every link, so the bar can decide which single
+     item owns the current path. See header-link.tsx. */
+  const hrefs = links.map((l) => l.href);
+
   return (
     /*
       `h-[72px]`, matching `SiteHeader`. It was 64, so the chrome jumped 8px and
@@ -118,7 +122,11 @@ export async function AppHeader() {
           */}
           <nav aria-label="Main" className="hidden items-center gap-1 sm:flex">
             {links.map((l) => (
-              <HeaderLink key={l.href} href={l.href}>
+              /* `hrefs` is every link in this bar, so `HeaderLink` can let the
+                 longest match win. Without it /dashboard/certifications lit up
+                 Dashboard and Certifications at the same time — that file has
+                 the note. */
+              <HeaderLink key={l.href} href={l.href} siblings={hrefs}>
                 {l.label}
               </HeaderLink>
             ))}
@@ -199,7 +207,7 @@ export async function AppHeader() {
       >
         <Container className="flex flex-wrap items-center gap-x-1 gap-y-0 py-1.5">
           {links.map((l) => (
-            <HeaderLink key={l.href} href={l.href}>
+            <HeaderLink key={l.href} href={l.href} siblings={hrefs}>
               {l.label}
             </HeaderLink>
           ))}

@@ -430,6 +430,55 @@ export async function bindRosterUser(formData: FormData): Promise<void> {
   await revalidateRoster();
 }
 
+/* --------------------------------------------------------------------- seat */
+
+/**
+ * Which board seat this judge holds.
+ *
+ * ------------------------------------------------------------- why it is here
+ *
+ * Roan: "all of those have to be here /review-judge-board and be able to crud and
+ * link to a user."
+ *
+ * The seat was the one fact about a judge with no console anywhere: /admin/judging
+ * binds a seat to an ACCOUNT, and every judge on the board has no account, so
+ * there was no way to record that Liz Zhang reads Course A short of giving her a
+ * login first. The card holds the assignment now, and the account is still bound
+ * separately when there is one.
+ *
+ * ------------------------------------------------------ what this does NOT do
+ *
+ * It does not grant the judge role and it does not write `judge_seats.user_id`.
+ * Same asymmetry as `bindRosterUser`, and the same reason: naming somebody as the
+ * revenue-operations judge on a public page is a claim about them, and handing
+ * them read access to learners' submitted work is a permission. `bind_seat`, on
+ * /admin/judging, is where the second one happens.
+ */
+export async function setRosterSeat(formData: FormData): Promise<void> {
+  await requireRole("admin", "/admin/roster");
+
+  const id = formData.get("id") as string;
+  const seatId = ((formData.get("seatId") as string | null) ?? "").trim();
+  if (!id) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("roster")
+    .update({ seat_id: seatId || null })
+    .eq("id", id);
+
+  /* 23505 is `roster_seat_id_key`: one seat, one holder. The author's next move
+     is to take it off whoever has it, and nothing else on the screen would say
+     so. 23514 is `roster_seat_is_judge`, which only an instructor row can trip
+     and which the form below never offers. */
+  if (error?.code === "23505") {
+    throw new Error("Another judge already holds that seat. Take it off them first.");
+  }
+  fail("set roster seat", error);
+
+  await revalidateRoster();
+}
+
 /* ------------------------------------------------------------------- delete */
 
 export async function deleteRosterEntry(formData: FormData): Promise<void> {

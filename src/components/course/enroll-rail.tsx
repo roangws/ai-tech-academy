@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ArrowRightIcon,
   ClipboardTextIcon,
   FlaskIcon,
   IdentificationBadgeIcon,
@@ -10,8 +9,8 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
-import { ButtonLink, TextAction } from "@/components/ui";
-import { cta, moduleFormat, type Course } from "@/lib/content";
+import { EnrollButton, TextAction } from "@/components/ui";
+import { moduleFormat, type Course } from "@/lib/content";
 
 /**
  * The reference's purchase card, with every commerce slot replaced by a fact.
@@ -77,31 +76,47 @@ export function EnrollRail({ course }: { course: Course }) {
           {/*
             THE PAGE'S ONE FILLED ACCENT CONTROL, AND IT OPENS A LESSON.
 
-            It was `EnrollButton withDate href="/sign-up"`, and that is the single
-            highest-friction decision on the site. A reader who has read this
-            whole page, decided, and reached for the one obvious control was
-            answered with an account form — and after the form, a dashboard, which
-            is a list of courses shown to somebody who has just picked one. Six
-            steps between deciding and watching, on a program whose entire pitch
-            is that the first module needs nothing.
+            `href` is this course's own `/courses/<slug>/start`: one GET and a 303
+            into a real lesson. It works signed out, because module 1 does; it
+            enrols and resumes for somebody signed in; and it is a URL, so the
+            sign-up link below can carry it as `next` and finish an account inside
+            the lesson instead of on a dashboard.
 
-            `/courses/<slug>/start` is one GET and a 302 into a real lesson. It
-            works signed out, because module 1 does; it enrols and resumes for
-            somebody signed in; and it is a URL, so the sign-up form below can
-            carry it as `next` and finish an account inside the lesson instead of
-            on a dashboard.
+            That replaced `/sign-up`, which was the single highest-friction
+            decision on the site: a reader who had read this whole page, decided,
+            and reached for the one obvious control was answered with an account
+            form, and after the form a dashboard, which is a list of courses shown
+            to somebody who has just picked one.
 
-            The start date came off with the sign-up href. "Starts <today>" was
-            answering "when does this begin" for a reader who was about to join a
-            cohort. There is no cohort and the button is now literally the thing
-            that begins it, so a date under it is a countdown to a press that has
-            already happened.
+            ------------------------------------------------- the label, and the date
+
+            "Enroll for free", with the date under it, restored 9 Aug on Roan's
+            instruction: "all the cta on /courses/applied-ai-for-gtm-teams has to
+            be 'Enroll for free / Starts <today>'".
+
+            It spent a pass on `cta.start` — "Start the course" — on the argument
+            recorded in content.ts: a reader on a course page has already chosen, so
+            the label should say what the control does rather than offer them a list
+            to join. That argument was about a button that opened an account form,
+            and it stopped applying the moment every other instance of "Enroll for
+            free" on the site started opening a lesson too. One label for one act,
+            and it is the same act everywhere now.
+
+            The date came off in the same pass, as "a countdown to a press that has
+            already happened". That reads well and is wrong about who is looking:
+            this is the control a reader meets while still deciding, and it is the
+            only line on the card saying there is no cohort to wait for.
+
+            `EnrollButton`, not `ButtonLink` with a hand-written second line — that
+            component owns the two-line geometry, the released fixed height and the
+            contrast-checked subtitle, and a second spelling of it drifts.
           */}
           <div className="mt-4">
-            <ButtonLink href={`/courses/${course.slug}/start`} className="w-full">
-              {cta.start}
-              <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-            </ButtonLink>
+            <EnrollButton
+              withDate
+              href={`/courses/${course.slug}/start`}
+              className="w-full"
+            />
           </div>
 
           {/* The account, offered second and as a reason rather than as a gate.

@@ -1,5 +1,4 @@
 import { Board } from "@/components/sections/board";
-import { Certificate } from "@/components/sections/certificate";
 import { Closing } from "@/components/sections/closing";
 import { HowModulesWork } from "@/components/sections/modules";
 import { Faq } from "@/components/sections/faq";
@@ -11,7 +10,7 @@ import { Partners } from "@/components/sections/partners";
 import { Teams } from "@/components/sections/teams";
 
 /*
-  Ten sections, from fourteen.
+  Nine sections, from fourteen.
 
   ORDER. The catalog is the first thing under the fold, and the method is the
   section directly under it.
@@ -99,7 +98,10 @@ import { Teams } from "@/components/sections/teams";
   sits under the board rather than under the fold where every capture puts one.
 
   Ground rhythm, in order: white, tint, white, tint, white, white, tint, white,
-  white, white. The lock is that no two tinted bands sit next to each other, and
+  white. Nine, from ten: the certificate band came out of slot five, which was a
+  white band between a tinted one and a white one, so removing it left the tinted
+  Outcomes band meeting the white Instructors band and the lock still holds. The
+  lock is that no two tinted bands sit next to each other, and
   that holds — but only after the FAQ went white in the same pass that merged the
   method, since removing a white band from between the board and the FAQ left
   two tints touching. faq.tsx has that note. Teams and Closing are white grounds
@@ -134,12 +136,11 @@ export default function HomePage() {
       <Courses />
       <HowModulesWork />
       <Outcomes />
-      {/* Between Outcomes and Instructors, and white because both of its
-          neighbours cannot be. Outcomes is tinted, Instructors is not, so this
-          is the one ground available to a band placed here — and the placement
-          is right: the page has just finished saying what a learner leaves
-          holding, and this is the smallest of the three things on that list. */}
-      <Certificate />
+      {/* THE CERTIFICATE BAND WAS HERE, between Outcomes and Instructors, and it is
+          gone on Roan's instruction — moved onto the five course pages, where the
+          same four facts can name a course instead of gesturing at five of them.
+          course/blocks.tsx has the argument, and `certificate` in content.ts records
+          why the copy could only ever be weak on this page. */}
       <Instructors />
       <Teams />
       <Board />

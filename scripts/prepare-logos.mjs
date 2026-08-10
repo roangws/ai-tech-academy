@@ -60,16 +60,28 @@ const LOGOS = [
     height: 120,
   },
   /*
-    Fetched from their own site rather than a download, because that is where
-    they publish it: https://www.multimodalsociety.com/assets/logo.png, the file
-    their own header renders at 64px. Square, black-grounded, and `keepBox` for
-    the same reason n-aible is.
+    THE LOCKUP, NOT THE APP ICON, replaced 9 Aug on Roan's instruction.
+
+    This was fetched from https://www.multimodalsociety.com/assets/logo.png —
+    the 256px square their own header renders — and that file is a black-grounded
+    icon, so it needed `keepBox` and a full-bleed treatment in the card, and the
+    organisation's name had to be set in type beside it.
+
+    Roan supplied the real lockup: mark plus "THE MULTIMODAL SOCIETY" in one
+    4000x913 file with a transparent ground. It reads its own name, so it is now
+    the same kind of object as The AI Collective's and gets the same treatment —
+    trimmed, alpha, on the light chip, with nothing set beside it. `keepBox` is
+    gone with the square, and so are `setNameInType` and `markHasOwnGround` in
+    content.ts.
+
+    120 tall for the same reason The AI Collective's is: this file serves the
+    partner band at 26px and Liz Zhang's board card at 18, and downscaling is
+    free where upscaling is not.
   */
   {
-    src: "https://www.multimodalsociety.com/assets/logo.png",
+    src: `${HOME}/Downloads/multimodal-society-lockup-on-light.png`,
     out: "multimodal-society.png",
-    keepBox: true,
-    height: 256,
+    height: 120,
   },
 ];
 

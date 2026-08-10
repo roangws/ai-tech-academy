@@ -62,7 +62,14 @@ export function AdvisoryBoard() {
         <h3 id="advisors-roster-heading" className="t-h3 text-ink">
           The advisors
         </h3>
-        <FactsLine className="mt-2" items={[advisorCount, "No course, no seat", "Reads both tracks"]} />
+        {/* "Independent of the program", not "No course, no seat". Roan flagged the
+            negatives in this section; content.ts has the full note. This one was the
+            worst of the three, because a facts line is read as a list of properties
+            and two of the three items were holes. */}
+        <FactsLine
+          className="mt-2"
+          items={[advisorCount, "Independent of the program", "Reads both tracks"]}
+        />
 
         {/*
           Two columns from sm, which is what keeps one card from filling the

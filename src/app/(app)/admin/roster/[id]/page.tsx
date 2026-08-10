@@ -6,12 +6,13 @@ import { StatusChip } from "@/components/ui";
 import { ActionForm, Area, Field, Save, Quiet, Danger, Text } from "@/components/lms/admin-form";
 import { GroundPicker, ImageField } from "@/components/lms/roster-fields";
 import { getRosterEntry } from "@/lib/roster";
-import { listPeople } from "@/lib/lms/admin";
+import { listPeople, listSeats } from "@/lib/lms/admin";
 import {
   bindRosterUser,
   deleteRosterEntry,
   saveRosterEntry,
   setRosterLead,
+  setRosterSeat,
   setRosterStatus,
 } from "@/app/actions/roster";
 
@@ -54,6 +55,10 @@ export default async function AdminRosterEntry({
 
   const people = await listPeople();
   const isJudge = entry.kind === "judge";
+  /* Only for a judge, and only fetched for one: an instructor row cannot hold a
+     seat — `roster_seat_is_judge` refuses it — so a picker on that form would be
+     a control whose only outcome is an error. */
+  const seats = isJudge ? await listSeats() : [];
   const publicHref = isJudge ? `/review-judge-board#${entry.id}` : `/instructors#${entry.id}`;
 
   return (
@@ -275,6 +280,53 @@ export default async function AdminRosterEntry({
           </label>
           <Quiet>Link</Quiet>
         </form>
+
+        {/* ------------------------------------------------------------ the seat */}
+        {isJudge ? (
+          <>
+            <h2 className="t-h3 mt-8 text-ink">Board seat</h2>
+            <p className="t-body-sm mt-1.5 max-w-[64ch] text-ink-secondary">
+              Which course this judge reads each term. It prints on their card on
+              /review-judge-board, and the board page showed nothing at all until it
+              did. One seat, one holder.
+            </p>
+            {/* The permission is a separate act, stated here because this is the
+                screen somebody is on when they assume it is not. */}
+            <p className="t-meta mt-1.5 max-w-[64ch] text-ink-muted">
+              This is the public claim only. Letting them open the judge console and
+              read submitted sheets is a role and an account binding, on{" "}
+              <Link href="/admin/judging" className="text-accent no-underline hover:underline">
+                Judging
+              </Link>
+              .
+            </p>
+
+            <form action={setRosterSeat} className="mt-3 flex flex-wrap items-end gap-3">
+              <input type="hidden" name="id" value={entry.id} />
+              <label className="min-w-[260px] flex-1">
+                <span className="t-label text-ink-muted">Seat</span>
+                <select
+                  name="seatId"
+                  defaultValue={entry.seat_id ?? ""}
+                  className="t-body-sm mt-1 h-10 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                >
+                  {/* "No seat yet", not "None". The board is still being seated and
+                      an unassigned card is a normal state, not a blank. */}
+                  <option value="">No seat yet</option>
+                  {seats.map((seat) => (
+                    <option key={seat.id} value={seat.id}>
+                      {seat.seat} ·{" "}
+                      {seat.reads_all_courses || !seat.reviews_label
+                        ? "Every course"
+                        : seat.reviews_label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Quiet>Assign</Quiet>
+            </form>
+          </>
+        ) : null}
       </section>
 
       {/* ------------------------------------------------------ lead, then delete */}

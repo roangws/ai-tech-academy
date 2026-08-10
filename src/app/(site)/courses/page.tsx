@@ -231,15 +231,25 @@ export default function CoursesPage() {
               </p>
             </div>
             <div>
-              <EnrollButton withDate tone="onDark" href="/sign-up" />
-              {/* "Pick a course above" was the whole instruction, and the cards
-                  above link to the marketing page rather than to module 1 — so
-                  a panel headed "Start with module 1" offered no way to start
-                  module 1. The course pages each carry the direct link now; this
-                  says where to find it rather than repeating the access model a
-                  fourth time. */}
+              {/*
+                No `href`, so this takes `EnrollButton`'s default, which is
+                `/start`.
+
+                It was `/sign-up`. A panel headed "Start with module 1", on the
+                page whose whole job is the five courses, answered the press with
+                an account form — the defect Roan reported from the homepage,
+                repeated here. `/start` sends the reader into a lesson: the course
+                they are already in, or the featured one, enrolling them on the
+                way through.
+              */}
+              <EnrollButton withDate tone="onDark" />
+              {/* "Pick a course above" was the whole instruction, and it was an
+                  instruction because nothing on this page started anything. The
+                  button above does now, so this says what pressing it opens and
+                  leaves the grid to the reader who wants to choose first. */}
               <p className="t-meta mt-2.5 text-white/60">
-                A free account opens the rest. Module 1 starts from any course page.
+                Opens lesson 1 straight away. Pick a different course above if you would
+                rather choose first.
               </p>
             </div>
           </div>

@@ -134,6 +134,31 @@ export function SiteHeader({
   */
   const onHome = pathname === "/";
 
+  /*
+    THE ENROL CONTROL FOLLOWS THE PAGE IT IS ON.
+
+    `EnrollButton` defaults to `/start`, which resolves the featured course. That
+    is right on the homepage, the catalog and anywhere else the chrome is floating
+    over a page that names no single course — and wrong on a course page, where it
+    would take a reader who is reading about the media course and start them on
+    the GTM one.
+
+    So on `/courses/<slug>` and on `/learn/<slug>/...` the bar starts THAT course.
+    Derived from the path rather than threaded down as a prop, because this header
+    is mounted from a layout that does not know which course is below it.
+
+    `slug` is taken as the second segment and validated against the same shape the
+    `courses.id` check constraint uses, so a crafted path cannot turn this into an
+    open redirect through the `next` chain. Anything else falls through to
+    `/start`, which resolves a real course or sends the reader to the catalog.
+  */
+  const courseSlug = (() => {
+    const [, section, slug] = (pathname ?? "").split("/");
+    if (section !== "courses" && section !== "learn") return null;
+    return slug && /^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$/.test(slug) ? slug : null;
+  })();
+  const enrollHref = courseSlug ? `/courses/${courseSlug}/start` : "/start";
+
 
   /**
    * Bumped on resize, purely to re-run the pill's placement effect.
@@ -622,6 +647,7 @@ export function SiteHeader({
                   page holds and height was never what overflowed at 320 — the
                   padding was. */}
               <EnrollButton
+                href={enrollHref}
                 size="md"
                 className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
               />
@@ -706,7 +732,7 @@ export function SiteHeader({
                 </>
               ) : (
                 <>
-                  <EnrollButton onClick={closeMenu} />
+                  <EnrollButton href={enrollHref} onClick={closeMenu} />
                   <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
                     Sign in
                   </ButtonLink>

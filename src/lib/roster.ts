@@ -41,6 +41,22 @@ type RosterRow = {
   id: string;
   kind: "instructor" | "judge";
   user_id: string | null;
+  /** The board seat this judge holds, or null. See the migration. */
+  seat_id: string | null;
+  /**
+   * The seat itself, embedded.
+   *
+   * PostgREST returns an embedded one-to-one as an object or null, and the
+   * relationship is resolved from the `roster.seat_id` foreign key rather than
+   * named, so a second FK to `judge_seats` from this table would make the
+   * embed ambiguous and this select would start failing at runtime.
+   */
+  judge_seats: {
+    id: string;
+    seat: string;
+    reviews_label: string | null;
+    reads_all_courses: boolean;
+  } | null;
   name: string;
   role: string | null;
   detail: string | null;
@@ -68,7 +84,7 @@ type RosterRow = {
 export type RosterEntry = RosterRow;
 
 const COLUMNS =
-  "id, kind, user_id, name, role, detail, summary, scope, location, org_name, org_role, org_url, wordmark, ground, photo_src, photo_alt, logo_src, logo_alt, linkedin, site_label, site_href, lead, position, status";
+  "id, kind, user_id, seat_id, name, role, detail, summary, scope, location, org_name, org_role, org_url, wordmark, ground, photo_src, photo_alt, logo_src, logo_alt, linkedin, site_label, site_href, lead, position, status, judge_seats(id, seat, reviews_label, reads_all_courses)";
 
 /**
  * The rows, ordered as the pages print them.
@@ -102,7 +118,14 @@ const allRows = cache(async (): Promise<RosterRow[]> => {
     console.error("roster read failed:", error.message);
     return [];
   }
-  return (data ?? []) as RosterRow[];
+  /* `as unknown as`, and the extra hop is the client guessing rather than a lie
+     about the shape. This project runs supabase-js with no generated `Database`
+     type — supabase/types.ts is deliberately hand-written and narrow — so the
+     embed in the select string is inferred as an ARRAY, which is what it defaults
+     to with no schema to consult. PostgREST returns an OBJECT here, because
+     `roster.seat_id` is many-to-one. The runtime shape is `RosterRow`; the two
+     casts are the price of not generating the whole schema. */
+  return (data ?? []) as unknown as RosterRow[];
 });
 
 function toPerson(r: RosterRow): Person {
@@ -185,6 +208,30 @@ function toSeat(r: RosterRow): Seat {
     photo: { src: r.photo_src ?? "", alt: r.photo_alt ?? r.name },
     ...(r.logo_src ? { logo: { src: r.logo_src, alt: r.logo_alt ?? r.org_name ?? "" } } : {}),
     ...(r.wordmark ? { wordmark: r.wordmark } : {}),
+    /*
+      THE SEAT, when one has been assigned to this card.
+
+      Absent by default and that is the honest default: the board is six named
+      seats and five agreed judges, and which seat a given person reads is a claim
+      about them that only Roan can make. Nothing here derives it, guesses it or
+      fills it in from an employer — an unassigned card simply prints no seat line,
+      exactly as a card with no employer prints no employer.
+
+      `reads` is the human sentence: the course this seat reads, or the
+      all-courses label for the learning-design seat.
+    */
+    ...(r.judge_seats
+      ? {
+          seat: {
+            id: r.judge_seats.id,
+            name: r.judge_seats.seat,
+            reads:
+              r.judge_seats.reads_all_courses || !r.judge_seats.reviews_label
+                ? "Every course"
+                : r.judge_seats.reviews_label,
+          },
+        }
+      : {}),
     linkedin: r.linkedin ?? "#",
   };
 }

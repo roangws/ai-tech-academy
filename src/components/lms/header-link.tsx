@@ -26,16 +26,51 @@ import { cn } from "@/lib/utils";
  * `/learn` counts as Catalog rather than as nothing: a learner reading a lesson
  * is inside a course, and leaving every item unmarked there would be the one
  * place the signal is most useful.
+ *
+ * ------------------------------------------------------ ONLY ONE AT A TIME
+ *
+ * `siblings` is what stops the bar highlighting two items at once, and it is
+ * load-bearing rather than a nicety.
+ *
+ * The `/dashboard` branch used to claim any path under it, and Certifications
+ * lives at `/dashboard/certifications` — so on that page BOTH pills were tinted
+ * and both carried `aria-current="page"`, which is not a cosmetic bug: a screen
+ * reader was told the reader was on two pages, and Roan's report was that the
+ * chrome had simply stopped saying where he was.
+ *
+ * The rule is longest match wins. A parent link keeps its prefix behaviour, which
+ * is what makes /learn read as Courses and /dashboard/outcome read as Dashboard,
+ * but it yields to any sibling in the same nav whose own href is a longer prefix
+ * of the same path. That is derived from the nav rather than special-cased, so
+ * adding a third `/dashboard/...` tab needs no change here.
  */
-export function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
+export function HeaderLink({
+  href,
+  siblings = [],
+  children,
+}: {
+  href: string;
+  /** Every href in this nav, so the longest matching one can win. */
+  siblings?: readonly string[];
+  children: React.ReactNode;
+}) {
   const pathname = usePathname() ?? "";
 
+  /* Does this href own the current path at all? `/courses` also answers for
+     `/learn`, because a learner reading a lesson is inside a course. */
+  const owns = (candidate: string) =>
+    candidate === "/courses"
+      ? pathname === "/courses" ||
+        pathname.startsWith("/courses/") ||
+        pathname === "/learn" ||
+        pathname.startsWith("/learn/")
+      : pathname === candidate || pathname.startsWith(`${candidate}/`);
+
   const active =
-    href === "/dashboard"
-      ? pathname === "/dashboard" || pathname.startsWith("/dashboard/")
-      : href === "/courses"
-        ? pathname.startsWith("/courses") || pathname.startsWith("/learn")
-        : pathname === href || pathname.startsWith(`${href}/`);
+    owns(href) &&
+    /* Yield to a sibling that matches the same path more specifically. `>` and
+       not `>=`, so an href never loses to itself. */
+    !siblings.some((s) => s.length > href.length && owns(s));
 
   return (
     <Link

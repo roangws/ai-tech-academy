@@ -87,8 +87,20 @@ export default async function LessonPage({
   const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { course, module, lesson, index, total, done, prev, next, blocks, siblings, doneIds } =
-    view;
+  const {
+    course,
+    module,
+    lesson,
+    index,
+    total,
+    done,
+    prev,
+    next,
+    nextModule,
+    blocks,
+    siblings,
+    doneIds,
+  } = view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}/${lessonSlug}`;
 
@@ -258,23 +270,33 @@ export default async function LessonPage({
             n={n}
             done={done}
             next={next ? { slug: next.slug, name: next.name } : null}
-            artifact={module.artifact ?? ""}
+            /* The next MODULE, for the last lesson's forward control. It used to
+               hand off to this module's artifact instead, which is the dead end
+               Roan reported — lesson-advance.tsx has the note. `getLessonView`
+               has always returned this; nothing was reading it. */
+            nextModule={nextModule ? { n: nextModule.n, name: nextModule.name } : null}
           />
         ) : (
           <div className="mt-10 border-t border-line pt-6">
+            {/* The same three destinations the signed-in control uses, in the same
+                order: next lesson, next module, then the end of the course. A
+                signed-out reader is at the end of the free module, so for them the
+                third case is the account rather than a certificate. */}
             <Link
               href={
                 next
                   ? `/learn/${slug}/${n}/${next.slug}`
-                  : `/learn/${slug}/${n}#artifact-heading`
+                  : nextModule
+                    ? `/learn/${slug}/${nextModule.n}`
+                    : unlockHref(path)
               }
               className="t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
             >
               {next
                 ? `Next lesson: ${next.name}`
-                : module.artifact
-                  ? `Write your ${module.artifact.toLowerCase()}`
-                  : "Finish the module"}
+                : nextModule
+                  ? `Next module: ${nextModule.n} ${nextModule.name}`
+                  : "Keep going with a free account"}
               <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
             </Link>
             <p className="t-body-sm mt-3 text-ink-secondary">
@@ -358,7 +380,10 @@ export default async function LessonPage({
             </Link>
           ) : (
             <Link
-              href={`/learn/${slug}/${n}#artifact-heading`}
+              /* The next module, not this module's hand-in. This card pointed at
+                 `#artifact-heading` and was the second of the two controls that
+                 made the end of a module a cul-de-sac. */
+              href={nextModule ? `/learn/${slug}/${nextModule.n}` : `/learn/${slug}`}
               /* Neutral, like its sibling. This card used to carry the accent
                  and a tint because it was the only forward control a reader had
                  once they had ticked the lesson. The primary control above owns
@@ -368,9 +393,11 @@ export default async function LessonPage({
               className="group flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-right no-underline transition-colors hover:border-line-strong sm:col-start-2"
             >
               <span className="min-w-0 flex-1">
-                <span className="t-meta block text-ink-muted">Last lesson in this module</span>
+                <span className="t-meta block text-ink-muted">
+                  {nextModule ? "Next module" : "Last module in this course"}
+                </span>
                 <span className="t-body-sm block clamp-2 text-ink">
-                  {module.artifact ? `Write your ${module.artifact.toLowerCase()}` : "Finish the module"}
+                  {nextModule ? `${nextModule.n} ${nextModule.name}` : "All modules"}
                 </span>
               </span>
               <ArrowRightIcon

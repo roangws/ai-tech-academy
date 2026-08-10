@@ -122,27 +122,33 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
       {/* --------------------------------------------------- how it works */}
       <Section id="how-it-works" ariaLabelledBy={stepsId}>
         {/*
-          Rewritten 12 Aug.
+          Rewritten twice, and the second pass is the one that matters.
 
-          The heading was "Three steps, and the board reads the third one", over
-          an intro that opened "The first half of an application is public
-          information about you. The second half is not". Both sentences are
-          true and neither one is an instruction: the first counts steps and then
-          describes what happens inside the process, and the second explains the
-          site's own architecture to somebody who has not started yet and has no
-          reason to care about it.
+          It was "Three steps, and the board reads the third one", over an intro
+          opening "The first half of an application is public information about you.
+          The second half is not." Both sentences are true and neither is an
+          instruction: the first counts steps and then describes what happens inside
+          the process, and the second explains the site's own architecture to
+          somebody who has not started yet and has no reason to care.
 
-          What a reader is asking at this fold is what to do first and what it
-          will cost them. The heading answers both in six words. The intro now
-          says the one thing about the account that they need before pressing
-          it, which is that the account is free and it is the same one the
-          courses use.
+          That became "Three steps, about fifteen minutes", which Roan read and
+          asked to be clearer: "has to be more clear like how to apply, easy to
+          understand copy." He is right, and the reason is that it still counts the
+          steps instead of naming them. "Three steps" is a fact about the shape of a
+          process; what a reader wants is the three steps.
+
+          So the heading IS the process, in the imperative, in the order it happens
+          — a reader who reads nothing else on this band now knows what applying
+          consists of. "About fifteen minutes" moves into the intro, where a
+          measurement belongs, next to the two other things somebody needs before
+          they press the button: that they can stop halfway, and that a real person
+          reads it.
         */}
         <SectionHeader
           id={stepsId}
           label="How to apply"
-          heading="Three steps, about fifteen minutes"
-          intro="Start with a free account, fill in the form at your own pace, and send it when it is ready. The advisory board reads every application that arrives."
+          heading="Create an account, fill in the form, send it"
+          intro="About fifteen minutes in total, and you do not have to do it in one sitting — every field saves as you type, and nothing reaches anyone until you press send. The advisory board reads every application that arrives."
         />
 
         {/*

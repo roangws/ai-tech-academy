@@ -61,15 +61,20 @@ export default async function JudgePage() {
           <Empty
             title="You do not hold a seat yet"
             action={
-              <Link href="/review-judge-board" className="t-button text-accent no-underline hover:underline">
-                See the six seats
+              /* /admin/judging, not /review-judge-board. This pointed at the public
+                 board to "see the six seats" and that page has never listed a seat
+                 in its life — it lists the judges. So the one screen a seatless
+                 judge was sent to could not answer the question the empty state
+                 raised, which is Roan's report. Judging is where seats are bound and
+                 where all three facts about a judge are visible at once. */
+              <Link href="/admin/judging" className="t-button text-accent no-underline hover:underline">
+                Where seats are assigned
               </Link>
             }
           >
-            The board has six seats and each one reads a particular course. A seat is bound
-            to a person by an administrator, in{" "}
-            <code className="t-meta rounded bg-surface-subtle px-1.5 py-0.5">judge_seats</code>.
-            Until then there is no curriculum to review under your name and no sheets to score.
+            The board has six seats and each one reads a particular course. An administrator
+            binds a seat to a person, and until one is bound to you there is no curriculum to
+            review under your name and no sheets to score.
           </Empty>
         </div>
       </Container>

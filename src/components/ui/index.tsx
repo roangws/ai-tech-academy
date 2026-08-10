@@ -318,26 +318,40 @@ export function ButtonLink({
  */
 export function EnrollButton({
   /*
-    `/sign-up`, and this went through two wrong answers first.
+    `/start`, and this went through three wrong answers first.
 
     It was `#paths`, a bare fragment resolved against the current URL, so from
     /courses/gtm it pointed at /courses/gtm#paths and did nothing. Making it
     `/#courses` fixed the resolution and left a worse bug: the catalog is not an
     enrolment. On a course card it was a self-link, so pressing "Enroll for free"
     on the infrastructure card scrolled the reader back to the grid the card was
-    already in. From the sticky header on a course page it threw the reader off
-    that course entirely and back to the homepage.
+    already in.
 
-    One label has to mean one thing. "Enroll for free" appears in the header, the
-    hero, five catalog cards, the module section, the closing band and the course
-    rail, and a reader who has pressed it once should be able to predict it. It
-    starts the account, everywhere.
+    `/sign-up` was the third, and it is the one Roan reported: "the homepage is
+    not sending to the first class as i clicked on it." A button labelled "Enroll
+    for free", sitting under a headline that promises module 1 opens with no
+    account, opened an account form — and a reader who already had an account was
+    bounced from that form onto a dashboard listing the five courses they had just
+    been reading about. The label described a database write rather than anything
+    the reader wanted.
+
+    `/start` is a route handler: one GET, one 303, and the reader is in a lesson.
+    It picks the course they are already in, or the featured one, enrols them on
+    the way through, and works signed out because module 1 does. That file has the
+    rules.
+
+    One label still has to mean one thing, and it now means something better:
+    "Enroll for free" appears in the header, the hero, the module section, the
+    catalog band, the closing panel and the mobile menu, and everywhere it presses
+    it starts the course.
 
     Choosing a course is a different job and it already has its own controls:
-    "View course" on each card, and "Compare all five courses" where the reader is
-    somewhere else on the site.
+    "View course" on each card, and "Compare every course" where the reader is
+    somewhere else on the site. A course page passes its own
+    `/courses/<slug>/start`, so on a page about one course the button starts that
+    one rather than the featured one.
   */
-  href = "/sign-up",
+  href = "/start",
   withDate = false,
   tone = "primary",
   size = "lg",

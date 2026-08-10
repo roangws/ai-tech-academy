@@ -36,14 +36,26 @@ import { partners } from "@/lib/content";
  * a full band's 128px of air, and this is a band a reader passes rather than one
  * they stop in.
  *
- * ================================================================== two shapes
+ * ==================================================================== one shape
  *
- * The two marks are not the same kind of file, and the card handles it rather
- * than the assets: one is a lockup with the name set into it, the other is a
- * square mark whose owner pairs it with the name in type. content.ts carries the
- * reasoning; the visible rule here is that the row's identity block is 44px tall
- * either way, so the two cards agree on their first baseline no matter which
- * shape fills it.
+ * Both marks are lockups now — a mark and the organisation's name in one file,
+ * with a transparent ground — so both are drawn the same way: capped by HEIGHT
+ * rather than by width, on the light chip the roster cards use, at 26px inside a
+ * 44px chip.
+ *
+ * It was two shapes for one pass, and the branch is worth recording because it
+ * will come back the next time somebody supplies an app icon. The Multimodal
+ * Society's mark was the 256px black square their own site header renders: no
+ * name in it, and a dark ground that is part of the artwork rather than a
+ * background to be stripped. On the white chip it became a 36px stamp inside a
+ * frame it never asked for, so it was drawn full-bleed at 44 (`markHasOwnGround`)
+ * and the name was set in type beside it (`setNameInType`). Roan supplied the real
+ * lockup on 9 Aug and both flags went with the file.
+ *
+ * The height cap is what makes two lockups of different aspect land at the same
+ * optical size: this one is 5.2:1 and The AI Collective's is 3.7:1, and capping by
+ * width would draw one of them half the height of the other. 26px inside 44,
+ * because a wordmark set to an icon's full height reads as shouting next to one.
  */
 export function Partners() {
   return (
@@ -81,45 +93,31 @@ export function Partners() {
             >
               <span className="flex items-center gap-3">
                 {/*
-                  Two mark treatments, 44px tall either way.
+                  One treatment for both: the light chip, 44px tall, the mark
+                  capped at 26px of height. The docblock has why, and why there
+                  used to be two.
 
-                  A lockup goes on the light chip the roster cards use, capped by
-                  height rather than width so it lands at the same optical size
-                  whatever its aspect. 26px inside a 44px chip, because a
-                  wordmark set to an icon's full height reads as shouting next to
-                  one.
-
-                  A mark that ships its own ground is drawn edge to edge instead.
-                  The Multimodal Society's is a black square with the ground as
-                  part of the design, and on a white chip it became a 36px stamp
-                  inside a frame it never asked for. Full-bleed at 44 it reads as
-                  what it is. content.ts has the flag and the precedent, which is
-                  `keepBox` in scripts/prepare-logos.mjs.
+                  `width`/`height` are the intrinsic pixels of the wider of the two
+                  files and exist only to give Next an aspect ratio to reserve — the
+                  rendered size comes from `h-[26px] w-auto`. They do not need to
+                  match either file exactly, and cannot match both.
                 */}
-                {p.markHasOwnGround ? (
+                <span className="inline-flex h-11 flex-none items-center justify-center rounded-[var(--radius-control)] bg-white px-2.5 ring-1 ring-inset ring-line">
                   <Image
                     src={p.logo.src}
                     alt={p.logo.alt}
-                    width={256}
-                    height={256}
-                    sizes="88px"
-                    className="h-11 w-11 flex-none rounded-[var(--radius-control)] object-cover ring-1 ring-inset ring-black/10"
+                    width={618}
+                    height={120}
+                    sizes="180px"
+                    className="h-[26px] w-auto"
                   />
-                ) : (
-                  <span className="inline-flex h-11 flex-none items-center justify-center rounded-[var(--radius-control)] bg-white px-2.5 ring-1 ring-inset ring-line">
-                    <Image
-                      src={p.logo.src}
-                      alt={p.logo.alt}
-                      width={442}
-                      height={120}
-                      sizes="180px"
-                      className="h-[26px] w-auto"
-                    />
-                  </span>
-                )}
+                </span>
 
-                {/* Printed only for a mark that does not contain its owner's
-                    name. See content.ts. */}
+                {/* The name is in both marks now, so it is never set in type
+                    beside them — but it is still the card's accessible name, and a
+                    card whose only label is inside an image is a card a screen
+                    reader announces as a URL. `setNameInType` in content.ts is the
+                    switch if a mark without a name ever arrives again. */}
                 {p.setNameInType ? (
                   <span className="t-card-title min-w-0 text-ink group-hover:underline">
                     {p.name}

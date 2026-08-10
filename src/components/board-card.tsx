@@ -270,6 +270,34 @@ export function BoardCard({
         ) : null}
 
         {/*
+          THE SEAT, when this judge holds one.
+
+          Roan's report was that /judge showed nothing and that the seats "have to
+          be here" — on this board. The console's own empty state pointed a
+          seatless judge at /review-judge-board to "see the six seats", and this
+          page has never printed one, so the two screens described a board that
+          existed in neither of them.
+
+          It is a chip rather than a fourth line of text because it is a different
+          kind of fact from the three above it: name, title and employer are about
+          the person, and this is about their job here. It also has to survive a
+          240px card, so it carries the seat name and the course it reads on one
+          line each rather than joined by a separator — the same break the employer
+          and location pair already makes, for the same measured reason.
+
+          Absent on an unassigned card. See `Seat.seat` in content.ts on why that
+          is the correct rendering rather than a hole.
+        */}
+        {member.seat ? (
+          <p className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span className="t-micro inline-flex items-center rounded-full bg-white/15 px-2 py-0.5 font-semibold text-white ring-1 ring-inset ring-white/25">
+              {member.seat.name}
+            </span>
+            <span className="t-micro clamp-1 text-white/60">reads {member.seat.reads}</span>
+          </p>
+        ) : null}
+
+        {/*
           The summary, on hover.
 
           Roan asked for it on 9 Aug: hovering used to change the background and

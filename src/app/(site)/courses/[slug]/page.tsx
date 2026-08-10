@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   About,
+  CourseCertificate,
   CourseClosing,
   MoreCourses,
   WhatYouLearn,
@@ -51,6 +52,12 @@ import { courseJsonLd } from "@/lib/seo";
  *
  * ink, white, white, tint, white, tint, white. No two tints adjacent, which is the
  * rule in DESIGN-SPEC.md, and exactly one dark ground, which is Amendment 2.
+ *
+ * The tint moved one band later on 9 Aug, when the completion record landed here
+ * from the homepage and Roan asked for it on the tinted ground. `About` was the
+ * tinted band and is now white with a hairline; the record has the tint. Same
+ * sequence, different occupant — and it has to stay a swap rather than an addition,
+ * because a tint on both would put two of them side by side.
  *
  * The hero and the stat bar are two elements of one visual band and have to stay
  * adjacent in that order: the straddle is built from document order and a negative
@@ -327,6 +334,12 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       </div>
 
       <About course={course} />
+      {/* The completion record, moved off the homepage on 9 Aug and given the tinted
+          ground Roan asked for. It sits between the prose and the questions because
+          that is the order the two answer in: what this course is, what you are left
+          holding, then whatever is still unclear. `About` gave up its tint for it —
+          both bands cannot have one, and blocks.tsx has the note on both sides. */}
+      <CourseCertificate course={course} />
       <Questions lead={lead} />
       <MoreCourses currentId={course.id} />
       <CourseClosing course={course} />

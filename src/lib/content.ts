@@ -1261,24 +1261,64 @@ export const outcomes = {
  * published as an advertisement or an invented one, and both are worse than the
  * list below.
  */
+/*
+  THE COMPLETION RECORD, AND IT LIVES ON THE COURSE PAGES NOW.
+
+  This was a homepage band, between Outcomes and Instructors, and Roan asked for it
+  off: "remove this block […] of the homepage. on the individual course add this
+  individual information there, best way possible."
+
+  He is right about where it belongs, and the reason is in the copy itself. Every
+  line of it was written in the general — "Finish a course", "Which of the five" —
+  because on the homepage there is no course to be specific about. That is the
+  weakest possible version of a section whose entire job is to make a document feel
+  real. On a course page the same four facts become concrete: this course, its
+  lesson count, its own hue on the printed sheet.
+
+  It is also a supporting reason to take a free course and never the reason, and a
+  reader on the homepage has not yet chosen anything to finish. A reader on a course
+  page has, which is the moment the question "and what do I have at the end" is
+  actually being asked.
+
+  `headline` and `intro` are therefore written for a course page and take the
+  course's title. `fields.items` carries an `id` so the course page can specialise
+  the one item that has to name the course while sharing the other three.
+*/
 export const certificate = {
-  label: "Certificate",
-  headline: "Finish a course and the certificate is issued the same moment",
+  label: "Completion record",
+  headline: (title: string) => `Finish ${title} and your record is issued the same moment`,
   intro:
     "Ticking the last lesson issues it. It arrives with your name on it, downloads as a PDF or an image, and carries a reference that anyone you send it to can check on this site.",
   fields: {
     label: "What is printed on it",
     items: [
-      { title: "Your name", text: "As it is on your account, with your photograph if you added one." },
-      { title: "The course", text: "Which of the five, and confirmation that every lesson in it is complete." },
-      { title: "A reference", text: "Unique, permanent, and readable aloud over a phone." },
-      { title: "The date", text: "The day you finished, recorded when it happened." },
+      {
+        id: "name",
+        title: "Your name",
+        text: "As it is on your account, with your photograph if you added one.",
+      },
+      {
+        id: "course",
+        title: "The course",
+        /* Replaced on a course page with the course's own title and lesson count.
+           This is the fallback for any surface that has no single course to name. */
+        text: "Which course, and confirmation that every lesson in it is complete.",
+      },
+      {
+        id: "reference",
+        title: "A reference",
+        text: "Unique, permanent, and readable aloud over a phone.",
+      },
+      { id: "date", title: "The date", text: "The day you finished, recorded when it happened." },
     ],
   },
   facts: ["Issued automatically", "PDF or image", "Free, like the courses"],
-  /* Points at the FAQ answer that states the price, because the question a
-     certificate raises on a free program is what it costs. */
-  action: { label: "What it costs", href: "/#faq" },
+  /* Points at the questions block that states the price, because the question a
+     completion record raises on a free program is what it costs. A same-page
+     fragment now rather than `/#faq`: this section renders on the course pages,
+     which carry their own questions block, and the old href threw the reader back
+     to the homepage to read an answer that was 400px below them. */
+  action: { label: "What it costs", href: "#faq" },
 } as const;
 
 export type Person = {
@@ -1877,6 +1917,19 @@ export type Seat = {
   wordmark?: string;
   /** Full LinkedIn profile URL. The card links to it. */
   linkedin: string;
+  /**
+   * The board seat this judge holds, when Roan has assigned one.
+   *
+   * Optional, and it has to be: the board is six named seats and the judges who
+   * have agreed to sit on it are five real people. Which seat somebody reads is a
+   * statement about them, so an unassigned card prints no seat line rather than a
+   * plausible one — the same rule `role`, `org` and `summary` already follow.
+   *
+   * `reads` is the sentence a stranger needs: the course this seat reads, or
+   * "Every course" for the learning-design seat, which reads assessment across
+   * all five rather than one curriculum.
+   */
+  seat?: { id: string; name: string; reads: string };
 };
 
 /*
@@ -1925,7 +1978,13 @@ export const board = {
          the 240px homepage card, losing the founder half that was the reason
          for the phrasing. Both credentials still fit at this length. */
       role: "Founder, AI developer relations",
-      org: "The AI Collective",
+      /* THE MULTIMODAL SOCIETY, corrected 9 Aug: "liz logo is actyally the
+         multimodal society that i just sent to you." The card had The AI
+         Collective, which is the community her summary describes rather than the
+         organisation she founded, and the mark below has to agree with the line
+         above it — a card printing one employer's name over another's logo is a
+         claim about a real person that neither of them made. */
+      org: "The Multimodal Society",
       location: "San Francisco Bay Area",
       linkedin: "https://www.linkedin.com/in/lizz-zhang/",
       summary:
@@ -1935,10 +1994,11 @@ export const board = {
         src: "/images/people/liz-zhang.jpg",
         alt: "Studio portrait of Liz Zhang",
       },
-      /* Supplied by Roan on 9 Aug. Her card carried no mark until then because
-         her profile publishes no employer, and an empty slot is the correct
-         rendering of a fact nobody has stated. Now somebody has stated it. */
-      logo: { src: "/images/logos/ai-collective.png", alt: "The AI Collective" },
+      /* Supplied by Roan on 9 Aug, and corrected the same day: it is The
+         Multimodal Society's lockup, not The AI Collective's. Her card carried no
+         mark before that because her profile publishes no employer, and an empty
+         slot is the correct rendering of a fact nobody has stated. */
+      logo: { src: "/images/logos/multimodal-society.png", alt: "The Multimodal Society" },
     },
     {
       id: "yunbin-bae",
@@ -2130,10 +2190,32 @@ export type Partner = {
 
 export const partners = {
   label: "Community partners",
-  headline: "The AI communities this program partners with",
-  /* The sentence that turns the two lines below from assertions into quotations.
-     It is doing real work and it is not decoration — see the note above. */
-  intro: "Two independent organisations, each described in its own words.",
+  /*
+    REWRITTEN 9 Aug, on Roan's instruction: "improve this text, clear and easy to
+    understand copy."
+
+    It read "The AI communities this program partners with" over "Two independent
+    organisations, each described in its own words."
+
+    Both sentences are true and neither one tells a reader anything they can use.
+    The headline is a noun phrase that restates the eyebrow directly above it —
+    "Community partners" / "The AI communities this program partners with" is the
+    same three words twice — and it answers a question nobody asked, which is what
+    the relationship is called. The intro was worse in a more interesting way: it
+    is a note about editorial method. "each described in its own words" is a
+    sentence about how this page was written, addressed to somebody who has not yet
+    been told what either organisation is.
+
+    What a reader wants at this band is why these two names are on the page. So the
+    headline says what the partnership does for them — these are rooms you can
+    actually walk into — and the intro says the two facts that follow from it: the
+    partners are independent, and the events are theirs rather than ours. The
+    quotation point survives without being announced, because "in their own words"
+    is now doing its work in the last clause rather than as the whole sentence.
+  */
+  headline: "Two AI communities you can learn alongside",
+  intro:
+    "Both run their own events, in person and online, and both are open to join. Neither is part of this program — here is what each one does, in their own words.",
   /* Roan's order, as he listed them. Two entries have no order worth deriving
      and any other one would be this site ranking two partners against each
      other, which is a judgement nobody asked it to publish. */
@@ -2144,12 +2226,17 @@ export const partners = {
       href: "https://www.multimodalsociety.com/",
       blurb:
         "A community of creatives and engineers building the AI era together. Masterclasses, hackathons and screening nights in San Francisco.",
-      /* Their mark carries no name, so the name is set in type beside it, which
-         is what their own header does. `setNameInType` is the switch, and `alt` is
-         empty because the name is right there in text. */
-      logo: { src: "/images/logos/multimodal-society.png", alt: "" },
-      setNameInType: true,
-      markHasOwnGround: true,
+      /*
+        THE LOCKUP, replaced 9 Aug: Roan supplied their real one.
+
+        This used to be the 256px black square their own site header renders, which
+        carries no name — so the name was set in type beside it (`setNameInType`)
+        and the mark was drawn full-bleed rather than on the light chip, because its
+        dark ground is part of the artwork (`markHasOwnGround`). Both flags are gone
+        with the file. The lockup reads "THE MULTIMODAL SOCIETY", so it carries the
+        name as `alt` and gets the same treatment The AI Collective's does.
+      */
+      logo: { src: "/images/logos/multimodal-society.png", alt: "The Multimodal Society" },
     },
     {
       id: "ai-collective",
@@ -3013,8 +3100,23 @@ export const advisors = {
     only interesting once a reader believes the decision is not being made by
     the person whose work is being added to.
   */
+  /*
+    REWRITTEN 9 Aug. Roan: "so bad this negative text, need to fix 'no' and
+    'nobody' on /review-judge-board advisor."
+
+    Three sentences in this section were built out of absences — "Advisors hold no
+    course and no seat here", "No course, no seat" in the facts line, and a footnote
+    opening "Nobody appears on it until…". Read together they describe the advisory
+    board almost entirely by what it lacks, which is a strange way to introduce the
+    people who decide whether you get in.
+
+    The independence claim is the point of the paragraph and it is NOT weakened
+    here: it is stated as the thing it is, which is a positive fact about these
+    people. "Independent of every course and every seat" says exactly what "hold no
+    course and no seat" said, and says it as a qualification rather than as a gap.
+  */
   intro:
-    "Applications to teach and applications to judge are read by the advisory board, not by the person who wrote the curriculum. Advisors hold no course and no seat here. They are operators and investors from outside the program, and what they read is the evidence rather than the name on it.",
+    "Applications to teach and applications to judge are read by the advisory board, not by the person who wrote the curriculum. Every advisor is independent of every course and every seat on this program. They are operators and investors from outside it, and what they read is the evidence rather than the name on it.",
   seoDescription:
     "The advisory board reads every application to teach or to judge on this program, and decides which ones are seated.",
   /*
@@ -3092,8 +3194,12 @@ export const advisors = {
     one person has agreed. Saying so costs a sentence and is the difference
     between a page that is small and a page that is overstating itself.
   */
+  /* Same rewrite. The old line — "Nobody appears on it until they have agreed to
+     sit on it" — was making a promise about the site's honesty by describing a
+     thing that does not happen, which asks a reader to imagine the dishonest
+     version first. Stated forwards it is a stronger sentence and a shorter one. */
   footnote:
-    "The board is still being seated. Nobody appears on it until they have agreed to sit on it, so what you see here is the whole of it.",
+    "Every advisor here has agreed to sit on the board, and this is the whole of it. The board is still being seated, so it will grow.",
 } as const;
 
 /** "1 advisor", "6 advisors". A count in a facts line has to agree with itself. */

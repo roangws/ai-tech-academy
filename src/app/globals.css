@@ -770,10 +770,69 @@ html:has([data-theme="dark"]) {
   inline on the certificate, because Safari honours the property on the root and
   Chromium honours it on the element.
 */
+/*
+  THE SHEET, and it is a class rather than an inline style because it has to say
+  two different things on screen and on paper.
+
+  On screen the document is A4 landscape by RATIO and fluid in width, so it
+  scales down inside whatever column it is dropped into and still looks like the
+  piece of paper it becomes.
+
+  On paper a ratio is the wrong instruction and it is what put the record on two
+  sheets. The printable area of A4 landscape at a 10mm margin is 277 x 190mm.
+  277mm of width at the paper's own 297/210 ratio wants 195.8mm of height, which
+  is 5.8mm more than there is — so the footer row was pushed onto sheet two and
+  the reader got a page headed "ISSUED" with the date on the page after it. It
+  looked like a layout bug and it was an arithmetic one.
+
+  In print the sheet is therefore sized in absolute millimetres, to fit inside the
+  box `@page` leaves rather than to match the paper: 277 x 189mm inside the 281 x
+  194mm an 8mm margin leaves. The ratio goes to `auto`, because the printable area
+  is not the paper and pretending otherwise is the whole defect.
+
+  THE 4mm AND 5mm OF SLACK ARE DELIBERATE and were measured, not guessed. Sizing
+  the sheet to fill the printable area exactly still printed two pages: the
+  mm-to-device conversion differs between Chromium, WebKit and Gecko, and an
+  overshoot of a hair costs a whole second sheet. There is nothing to spend the
+  last 4mm on and everything to lose by claiming it.
+
+  THE WRAPPER HAS TO GIVE UP ITS PADDING TOO, which is the other half of the same
+  bug and the half that survived the first fix. The certificate is nested in a
+  `Container` with `py-8 md:py-10` and a `mt-6` wrapper — 27mm of vertical space
+  that is right on screen and is pure overflow on paper, because `@page` already
+  provides the margin. `main { padding: 0 }` did not reach it: the padding is on a
+  div inside main, not on main. So the rule below zeros every vertical margin and
+  padding between the page root and the sheet.
+*/
+.doc-sheet {
+  aspect-ratio: 297 / 210;
+}
+
 @media print {
   @page {
     size: A4 landscape;
-    margin: 10mm;
+    /* 8, not 10. See `.doc-sheet` above: the margin and the sheet's printed size
+       are one calculation and cannot be edited independently. */
+    margin: 8mm;
+  }
+
+  .doc-sheet {
+    aspect-ratio: auto;
+    width: 277mm;
+    height: 189mm;
+    break-inside: avoid;
+  }
+
+  /* Everything between the page root and the sheet gives up its vertical space.
+     Scoped through `:has()` so it only applies on a page that actually contains a
+     document — every other route prints unchanged. */
+  main:has(.doc-sheet),
+  main:has(.doc-sheet) > *,
+  main:has(.doc-sheet) > * > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   html,

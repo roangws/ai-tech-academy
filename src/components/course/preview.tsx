@@ -1,9 +1,8 @@
-import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { YouTubeBlock } from "@/components/lms/blocks/youtube";
-import { ButtonLink } from "@/components/ui";
+import { EnrollButton } from "@/components/ui";
 import { publicMediaUrl } from "@/lib/lms/media";
 import { createClient } from "@/lib/supabase/server";
-import { cta, type Course } from "@/lib/content";
+import { type Course } from "@/lib/content";
 
 /**
  * The first lesson's video, on the public course page.
@@ -93,11 +92,19 @@ export async function CoursePreview({ course }: { course: Course }) {
           here. Same destination for a signed-out reader; for a signed-in one it
           enrols them and resumes where they were, which a hardcoded "lesson 1"
           link cannot do. One control, one behaviour, wherever it appears.
+
+          `EnrollButton withDate`, per Roan's instruction that every call to
+          action on a course page reads "Enroll for free / Starts <today>". It was
+          `cta.start`, which made this the second label on one page for the one
+          thing the page is for — the rail 200px above said "Start the course" and
+          this said it again, and neither of them said the word a reader arrived
+          looking for. The enrol-rail note has the full argument.
         */}
-        <ButtonLink href={`/courses/${course.slug}/start`} className="mt-5 w-full">
-          {cta.start}
-          <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-        </ButtonLink>
+        <EnrollButton
+          withDate
+          href={`/courses/${course.slug}/start`}
+          className="mt-5 w-full"
+        />
         <p className="t-meta mt-3 text-center text-ink-muted">
           An account keeps your progress and opens the rest.
         </p>
