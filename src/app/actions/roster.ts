@@ -165,7 +165,7 @@ export async function createRosterEntry(
   const id = text(formData, "id", 60) ?? slugify(name);
   if (!id) {
     return {
-      error: "That name produced no id. Type one by hand — lowercase letters, numbers and hyphens.",
+      error: "That name produced no id. Type one by hand, using lowercase letters, numbers and hyphens.",
     };
   }
 
@@ -244,9 +244,41 @@ export async function saveRosterEntry(_prev: FormState, formData: FormData): Pro
   const photoSrc = portrait?.url ?? text(formData, "photo_src", 400);
   const logoSrc = mark?.url ?? text(formData, "logo_src", 400);
 
+  /*
+    THE ACCOUNT AND THE SEAT ARE SAVED HERE NOW, folded in on 9 Aug at Roan's
+    instruction: "on 'the account this card belongs to' put inside the form, no need
+    to be highlighted."
+
+    They were two more `<form>` elements below this one, each with its own action and
+    its own button, because HTML cannot nest forms. Three saves on one screen, and
+    two of them in tinted panels that read as warnings. Both are now fields in the
+    card, which is a page with one Save on it.
+
+    What has NOT changed is what either one means. Linking an account still grants no
+    role, and assigning a seat is still only the public claim; `/admin/people` grants
+    roles and `bind_seat` on `/admin/judging` is what lets somebody actually open the
+    judge console. The note at the head of this file has the argument, and it is the
+    reason these are two nullable columns rather than one "make this person a judge"
+    switch.
+
+    `seat_id` is only read for a judge, because `roster_seat_is_judge` refuses it on
+    an instructor row and the form does not render the control there. Reading it
+    unconditionally would send `null` for an instructor, which is a no-op, but it
+    would also silently clear a seat if the constraint ever loosened.
+  */
+  const { data: entry } = await supabase
+    .from("roster")
+    .select("kind")
+    .eq("id", id)
+    .maybeSingle<{ kind: "instructor" | "judge" }>();
+
   const { error } = await supabase
     .from("roster")
     .update({
+      user_id: (formData.get("userId") as string | null)?.trim() || null,
+      ...(entry?.kind === "judge"
+        ? { seat_id: (formData.get("seatId") as string | null)?.trim() || null }
+        : {}),
       name,
       role: text(formData, "role", 160),
       detail: text(formData, "detail", 1000),
@@ -271,6 +303,17 @@ export async function saveRosterEntry(_prev: FormState, formData: FormData): Pro
     })
     .eq("id", id);
 
+  /* Both folded-in fields have a unique index behind them, and a code is not a
+     message: 23505 here is either this account already being bound to another card
+     of the same kind or this seat already having a holder. The author's next move
+     differs, so the two are told apart by which constraint fired. */
+  if (error?.code === "23505") {
+    return {
+      error: error.message.includes("seat")
+        ? "Another judge already holds that seat. Take it off them first."
+        : "That account is already bound to another card of this kind. Unbind it there first.",
+    };
+  }
   fail("save roster entry", error);
 
   await revalidateRoster();
@@ -317,7 +360,7 @@ export async function setRosterStatus(_prev: FormState, formData: FormData): Pro
     if (!row?.photo_src) {
       return {
         error:
-          "This card has no portrait yet. Add one above and save, then publish — an empty frame on the roster reads as a broken page.",
+          "This card has no portrait yet. Add one above and save, then publish. An empty frame on the roster reads as a broken page.",
       };
     }
   }
@@ -401,83 +444,12 @@ export async function moveRosterEntry(formData: FormData): Promise<void> {
   await revalidateRoster();
 }
 
-/* --------------------------------------------------------------------- bind */
-
-export async function bindRosterUser(formData: FormData): Promise<void> {
-  await requireRole("admin", "/admin/roster");
-
-  const id = formData.get("id") as string;
-  const userId = (formData.get("userId") as string | null) ?? "";
-  if (!id) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("roster")
-    .update({ user_id: userId || null })
-    .eq("id", id);
-
-  /* 23505 here is `roster_one_row_per_person_per_kind`: this account is already
-     bound to another card of the same kind. Naming the constraint's meaning
-     rather than its code, because the author's next move is to unbind the other
-     one and nothing else would tell them that. */
-  if (error?.code === "23505") {
-    throw new Error(
-      "That account is already bound to another card of this kind. Unbind it there first.",
-    );
-  }
-  fail("bind roster user", error);
-
-  await revalidateRoster();
-}
-
-/* --------------------------------------------------------------------- seat */
-
-/**
- * Which board seat this judge holds.
- *
- * ------------------------------------------------------------- why it is here
- *
- * Roan: "all of those have to be here /review-judge-board and be able to crud and
- * link to a user."
- *
- * The seat was the one fact about a judge with no console anywhere: /admin/judging
- * binds a seat to an ACCOUNT, and every judge on the board has no account, so
- * there was no way to record that Liz Zhang reads Course A short of giving her a
- * login first. The card holds the assignment now, and the account is still bound
- * separately when there is one.
- *
- * ------------------------------------------------------ what this does NOT do
- *
- * It does not grant the judge role and it does not write `judge_seats.user_id`.
- * Same asymmetry as `bindRosterUser`, and the same reason: naming somebody as the
- * revenue-operations judge on a public page is a claim about them, and handing
- * them read access to learners' submitted work is a permission. `bind_seat`, on
- * /admin/judging, is where the second one happens.
- */
-export async function setRosterSeat(formData: FormData): Promise<void> {
-  await requireRole("admin", "/admin/roster");
-
-  const id = formData.get("id") as string;
-  const seatId = ((formData.get("seatId") as string | null) ?? "").trim();
-  if (!id) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("roster")
-    .update({ seat_id: seatId || null })
-    .eq("id", id);
-
-  /* 23505 is `roster_seat_id_key`: one seat, one holder. The author's next move
-     is to take it off whoever has it, and nothing else on the screen would say
-     so. 23514 is `roster_seat_is_judge`, which only an instructor row can trip
-     and which the form below never offers. */
-  if (error?.code === "23505") {
-    throw new Error("Another judge already holds that seat. Take it off them first.");
-  }
-  fail("set roster seat", error);
-
-  await revalidateRoster();
-}
+/*
+  `bindRosterUser` AND `setRosterSeat` ARE GONE, folded into `saveRosterEntry` on
+  9 Aug. They were one-column updates behind their own forms and their own buttons on
+  a page that now has a single Save. The unique-constraint messages they carried moved
+  with them; see the 23505 branch above.
+*/
 
 /* ------------------------------------------------------------------- delete */
 

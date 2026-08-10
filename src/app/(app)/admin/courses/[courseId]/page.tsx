@@ -144,7 +144,7 @@ export default async function AdminCourse({ params }: { params: Promise<{ course
         <input type="hidden" name="courseId" value={course.id} />
         <p className="t-card-title text-ink">The course</p>
         <p className="t-meta mt-1 text-ink-muted">
-          What a visitor reads before they enrol. The id — <code>{course.id}</code> — is fixed;
+          What a visitor reads before they enrol. The id, <code>{course.id}</code>, is fixed;
           everything else here can change.
         </p>
 
@@ -464,7 +464,7 @@ export default async function AdminCourse({ params }: { params: Promise<{ course
         <p className="t-body-sm mt-1.5 max-w-[68ch] text-ink-secondary">
           This removes the course, its {modules.length} modules, every lesson in them, and every
           learner&rsquo;s completions, artifacts, outcome sheets and judgements on this course.
-          There is no undo. If what you want is to take it off the site, unpublish it instead —
+          There is no undo. If what you want is to take it off the site, unpublish it instead:
           that is reversible and keeps everything.
         </p>
         <div className="mt-3 flex flex-wrap items-end gap-3">

@@ -65,7 +65,7 @@ export default async function CertificationsPage() {
         {/* The canonical sentence from content.ts, unchanged. A course completes
             when the work is done, and this page is where that becomes a
             document you can show somebody. */}
-        Finish every lesson in a course and it completes. What you get is a completion record — a
+        Finish every lesson in a course and it completes. What you get is a completion record: a
         reference you can share, tied to your name and the course.
       </p>
 
@@ -164,7 +164,7 @@ export default async function CertificationsPage() {
 
         {earned.length === 0 ? (
           <p className="t-body-sm mt-3 rounded-[var(--radius-card)] border border-dashed border-line-control bg-surface-subtle p-4 text-ink-secondary">
-            None yet. Finish a course and it appears here — the three steps above are the whole of
+            None yet. Finish a course and it appears here. The three steps above are the whole of
             it.
           </p>
         ) : (

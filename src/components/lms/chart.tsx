@@ -22,9 +22,35 @@ export type Bar = { label: string; value: number; sub?: number };
 /**
  * A column chart over time.
  *
- * `sub` draws a second, quieter bar behind the first — used for "signed up"
- * against "came back", where the pair is the interesting shape and two separate
- * charts would make the reader hold one in their head.
+ * `sub` draws a second, quieter bar behind the first, used for "signed up" against
+ * "came back", where the pair is the interesting shape and two separate charts would
+ * make the reader hold one in their head.
+ *
+ * ------------------------------------------------------------ THE LABELS FIT NOW
+ *
+ * Roan's screenshot of "Who arrived, and who came back": twelve x-axis labels reading
+ * "25 ...", "8 J...", "15 ...", "22 ...". Every one truncated, so the chart had no
+ * usable axis at all, and the report was simply "data not visible".
+ *
+ * The cause was `truncate` on a label in a column that is a twelfth of the card.
+ * Twelve weekly labels at "25 May" need about 44px each; at two columns on a 1280
+ * screen the card is roughly 600px wide, so each column is 48px minus the gap. It was
+ * always going to be one character short, and `truncate` hid that by design.
+ *
+ * Three changes, and the first is the one that matters:
+ *
+ *   1. THE LABEL IS ROTATED, not shrunk. Rotating 45 degrees takes the label out of
+ *      the column's width budget entirely, so it can be as long as it likes at any
+ *      column count. This is what an axis on a dense time series normally does, and it
+ *      is the only fix that does not degrade as weeks are added.
+ *   2. `whitespace-nowrap` replaces `truncate`. A rotated label has no width to
+ *      truncate against, and leaving `truncate` on would clip it against a box that no
+ *      longer describes it.
+ *   3. A ZERO ROW STILL DRAWS. `bar.value === 0` painted a transparent bar and printed
+ *      an empty string for its figure, so eleven of Roan's twelve weeks were blank
+ *      space with no indication they were weeks at all rather than missing data. A
+ *      2px stub on the baseline and a muted "0" say "measured, and it was none",
+ *      which is a different claim from saying nothing.
  */
 export function BarChart({
   bars,
@@ -43,11 +69,37 @@ export function BarChart({
     <figure className={cn("rounded-[var(--radius-feature)] border border-line bg-surface p-5", className)}>
       <figcaption className="t-card-title text-ink">{caption}</figcaption>
 
-      <div className="mt-5 flex h-[132px] items-end gap-1.5">
+      {/* `pb-9` reserves the room the rotated labels hang into. Without it they
+          overlap whatever follows the figure, which on the admin overview is the
+          paragraph explaining what the two bars mean. */}
+      <div className="mt-5 flex h-[132px] items-end gap-1.5 pb-9">
         {bars.map((bar) => (
-          <div key={bar.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
-            <span className="t-meta tabular-nums text-ink-secondary">{bar.value || ""}</span>
-            <div className="relative flex w-full justify-center" style={{ height: 88 }}>
+          <div key={bar.label} className="flex min-w-0 flex-1 flex-col items-center justify-end">
+            <div className="relative flex w-full justify-center" style={{ height: 112 }}>
+              {/*
+                THE FIGURE SITS ON TOP OF ITS OWN BAR, and it was a fixed row above
+                the plot.
+
+                As a flex child above a fixed-height bar box, every figure landed on
+                one line at the top of the chart whatever its bar did — so twelve weeks
+                of mostly-zero data read as a header row of numbers with an unrelated
+                column underneath, which is half of why Roan could not see the data.
+                Positioned from the bottom by the same percentage the bar uses, each
+                number rides its own column.
+
+                `bottom` is the bar's own height plus 4px of air, and the zero case is
+                pinned to the 2px stub rather than computed, so a zero label does not
+                sit on the baseline.
+              */}
+              <span
+                style={{ bottom: bar.value === 0 ? 8 : `calc(${(bar.value / peak) * 100}% + 4px)` }}
+                className={cn(
+                  "t-meta absolute tabular-nums leading-none",
+                  bar.value === 0 ? "text-ink-muted/60" : "text-ink-secondary",
+                )}
+              >
+                {bar.value}
+              </span>
               {bar.sub !== undefined ? (
                 <span
                   aria-hidden="true"
@@ -57,14 +109,30 @@ export function BarChart({
               ) : null}
               <span
                 aria-hidden="true"
-                style={{ height: `${(bar.value / peak) * 100}%` }}
+                /* A 2px stub for a zero week, so the column reads as a measured
+                   nothing rather than as a gap in the data. */
+                style={{ height: bar.value === 0 ? 2 : `${(bar.value / peak) * 100}%` }}
                 className={cn(
                   "absolute bottom-0 w-full rounded-t-[3px]",
-                  bar.value === 0 ? "bg-transparent" : "bg-accent",
+                  bar.value === 0 ? "bg-line-strong" : "bg-accent",
                 )}
               />
             </div>
-            <span className="t-micro w-full truncate text-center text-ink-muted">{bar.label}</span>
+            {/*
+              Rotated out of the column's width budget. `origin-top-right` with a
+              `translate-x-1/2` puts the label's right end under the centre of its own
+              bar, which is where an eye looks for it; rotating about the centre walks
+              the whole run left as the labels lengthen.
+
+              `absolute`, so the rotated box contributes no layout height and the
+              columns stay the same height whatever the labels say. The `pb-9` on the
+              row above is what holds the space for them.
+            */}
+            <span className="relative block h-0 w-full">
+              <span className="t-micro absolute right-1/2 top-1 origin-top-right translate-x-1/2 -rotate-45 whitespace-nowrap text-ink-muted">
+                {bar.label}
+              </span>
+            </span>
           </div>
         ))}
       </div>

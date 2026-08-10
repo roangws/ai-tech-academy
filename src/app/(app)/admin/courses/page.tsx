@@ -72,8 +72,8 @@ export default async function AdminCourses() {
         <div>
           <h1 className="t-h2 text-ink">Courses</h1>
           <p className="t-body-sm mt-1.5 max-w-[60ch] text-ink-secondary">
-            Everything here is what the site shows. A new course starts as a draft — invisible to
-            visitors and to the player — with one open module and one lesson, so it can be opened
+            Everything here is what the site shows. A new course starts as a draft, invisible to
+            visitors and to the player, with one open module and one lesson, so it can be opened
             from the moment it exists.
           </p>
         </div>

@@ -94,20 +94,29 @@ export function Faq() {
     instructors and teams above it, and dropping that would trade one
     three-band run for another.
 
-    `hairlineTop`, ADDED 9 AUG, and it is the same chain one link longer. The
-    tinted board is no longer the band above: the community partners went in
-    between the two, on white, because the board's tint forbids a tint beside
-    it. So the rule this section used to inherit from a tinted neighbour is not
-    drawn any more, and without one the FAQ and the partner band above it run
-    together as one undivided white field.
+    `tint`, SET 9 AUG on Roan's instruction: "behind this block Questions / Common
+    questions the background color instead of white has to be the same light blue as
+    Review Judge board." That light blue is `--surface-subtle`, the same ground the
+    advisory band on /review-judge-board uses, so this is one token rather than a
+    new colour.
 
-    The reason it had none until now still stands and is the reason it is worth
-    writing twice: a tinted band draws its own bottom rule, so asking for a
-    hairline under one stacks two into a 2px line. Partners takes none for
-    exactly that reason. This one takes one for the opposite one.
+    It is available, and that is not luck. The lock is that no two tinted bands may
+    touch, and this section sits between the community partners and the closing
+    band, both of which are white. The full rhythm is in the page's own docblock.
+
+    `hairlineTop` came OFF in the same change, and forgetting that is how this ends
+    up with a 2px seam. A tinted band draws its own top and bottom rules, so a
+    hairline on one stacks two lines into one place. It needed the hairline only
+    while it was white and following a white band: the tinted board used to be its
+    neighbour, then the partner band went in between them on white, and the rule the
+    FAQ used to inherit from a tinted neighbour stopped being drawn. Now it draws its
+    own again.
+
+    The knock-on is one line in closing.tsx: that band follows this one and had a
+    `hairlineTop` of its own, which is now the second rule at the same boundary.
   */
   return (
-    <Section id="faq" hairlineTop>
+    <Section id="faq" tint>
       <SectionHeader label="Questions" heading="Common questions" />
 
       <div className="max-w-[900px]">

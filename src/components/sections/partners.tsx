@@ -54,8 +54,15 @@ import { partners } from "@/lib/content";
  *
  * The height cap is what makes two lockups of different aspect land at the same
  * optical size: this one is 5.2:1 and The AI Collective's is 3.7:1, and capping by
- * width would draw one of them half the height of the other. 26px inside 44,
- * because a wordmark set to an icon's full height reads as shouting next to one.
+ * width would draw one of them half the height of the other.
+ *
+ * 38px inside a 64px chip, up from 26 inside 44 on Roan's instruction to make them
+ * bigger. The old numbers came from a rule about wordmarks that does not apply here:
+ * a wordmark set to an icon's full height reads as shouting NEXT TO AN ICON, and
+ * there is no icon in this band. Both cards hold a lockup and nothing else, so the
+ * pair only has to agree with each other, and at 26px they were the smallest thing
+ * on a 600px card. `sizes` goes up with them, or the browser keeps picking a
+ * candidate for the old box and scaling it up.
  */
 export function Partners() {
   return (
@@ -102,14 +109,14 @@ export function Partners() {
                   rendered size comes from `h-[26px] w-auto`. They do not need to
                   match either file exactly, and cannot match both.
                 */}
-                <span className="inline-flex h-11 flex-none items-center justify-center rounded-[var(--radius-control)] bg-white px-2.5 ring-1 ring-inset ring-line">
+                <span className="inline-flex h-16 flex-none items-center justify-center rounded-[var(--radius-control)] bg-white px-3.5 ring-1 ring-inset ring-line">
                   <Image
                     src={p.logo.src}
                     alt={p.logo.alt}
                     width={618}
                     height={120}
-                    sizes="180px"
-                    className="h-[26px] w-auto"
+                    sizes="260px"
+                    className="h-[38px] w-auto"
                   />
                 </span>
 

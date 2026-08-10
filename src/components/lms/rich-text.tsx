@@ -94,7 +94,7 @@ const TOOLS: Tool[] = [
   { kind: "wrap", before: "_", after: "_", label: "Italic", Icon: TextItalicIcon, hint: "Italic" },
   { kind: "wrap", before: "`", after: "`", label: "Code", Icon: CodeSimpleIcon, hint: "Inline code" },
   { kind: "line", prefix: "- ", label: "Bulleted list", Icon: ListBulletsIcon, hint: "Bulleted list" },
-  { kind: "line", prefix: "1. ", label: "Numbered list", Icon: ListNumbersIcon, hint: "Numbered list — the numbers redraw themselves" },
+  { kind: "line", prefix: "1. ", label: "Numbered list", Icon: ListNumbersIcon, hint: "Numbered list, and the numbers redraw themselves" },
   { kind: "line", prefix: "> ", label: "Quote", Icon: QuotesIcon, hint: "Pull quote" },
   { kind: "link", label: "Link", Icon: LinkSimpleIcon, hint: "Link" },
   { kind: "block", text: "\n---\n", label: "Divider", Icon: MinusIcon, hint: "Horizontal rule" },

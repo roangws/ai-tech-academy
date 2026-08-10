@@ -106,7 +106,7 @@ function QuizFields({ initial }: { initial: Question[] }) {
               ) : null}
             </div>
 
-            <p className={`${label} mt-3`}>Choices — pick the correct one</p>
+            <p className={`${label} mt-3`}>Choices, and which one is correct</p>
             <div className="mt-1 grid gap-1.5">
               {q.choices.map((choice, c) => (
                 <div key={c} className="flex items-center gap-2">

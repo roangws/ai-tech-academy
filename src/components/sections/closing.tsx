@@ -35,13 +35,17 @@ const glyphs: Record<string, Icon> = {
 
 export function Closing() {
   /*
-    `hairlineTop`, restored 7 Aug. The FAQ above was a tinted band, and a tint
-    draws its own bottom rule, so asking for one here stacked two into a 2px
-    line. The method merge pushed the FAQ back to white — its own note has the
-    chain — so the only rule between two white bands is this one again.
+    NO `hairlineTop`, and this prop has now been on and off three times, which is
+    why the rule is worth stating rather than the state: this band takes a hairline
+    if and only if the band above it is white.
+
+    It had one on 7 Aug because the method merge pushed the FAQ to white. It comes
+    off again on 9 Aug because the FAQ is tinted at Roan's request, and a tint draws
+    its own bottom rule -- so a hairline here would be the second line at the same
+    boundary, which is the 2px seam that keeps reappearing in Roan's screenshots.
   */
   return (
-    <Section hairlineTop ariaLabelledBy="closing-heading">
+    <Section ariaLabelledBy="closing-heading">
       <Panel tone="dark">
         <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,470px)] lg:gap-14">
           <div>

@@ -183,7 +183,7 @@ export default async function AdminJudging() {
         </h2>
         <p className="t-body-sm mt-1.5 max-w-[66ch] text-ink-secondary">
           One seat per course, plus a learning-design seat that reads them all. Binding somebody
-          grants the judge role at the same time — <code>holds_seat()</code> tests for it first, so
+          grants the judge role at the same time, because <code>holds_seat()</code> tests for it first, so
           a seat bound to an account without it would silently do nothing.
         </p>
 

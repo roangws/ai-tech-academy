@@ -378,7 +378,7 @@ export async function deleteCourse(_prev: FormState, formData: FormData): Promis
   const confirm = String(formData.get("confirm") ?? "").trim();
   if (confirm !== courseId) {
     refuse(
-      `To delete this course type its id — ${courseId} — into the box exactly. Everything in it goes, including every learner's progress and submitted work.`,
+      `To delete this course type its id, ${courseId}, into the box exactly. Everything in it goes, including every learner's progress and submitted work.`,
     );
   }
 

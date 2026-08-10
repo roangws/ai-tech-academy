@@ -81,7 +81,7 @@ export async function claimCompletion(_prev: FormState, formData: FormData): Pro
     if (error.code === "23514") {
       /* The function's message is "completed 34 of 39 lessons", which is the one
          fact the learner needs and is already phrased for a person. */
-      return { error: `Not yet — you have ${error.message}. Finish them and this unlocks.` };
+      return { error: `Not yet. You have ${error.message}. Finish them and this unlocks.` };
     }
     return { error: error.message };
   }

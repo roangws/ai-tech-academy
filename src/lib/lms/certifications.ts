@@ -190,7 +190,7 @@ export async function listCertifications(): Promise<AdminCertification[]> {
       name: [p?.first_name, p?.last_name].filter(Boolean).join(" ") || p?.email || "Deleted account",
       email: p?.email ?? null,
       courseTitle: course.get(r.course_id)?.title ?? r.course_id,
-      courseBadge: course.get(r.course_id)?.badge ?? "—",
+      courseBadge: course.get(r.course_id)?.badge ?? "",
     };
   });
 }

@@ -2250,7 +2250,7 @@ export const partners = {
   */
   headline: "Two AI communities you can learn alongside",
   intro:
-    "Both run their own events, in person and online, and both are open to join. Neither is part of this program — here is what each one does, in their own words.",
+    "Both run their own events, in person and online, and both are open to join. Neither is part of this program. Here is what each one does, in their own words.",
   /* Roan's order, as he listed them. Two entries have no order worth deriving
      and any other one would be this site ranking two partners against each
      other, which is a judgement nobody asked it to publish. */
