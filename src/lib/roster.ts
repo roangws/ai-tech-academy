@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { instructors as instructorCopy, board as boardCopy } from "@/lib/content";
+import { instructors as instructorCopy, board as boardCopy, authoredBooks } from "@/lib/content";
 import type { Person, Seat } from "@/lib/content";
 
 /**
@@ -130,6 +130,24 @@ function toPerson(r: RosterRow): Person {
     ...(r.lead ? { lead: true } : {}),
     ...(r.linkedin ? { linkedin: r.linkedin } : {}),
     ...(r.site_href && r.site_label ? { site: { label: r.site_label, href: r.site_href } } : {}),
+    /*
+      The one field on a card that is editorial rather than a column.
+
+      A book by somebody on this roster is copy, not roster data — content.ts has
+      the argument at `authoredBooks`, and the short version is that five nullable
+      columns and five console fields to carry one hyperlink is a schema built for
+      a hypothetical. It joins on the profile URL, which is the only field on a
+      row that identifies a specific human being.
+
+      No match is the normal case: four of these five people have no book here and
+      the card renders without the row.
+    */
+    ...(r.linkedin
+      ? (() => {
+          const match = authoredBooks.find((b) => b.authorLinkedin === r.linkedin);
+          return match ? { book: match.book } : {};
+        })()
+      : {}),
   };
 }
 

@@ -114,6 +114,93 @@ export function InstructorLeadCard({ person }: { person: Person }) {
         ) : null}
 
         {/*
+          The book, as one row inside the biography.
+
+          =========================================================== why here
+
+          Because it is a fact about this person and it is nothing else. It came
+          off a credibility band under the fold that was cut for asking to be
+          admired, and content.ts records the sentence that cut it: authoring on
+          applied AI in media production "belongs on a biography rather than in
+          the second screen of a course page". This card is the biography. Roan
+          asked for the book back on the homepage; this is the one slot on the
+          page where it arrives attached to its author rather than floating as a
+          claim, and it costs the page no new band.
+
+          It also travels: /instructors renders the same card, so the book is on
+          both pages from one entry in content.ts.
+
+          ======================================================== why this small
+
+          Roan's instruction was "not too big", and the row is built to that
+          rather than trimmed to it afterwards. The cover is 40 x 65 — a
+          thumbnail that identifies the object and does not attempt to be read —
+          the title runs at the card-title size rather than a heading size, and
+          the whole row is one rule-bounded block between the bio and the links
+          instead of a panel of its own. Total height is about 100px in a card
+          that runs 500.
+
+          40 x 65 is 0.615, which is the jacket's own ratio rather than a shape
+          chosen for the row, so `object-cover` crops nothing. content.ts has the
+          note on where that ratio came from and why the asset is a crop.
+
+          ---------------------------------------------------- the link, and rel
+
+          `noopener noreferrer` and a new tab, matching every other outbound link
+          on this card.
+
+          The whole row is the anchor, and no chip sits inside it. That is a
+          departure from the two link chips below, and it is deliberate on both
+          counts: a chip would add a fourth line to a row built to be short, and
+          a button-shaped thing inside an anchor invites the nested-affordance
+          fault the specialist card has a long note about. The accessible name is
+          the row's own text, which already reads "The book, World Models Applied
+          in Video Production, A comprehensive technical guide…", so nothing
+          needed an `aria-label` — and nothing here has one, for the reason the
+          LinkedIn chip below spells out.
+        */}
+        {person.book ? (
+          <a
+            href={person.book.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group/book mt-5 flex items-start gap-3.5 rounded-[var(--radius-card)] border border-white/15 bg-white/[0.045] p-3.5 no-underline transition-colors hover:border-white/30 hover:bg-white/[0.08] md:gap-4 md:p-4"
+          >
+            {/*
+              A jacket is a photographed object rather than a mark, so it gets a
+              shadow and a hairline instead of the light chip the logos sit on.
+              `alt=""`: the title is set in type immediately to its right, and a
+              screen reader announcing both reads the same book twice.
+            */}
+            <Image
+              src={person.book.cover.src}
+              alt=""
+              width={387}
+              height={628}
+              sizes="80px"
+              className="h-[65px] w-10 flex-none rounded-[3px] object-cover shadow-[0_2px_8px_rgb(0_0_0/0.45)] ring-1 ring-inset ring-white/15"
+            />
+
+            <span className="min-w-0 flex-1">
+              <span className="t-label block text-white/55">{person.book.label}</span>
+              <span className="t-card-title mt-1 block text-white group-hover/book:underline">
+                {person.book.title}
+              </span>
+              <span className="t-meta mt-1 block max-w-[62ch] text-white/60">
+                {person.book.blurb}
+              </span>
+            </span>
+
+            <ArrowUpRightIcon
+              size={16}
+              weight="bold"
+              aria-hidden="true"
+              className="mt-0.5 flex-none text-white/45 transition-transform duration-150 group-hover/book:-translate-y-0.5 group-hover/book:translate-x-0.5 group-hover/book:text-white"
+            />
+          </a>
+        ) : null}
+
+        {/*
           The investor line and the links share a row, on a rule.
 
           They were stacked, which cost 20px of height in a card that had none to
