@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { StartDate } from "@/components/start-date";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
-import { cta, startsOn, type Img } from "@/lib/content";
+import { cta, REFERENCE_ZONE, startsOn, type Img } from "@/lib/content";
 
 /**
  * Shared primitives, built to references/DESIGN-SPEC.md.
@@ -386,6 +386,13 @@ export function EnrollButton({
           string hydration matches. StartDate replaces it with the reader's own
           date on mount; that file has the note on why the authority has to sit
           on the client.
+
+          `REFERENCE_ZONE` is not decoration. Without it this renders the SERVER's
+          date, which is UTC — so from mid-afternoon Pacific onwards the button
+          announced tomorrow, and because two ISR entries either side of midnight
+          UTC can be alive at once under `revalidate = 3600`, reloads seconds apart
+          alternated between two dates. Found on production by QA; `startsOn` in
+          content.ts has the full note.
         */}
         {/*
           90%, not 80%. The subtitle has to stay subordinate to the label, and at
@@ -396,7 +403,7 @@ export function EnrollButton({
         <span
           className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
         >
-          Starts <StartDate initial={startsOn(new Date())} />
+          Starts <StartDate initial={startsOn(new Date(), REFERENCE_ZONE)} />
         </span>
       </span>
     </ButtonLink>

@@ -230,9 +230,44 @@ export const cta = {
  * "7. Aug." inside an English button would be the only localised string on the
  * site. See components/start-date.tsx for the half of this that runs on the
  * client, and why it has to.
+ *
+ * ------------------------------------------------- THE SERVER RENDERS IN CALIFORNIA
+ *
+ * `timeZone` exists for one reason and it is a bug QA found on production: the
+ * button was alternating between "Starts Aug 9" and "Starts Aug 10" on reloads
+ * seconds apart.
+ *
+ * That looked like a caching race and it was not. Vercel runs in UTC, and at 20:20
+ * in California it is already 03:20 the next day in UTC — so the server was
+ * rendering tomorrow's date, and which of the two a reader got depended on whether
+ * the ISR entry serving them had been built before or after midnight UTC. The
+ * `revalidate = 3600` on the pages means both entries can be alive at once, which
+ * is what produced the flicker.
+ *
+ * The prerendered string is therefore computed in `REFERENCE_ZONE` rather than in
+ * the server's own. Two consequences, both wanted:
+ *
+ *   - It stops being wrong for most readers. This is a San Francisco program — the
+ *     partner events are in San Francisco and every judge on the board is in the
+ *     Bay Area — so Pacific is the closest thing to "the program's own day", and it
+ *     is the right day for the whole of the Americas rather than the wrong one.
+ *   - It stops flickering. Every cache entry built within one Pacific day now
+ *     produces the same string, whatever hour UTC thought it was.
+ *
+ * `StartDate` still corrects it to the reader's own zone on mount, which is what
+ * makes it right for a reader in Berlin too. This only decides what the HTML says
+ * before their browser has had a chance to say otherwise — which is also what a
+ * crawler and a reader with no JavaScript get, and neither of those was being
+ * served a correct date before.
  */
-export function startsOn(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+export const REFERENCE_ZONE = "America/Los_Angeles";
+
+export function startsOn(date: Date, timeZone?: string): string {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(timeZone ? { timeZone } : {}),
+  });
 }
 
 /*

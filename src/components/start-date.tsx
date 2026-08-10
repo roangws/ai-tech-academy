@@ -42,6 +42,9 @@ export function StartDate({ initial }: { initial: string }) {
 
     function tick() {
       const now = new Date();
+      /* No `timeZone`, deliberately: this is the half that is allowed to know the
+         reader's own. The server passes `REFERENCE_ZONE` because it cannot know it
+         and UTC was the wrong guess — content.ts has that note. */
       setLabel(startsOn(now));
 
       const midnight = new Date(now);
