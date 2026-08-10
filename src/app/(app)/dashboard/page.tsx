@@ -83,6 +83,24 @@ function nextActions(rows: DashboardCourse[]): Action[] {
     }
   }
 
+  /*
+    FIRST, because it is the only one of these that is a reward rather than a
+    chore, and because it is the moment the whole certification feature either
+    lands or is never discovered. Everything else in this list is work still to
+    do; this is work already done and not yet collected.
+  */
+  for (const row of rows) {
+    if (row.certifiable) {
+      out.push({
+        key: `cert-${row.course.id}`,
+        href: "/dashboard/certifications",
+        label: `Take your completion record for ${row.course.title}`,
+        detail: "Every lesson finished",
+        Icon: SealCheckIcon,
+      });
+    }
+  }
+
   for (const row of rows) {
     if (row.sheet?.status === "draft") {
       out.push({

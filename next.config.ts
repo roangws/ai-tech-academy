@@ -77,7 +77,30 @@ const nextConfig: NextConfig = {
   images: {
     // Placeholder photography only. Remove once real assets land in /public
     // or a media host. See IMAGE_MANIFEST in src/lib/content.ts.
-    remotePatterns: [{ protocol: "https", hostname: "picsum.photos" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "picsum.photos" },
+      /*
+        Supabase Storage, for roster portraits and employer marks uploaded in the
+        console rather than committed to /public.
+        
+        Scoped to the storage object path rather than the whole host, so this
+        entry cannot be used to proxy something else on the project's domain
+        through the image optimiser.
+
+        The hostname is derived from the project URL rather than written out, so
+        a project move is one environment variable rather than a code change —
+        and so this file cannot disagree with the client the rest of the app
+        builds. `next.config.ts` runs in Node at build and start, so reading the
+        env var here is legitimate in a way it would not be in a component.
+      */
+      {
+        protocol: "https",
+        hostname: new URL(
+          process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://localhost",
+        ).hostname,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 
   /**

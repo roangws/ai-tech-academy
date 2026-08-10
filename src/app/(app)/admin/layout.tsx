@@ -5,6 +5,7 @@ import {
   GavelIcon,
   GraduationCapIcon,
   IdentificationCardIcon,
+  SealCheckIcon,
   StackIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -49,6 +50,10 @@ const SECTIONS = [
      judge consists of. See the note at the head of admin/judging/page.tsx. */
   { href: "/admin/judging", label: "Judging", Icon: GavelIcon },
   { href: "/admin/learners", label: "Learners", Icon: GraduationCapIcon },
+  /* Directly under Learners, because it is the same people seen through the one
+     question the learners table cannot answer: who holds a completion record
+     and who has earned one without taking it. */
+  { href: "/admin/certifications", label: "Certifications", Icon: SealCheckIcon },
   { href: "/admin/courses", label: "Courses", Icon: StackIcon },
 ];
 
