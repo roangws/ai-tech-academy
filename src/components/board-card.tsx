@@ -129,12 +129,32 @@ export function BoardCard({
         flat ground and carries the fade; the inner is white at alpha with the
         silhouette cut out of it, so what shows through is the ground.
 
-        Opacity rather than a flip, and from sm up only: below that the face is
-        simply on, so a phone is not asked to hover.
+        ------------------------------------------------ HOVER ONLY, and it was not
+
+        Roan, 10 Aug: "not working the images from /review-judge-board on the
+        mobile."
+
+        The images were loading fine. This element was painted over them. It
+        carried `max-sm:opacity-100`, so below 640px the face was pinned on at
+        full opacity — and it is `inset-0` filled with a flat `member.ground`,
+        which means it covered the entire card. Every judge on the board, and
+        every judge in the homepage rail, was a coloured rectangle with a wave
+        pattern on a phone. The one page whose subject is these five people
+        showed none of their faces on the device most people read it on.
+
+        The reasoning behind it was sound and the conclusion was not: a phone
+        fires no hover, so the hover content was made permanent. But this
+        particular hover content REPLACES the photograph, and "cannot hover"
+        is not a reason to be shown the thing hovering would have hidden.
+
+        So the face is a hover affordance now and nothing else. A phone gets the
+        resting card, which is the photograph. The summary that hovering also
+        reveals is still shown below `sm` — it is the useful half — and the scrim
+        below carries it.
       */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100 max-sm:opacity-100"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100"
         style={{ backgroundColor: member.ground }}
       >
         <span
@@ -178,8 +198,13 @@ export function BoardCard({
              role, the employer and the location, and gone by the time it reaches a
              chin.
           2. THE EXTRA, faded in with the pattern and reaching 66%, which is what
-             carries the summary over the waves. It is also on permanently below `sm`,
-             where the face is on permanently because a phone fires no hover.
+             carries the summary over the waves. It stays on permanently below `sm`,
+             where the summary is permanently open — and it is now the ONLY thing
+             carrying that text, since the coloured face above it stopped being
+             permanent there. Measured against a portrait rather than the ground:
+             it is 0.42 at 34% of the card and fades to nothing by 66%, so it
+             covers the block of type at the bottom and has run out before it
+             reaches the eyes on a 3:4 head-and-shoulders frame.
 
         Both are `to-transparent` rather than to a low alpha. `to-[rgb(13_26_34/0.05)]`
         reads as nothing and is not nothing: it is a 5% black film over the brightest
@@ -341,6 +366,14 @@ export function BoardCard({
           The block is `pointer-events-none` as a whole and the two links sit
           above it, so text growing upward under the cursor cannot steal the
           click from the card it is drawn on.
+
+          CLAMPED TO THREE LINES BELOW `sm`, and only there. On hover there is a
+          flat coloured face behind this and the text can run as long as it
+          likes. On a phone there is a photograph behind it and one gradient over
+          that, and the gradient has faded to nothing by 66% of the card — so an
+          unclamped summary could grow up past its own wash and end as white text
+          on whatever the picture happens to be. Three lines keeps the block
+          inside the part of the card the scrim actually covers.
         */}
         {member.summary ? (
           <p
@@ -351,7 +384,7 @@ export function BoardCard({
               "max-sm:mt-2.5 max-sm:grid-rows-[1fr] max-sm:text-white/85"
             }
           >
-            <span className="overflow-hidden">{member.summary}</span>
+            <span className="overflow-hidden max-sm:clamp-3">{member.summary}</span>
           </p>
         ) : null}
       </div>
