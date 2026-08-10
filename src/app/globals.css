@@ -821,6 +821,30 @@ html:has([data-theme="dark"]) {
     width: 277mm;
     height: 189mm;
     break-inside: avoid;
+
+    /*
+      THE DOCUMENT IS ALWAYS ON PAPER, whatever theme the reader has on.
+
+      The signed-in app has a dark theme and /dashboard/certifications is inside
+      it, so `bg-surface` and `text-ink` on the sheet resolve to dark values for
+      anybody who has switched — and printing that produced a black certificate
+      with pale grey type, on the one object on this site whose entire purpose is
+      to be printed and handed to somebody.
+
+      Pinning the tokens on `.doc-sheet` rather than unsetting the theme is what
+      keeps this a two-line fix: everything inside the document is drawn from these
+      seven, including the gradient band's own `--accent`, so the whole sheet
+      reverts to paper without a single `print:` utility at any call site. Values
+      are the `:root` light set, copied deliberately — if those change, these have
+      to change with them.
+    */
+    --surface: #ffffff;
+    --surface-subtle: #eef3f7;
+    --ink: #101820;
+    --ink-secondary: #3d4f60;
+    --ink-muted: #5c6e7f;
+    --line: #d8e1e8;
+    --line-strong: #aebecb;
   }
 
   /* Everything between the page root and the sheet gives up its vertical space.
