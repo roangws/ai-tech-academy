@@ -4,6 +4,7 @@ import {
   EnvelopeSimpleIcon,
   GavelIcon,
   GraduationCapIcon,
+  SealCheckIcon,
   StackIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -41,6 +42,9 @@ const SECTIONS = [
   { href: "/admin/applications", label: "Applications", Icon: EnvelopeSimpleIcon },
   { href: "/admin/seats", label: "Judge seats", Icon: GavelIcon },
   { href: "/admin/learners", label: "Learners", Icon: GraduationCapIcon },
+  /* Directly under Learners, because it is what a learner row turns into: the
+     one page that answers "who has finished" without reading thirty meters. */
+  { href: "/admin/certificates", label: "Certificates", Icon: SealCheckIcon },
   { href: "/admin/courses", label: "Courses", Icon: StackIcon },
 ];
 

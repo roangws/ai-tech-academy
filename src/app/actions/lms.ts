@@ -188,6 +188,33 @@ export async function toggleLesson(_prev: ToggleState, formData: FormData): Prom
   });
   must(done ? "untick lesson" : "tick lesson", error);
 
+  /*
+    The tick that finishes the course issues the certificate.
+
+    `claim_completion` is the learner's half of what /admin/learners has always
+    been able to do by hand, and it refuses unless every lesson of the course has
+    a progress row for the caller — so this is safe to call on every completing
+    tick and is a no-op on all but one of them. It is idempotent after that: the
+    reference is minted once and returned unchanged on every later call.
+
+    The refusal is swallowed, and only the refusal. `check_violation` is the code
+    the function raises for "completed 12 of 35", which is the ordinary case and
+    is not an error the learner should ever see. Anything else is a real failure
+    and goes to the error boundary like every other write in this file, because a
+    course finished and a certificate silently not issued is exactly the class of
+    bug `must` exists to stop.
+
+    Only on `!done`. Unticking a lesson does not withdraw a record that has
+    already been issued: the record says the work was completed on a date, and it
+    was.
+  */
+  if (!done) {
+    const claim = await supabase.rpc("claim_completion", { p_course_id: course.id });
+    if (claim.error && claim.error.code !== "23514") {
+      must("issue completion record", claim.error);
+    }
+  }
+
   /* The lesson itself, which was missing and is the page whose state just
      changed. Then the module and the board, which show the counts.
 
@@ -198,6 +225,7 @@ export async function toggleLesson(_prev: ToggleState, formData: FormData): Prom
   revalidatePath(`/learn/${slug}/${n}`);
   revalidatePath(`/learn/${slug}`);
   revalidatePath("/dashboard");
+  revalidatePath("/certificate");
 
   /*
     Advancing is one press again, and this time the destination says so.
@@ -224,6 +252,32 @@ export async function toggleLesson(_prev: ToggleState, formData: FormData): Prom
   /* Staying put still has to say something. The button flips optimistically on
      the client, so this is the confirmation that the server agreed. */
   return { message: done ? "Marked as not done." : "Done. Saved to your account." };
+}
+
+/**
+ * Issue the caller their own certificate, for a course they have finished.
+ *
+ * The same RPC `toggleLesson` calls, reachable by hand. It exists for the people
+ * who finished a course before there was anything to issue, and as the recovery
+ * path for a tick whose claim failed on a network that dropped between the two
+ * calls. The page only renders the control when the board already says every
+ * lesson is done, so a refusal here is a genuine disagreement between the page
+ * and Postgres and belongs in the error boundary rather than in a message.
+ */
+export async function claimCertificate(formData: FormData): Promise<void> {
+  const slug = formData.get("slug") as string;
+  const course = await bySlug(slug);
+  if (!course) return;
+
+  await requireUserId(`/certificate/${slug}`);
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("claim_completion", { p_course_id: course.id });
+  must("issue certificate", error);
+
+  revalidatePath(`/certificate/${slug}`);
+  revalidatePath("/certificate");
+  revalidatePath("/dashboard");
 }
 
 /* -------------------------------------------------------------- artifacts */

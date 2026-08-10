@@ -63,6 +63,30 @@ const nextConfig: NextConfig = {
   },
 
   /**
+   * `sharp` is a native binding, so it has to stay a require rather than be
+   * bundled. The certificate PDF route is the only thing that imports it, and it
+   * imports it for one call: PNG in, JPEG out, so the PDF can embed the bytes
+   * verbatim under /DCTDecode.
+   */
+  serverExternalPackages: ["sharp"],
+
+  /**
+   * The certificate typefaces, read from disk at module scope by
+   * src/lib/lms/certificate-image.tsx.
+   *
+   * Next traces what a function needs by following imports, and a `readFile` of a
+   * path built with `join(process.cwd(), ...)` is not an import. Without this the
+   * certificate renders in dev, where the repo is on disk, and 500s in production,
+   * where only the traced files are. Named here rather than moved into `public/`
+   * because a static asset directory is served to browsers, and these are inputs
+   * to a renderer rather than downloads.
+   */
+  outputFileTracingIncludes: {
+    "/certificate/[reference]/image": ["./assets/fonts/**"],
+    "/certificate/[reference]/pdf": ["./assets/fonts/**"],
+  },
+
+  /**
    * Security headers.
    *
    * There were none until lessons could embed things. Now that a lesson can

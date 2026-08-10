@@ -12,6 +12,11 @@ import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, Empty } from "@/components/lms/ui";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
+import {
+  certificatePaths,
+  listMyCertificates,
+  type MyCertificate,
+} from "@/lib/lms/certificates";
 import { getCatalog, totalLessons } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -56,8 +61,21 @@ export const metadata: Metadata = {
 type Action = { key: string; href: string; label: string; detail: string; Icon: typeof ArrowRightIcon };
 
 /** The handful of things actually waiting on this learner, most useful first. */
-function nextActions(rows: DashboardCourse[]): Action[] {
+function nextActions(rows: DashboardCourse[], certificates: MyCertificate[]): Action[] {
   const out: Action[] = [];
+
+  /* First, and above the instructor replies, because it is the only row in this
+     list that is a result rather than a chore. A learner who finishes a course
+     and is told nothing has been given the thing and not shown it. */
+  for (const c of certificates) {
+    out.push({
+      key: `cert-${c.reference}`,
+      href: certificatePaths.page(c.reference),
+      label: "Your certificate is ready",
+      detail: c.course_title,
+      Icon: SealCheckIcon,
+    });
+  }
 
   for (const row of rows) {
     for (const a of row.feedback) {
@@ -102,12 +120,16 @@ function nextActions(rows: DashboardCourse[]): Action[] {
 
 export default async function DashboardPage() {
   const viewer = await requireUser("/dashboard");
-  const enrolled = await getDashboard(viewer.id);
+  const [enrolled, certificates] = await Promise.all([
+    getDashboard(viewer.id),
+    listMyCertificates(),
+  ]);
 
   const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
+  const certificateFor = new Map(certificates.map((c) => [c.course_id, c]));
   const started = enrolled.filter((e) => e.done > 0);
   const current = started[0] ?? null;
-  const actions = nextActions(enrolled);
+  const actions = nextActions(enrolled, certificates);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
   const rest = (await getCatalog()).filter((c) => c.id !== current?.course.id);
@@ -148,6 +170,18 @@ export default async function DashboardPage() {
                 <p className="t-label text-ink-muted">{current.course.badge}</p>
                 {current.enrollment.status === "completed" ? (
                   <StatusChip>Complete</StatusChip>
+                ) : null}
+                {/* The chip says the course is finished. This says what the
+                    learner got for finishing it, which is the part the chip has
+                    never been able to carry. */}
+                {certificateFor.get(current.course.id) ? (
+                  <Link
+                    href={certificatePaths.page(certificateFor.get(current.course.id)!.reference)}
+                    className="t-meta inline-flex items-center gap-1.5 text-accent no-underline underline-offset-4 hover:underline"
+                  >
+                    <SealCheckIcon size={15} weight="fill" aria-hidden="true" />
+                    Your certificate
+                  </Link>
                 ) : null}
               </div>
               <h2 className="t-h2 mt-1 text-ink">{current.course.title}</h2>

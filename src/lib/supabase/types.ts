@@ -279,6 +279,26 @@ export type CompletionRecord = {
   issued_at: string;
 };
 
+/* The return of `verify_completion(p_reference)`, which is the only way anybody
+   who is not the holder or an admin ever sees one of these. It is a function
+   rather than a policy because a policy would have to expose `user_id`, and a
+   public identifier that resolves to an account id is a way of asking "who has
+   completed what" rather than "is this document real". Every field below is
+   already printed on the certificate the reference came off. */
+export type VerifiedCompletion = {
+  reference: string;
+  holder: string | null;
+  avatar_url: string | null;
+  course_id: string;
+  course_title: string;
+  course_badge: string;
+  /* The literal `var(--path-a)` this column holds everywhere else. The renderer
+     resolves it to hex itself, because satori has no stylesheet to resolve it
+     against. */
+  course_ground: string | null;
+  issued_at: string;
+};
+
 /* --------------------------------------------------- instruction and judging */
 
 export type InstructorAssignment = {

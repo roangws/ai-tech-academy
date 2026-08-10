@@ -194,7 +194,7 @@ function toCourse(row: CourseRow): AdminCourse {
  * URLs. Drafts are excluded by the caller, not by the policy, so
  * `getAdminCatalog` must never route through this.
  */
-function anonClient() {
+export function anonClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,

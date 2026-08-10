@@ -1,4 +1,5 @@
 import { Board } from "@/components/sections/board";
+import { Certificate } from "@/components/sections/certificate";
 import { Closing } from "@/components/sections/closing";
 import { HowModulesWork } from "@/components/sections/modules";
 import { Faq } from "@/components/sections/faq";
@@ -124,6 +125,12 @@ export default function HomePage() {
       <Courses />
       <HowModulesWork />
       <Outcomes />
+      {/* Between Outcomes and Instructors, and white because both of its
+          neighbours cannot be. Outcomes is tinted, Instructors is not, so this
+          is the one ground available to a band placed here — and the placement
+          is right: the page has just finished saying what a learner leaves
+          holding, and this is the smallest of the three things on that list. */}
+      <Certificate />
       <Instructors />
       <Teams />
       <Board />

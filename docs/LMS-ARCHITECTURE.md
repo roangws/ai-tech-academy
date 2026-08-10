@@ -338,8 +338,14 @@ Real gaps, carried as placeholders rather than invented:
 - **[FILL: events]** — `content.ts:2550` already flags this: the board copy
   promises a panel judging events, and no event exists anywhere else on the site.
   Not modelled. Either the copy or the feature has to give.
-- **[FILL: completion record]** — modelled as a row with a reference string.
-  Whether it renders as a page, a PDF or a verifiable URL is undecided.
+- ~~[FILL: completion record]~~ **Answered 12 Aug. All three.** The row is drawn
+  once, by `src/lib/lms/certificate-image.tsx`, as a 2000x1414 PNG through
+  `next/og`. `/certificate/<reference>` is the holder's page and embeds that PNG;
+  `/certificate/<reference>/image` and `/certificate/<reference>/pdf` are the two
+  downloads, the PDF being that same PNG as a JPEG inside a hand-written
+  single-page A4 wrapper (`src/lib/pdf.ts`); `/verify/<reference>` is the public,
+  indexable page a stranger checks it on, reading `verify_completion` rather than
+  the table. Issued by `claim_completion` on the tick that finishes a course.
 - **[FILL: teams]** — `content.ts:2421` describes groups with a shared launch
   date. Out of scope; individual enrolment only, which matches the current copy.
 - ~~[FILL: file uploads]~~ **Answered 10 Aug.** Two buckets exist — `course-media`

@@ -27,6 +27,78 @@ else needs a human with a browser.
 
 ---
 
+## 0c. Certificates, verified end to end in a headless browser, 12 Aug 2026
+
+Run against a dev server on the live database, driving the real UI as a new
+learner and then as an admin, with the resulting rows checked in Postgres. The QA
+account and every row it created were deleted afterwards; `completion_records` is
+back to 0 rows and `enrollments` back to 5.
+
+**As a learner, from nothing** — signed up through the three-step form → landed
+signed in on `/dashboard` → ticked all 27 lessons of AI starter for small
+business through the real lesson player, one page load and one press each → the
+27th tick issued `AITE-STARTER-2026-D32HWC` with no further action → `/certificate`
+listed it, `/dashboard` showed it in "Waiting on you" and beside the Complete
+chip, `/learn/<slug>` replaced Continue with it, and the account menu carried it.
+
+**The document** — `/certificate/<reference>` served a 2000x1414 PNG and printed
+the same four facts as selectable text under it. `?download=1` returned the same
+bytes with a `Content-Disposition`. The PDF route returned 198KB that `file(1)`
+reads as "PDF document, version 1.4, 1 pages" and that renders identically to the
+PNG. Uploaded a portrait through `/account` and re-rendered: the photograph
+appears, and the layout holds in both states.
+
+**As a stranger** — `/verify/<reference>` signed out showed the certificate, the
+name, the course and the date. A well-formed reference that does not exist shows
+the "no certificate with that reference" state rather than a 404 or an error.
+
+**As an admin** — `/admin/certificates` listed the record with its verification
+link. `/admin/learners` force-issued a second record, which is the first time
+that button has ever worked (see defect 1).
+
+**Against the anonymous key, on the live database** — `select` on
+`completion_records` is `42501 permission denied`, `claim_completion` is denied,
+`issue_completion` is denied, and `verify_completion` returns exactly its seven
+public fields.
+
+Zero console errors and zero failed requests across the whole run.
+
+**Found and fixed by this pass, in order:**
+
+1. `issue_completion` had never worked. It is declared `set search_path = ''` and
+   called `gen_random_bytes(8)` unqualified; pgcrypto installs into `extensions`
+   on this project, so the function raised `42883` the moment it reached that
+   line. A plpgsql body is not parsed at CREATE time, so it was accepted, and the
+   only caller was a button nobody had pressed — hence a table with zero rows and
+   no error to show for it. Found because the same expression, moved into a
+   `language sql` function, is parsed at CREATE time and was refused.
+2. `next/og` cannot render at all in this app. `@vercel/og` rasterises satori's
+   SVG with sharp whenever `import("sharp")` resolves, and sharp is one of Next's
+   own optional dependencies; meanwhile `getSharp` in Next's image optimizer runs
+   `sharp.block({operation:['VipsForeignLoad']})` and unblocks six loaders by
+   name, SVG excluded. libvips holds that per process. Every ImageResponse fails
+   with `Input buffer contains unsupported image format`. `allowSvgRasterisation`
+   in certificate-image.tsx unblocks the one operation, and says at length why
+   that does not re-expose the optimiser.
+3. The certificate's attestation line read "A course completes when the workflow
+   built on it runs live and the result has been measured", which is the
+   program's canonical sentence and a claim about a deployment the document has
+   not seen. It now says what was actually checked and points at the outcome
+   sheet for the rest.
+4. With a portrait the layout overflowed its frame, and satori reports nothing
+   when that happens: the letterhead and the title collapsed into one block. The
+   vertical budget is now written down in the file.
+5. satori refuses a `<div>` with more than one child unless it is told its
+   display, and `Check this certificate at {url}` is two children.
+6. The homepage band left a third of itself empty: a 1fr/600px grid with three
+   lines in the left column.
+7. Two lines of the instructor bar still said "path", which the 7 Aug rename
+   retired from visible copy.
+
+**Left behind, knowingly:** the QA account's avatar object is still in the
+`avatars` bucket. Deleting a storage object needs the Storage API and a
+service-role key, which is deliberately absent here. Same gap as §8.
+
 ## 0a. Verified end to end in a headless browser, 11 Aug 2026
 
 Run against a dev server on the live database, driving the real UI as an admin
@@ -137,7 +209,12 @@ i.e. exactly what a PostgREST call with the publishable key can do.
 | Learner edits a **submitted** sheet's content | **BLOCKED** |
 | Learner un-submits a scored sheet | **BLOCKED** |
 | Learner rewrites `outcome_rows` on a submitted sheet | **BLOCKED** |
-| Learner sets their own enrolment to `completed` | **BLOCKED** |
+| Learner sets their own enrolment to `completed` | **BLOCKED** — and the rule moved. `enrollments_guard` now allows the transition when a `completion_records` row exists for the pair, which is a row no learner can write, so the guard is unchanged from the learner's side |
+| Anon reads `completion_records` | **BLOCKED** — `42501`, no grant and no policy |
+| Anon calls `claim_completion` | **BLOCKED** — `42501` |
+| Anon calls `issue_completion` | **BLOCKED** — `42501` |
+| Anon calls `verify_completion` | **ALLOWED, by design** — seven fields, all of them printed on the certificate the reference came off. It takes one reference and cannot be asked for a list |
+| Learner calls `claim_completion` on a course they have not finished | **BLOCKED** — raises `check_violation` with the count. It is DEFINER, and the subject is `auth.uid()` rather than a parameter |
 | Judge reads a sheet outside their seat's course | **BLOCKED** |
 | Judge scores a sheet outside their seat | **BLOCKED** |
 | Judge attaches another course's rubric criterion to a sheet | **BLOCKED** |

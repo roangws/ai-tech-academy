@@ -196,6 +196,57 @@ export async function listLearners(): Promise<AdminLearner[]> {
     .filter((x): x is NonNullable<typeof x> => x !== null);
 }
 
+/* ------------------------------------------------------------ certificates */
+
+export type AdminCertificate = {
+  reference: string;
+  issued_at: string;
+  course: Course;
+  profile: Profile | null;
+};
+
+/**
+ * Every certificate this program has issued, newest first.
+ *
+ * `/admin/learners` already shows a reference against the enrolment that earned
+ * it, and that is the right place to answer "how is this person doing". It is the
+ * wrong place to answer "what have we issued", which needs one row per record
+ * rather than one row per enrolment and needs them in the order they were issued
+ * rather than in the order people were last seen.
+ *
+ * Two selects and a join in JS, which is the shape every function in this file
+ * uses: PostgREST cannot embed `profiles` from `completion_records` without a
+ * declared foreign key between them, and both tables are small enough that the
+ * second round trip is cheaper than the migration would be.
+ */
+export async function listCertificates(): Promise<AdminCertificate[]> {
+  const supabase = await createClient();
+
+  const [{ data: records }, { data: profiles }] = await Promise.all([
+    supabase
+      .from("completion_records")
+      .select("reference, issued_at, user_id, course_id")
+      .order("issued_at", { ascending: false }),
+    supabase.from("profiles").select("*"),
+  ]);
+
+  const profileBy = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const courseBy = new Map((await getAdminCatalog()).map((c) => [c.id, c]));
+
+  return (records ?? [])
+    .map((r) => {
+      const course = courseBy.get(r.course_id);
+      if (!course) return null;
+      return {
+        reference: r.reference,
+        issued_at: r.issued_at,
+        course,
+        profile: profileBy.get(r.user_id) ?? null,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+}
+
 /* ---------------------------------------------------------------- insights */
 
 export type Insight = {

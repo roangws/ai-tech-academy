@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignOutIcon, UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
+import { SealCheckIcon, SignOutIcon, UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { Avatar } from "@/components/lms/avatar";
 import { cn } from "@/lib/utils";
 
@@ -140,6 +140,19 @@ export function AccountMenu({
             >
               <UserCircleIcon size={17} aria-hidden="true" />
               Your account
+            </Link>
+
+            {/* The second door, and the one thing in this menu that is a result
+                rather than a setting. It is here rather than only on the
+                dashboard because a certificate is what somebody comes back for
+                months after they have stopped taking courses. */}
+            <Link
+              href="/certificate"
+              role="menuitem"
+              className={cn(item, "t-body-sm text-ink-secondary hover:bg-surface-subtle hover:text-ink")}
+            >
+              <SealCheckIcon size={17} aria-hidden="true" />
+              Your certificates
             </Link>
 
             <form action={signOut} className="mt-1 border-t border-line pt-1.5">

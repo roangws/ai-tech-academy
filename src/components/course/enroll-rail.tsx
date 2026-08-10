@@ -119,6 +119,20 @@ export function EnrollRail({ course }: { course: Course }) {
                 );
               })}
             </ul>
+
+            {/* Under the list rather than in it. The rows above are what a module
+                contains and this happens once, for the course, after the eighth
+                one — so it sat in "Every module includes" saying something that
+                was not true of every module. The rule and the badge glyph keep it
+                attached to the list without being a sixth row of it. */}
+            <p className="mt-3 flex items-start gap-2.5 border-t border-line pt-3">
+              <IdentificationBadgeIcon
+                size={16}
+                aria-hidden="true"
+                className="mt-0.5 flex-none text-ink-muted"
+              />
+              <span className="t-body-sm text-ink">{moduleFormat.completion}</span>
+            </p>
           </div>
 
           <div className="mt-3 border-t border-line pt-2">

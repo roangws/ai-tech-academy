@@ -121,11 +121,28 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
 
       {/* --------------------------------------------------- how it works */}
       <Section id="how-it-works" ariaLabelledBy={stepsId}>
+        {/*
+          Rewritten 12 Aug.
+
+          The heading was "Three steps, and the board reads the third one", over
+          an intro that opened "The first half of an application is public
+          information about you. The second half is not". Both sentences are
+          true and neither one is an instruction: the first counts steps and then
+          describes what happens inside the process, and the second explains the
+          site's own architecture to somebody who has not started yet and has no
+          reason to care about it.
+
+          What a reader is asking at this fold is what to do first and what it
+          will cost them. The heading answers both in six words. The intro now
+          says the one thing about the account that they need before pressing
+          it, which is that the account is free and it is the same one the
+          courses use.
+        */}
         <SectionHeader
           id={stepsId}
-          label="How it works"
-          heading="Three steps, and the board reads the third one"
-          intro="The first half of an application is public information about you. The second half is not, which is why it is finished inside your account rather than in a form on this page."
+          label="How to apply"
+          heading="Three steps, about fifteen minutes"
+          intro="Start with a free account, fill in the form at your own pace, and send it when it is ready. The advisory board reads every application that arrives."
         />
 
         {/*
@@ -165,8 +182,8 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
           <div>
             <h3 className="t-h3 text-ink">What the board looks for</h3>
             <p className="t-body-sm mt-2 max-w-[52ch] text-ink-secondary">
-              Every one of these is something a stranger can verify without taking your
-              word for it, which is the standard the rest of this site holds itself to.
+              Every one of these is something a stranger can check for themselves,
+              which is the standard the rest of this site holds itself to.
             </p>
             <CheckList className="mt-5" items={track.bar} />
           </div>
@@ -174,8 +191,8 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
           <div>
             <h3 className="t-h3 text-ink">What it asks of you</h3>
             <p className="t-body-sm mt-2 max-w-[52ch] text-ink-secondary">
-              Stated before you apply rather than after you are accepted. It is a
-              commitment across a term, not a credit line.
+              Stated before you apply rather than after you are accepted. A seat is a
+              commitment across a whole term.
             </p>
             <CheckList className="mt-5" items={track.asked} />
           </div>

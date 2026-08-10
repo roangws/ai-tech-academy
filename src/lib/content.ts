@@ -1113,8 +1113,18 @@ export const moduleFormat = {
     "Guided labs on your own workflow",
     "Templates for the brief and the outcome sheet",
     "A recorded baseline and a measured result",
-    "A completion record you can share",
   ],
+  /*
+    Moved out of `includes` on 12 Aug, because it was the one line in that list
+    that is not true of every module. The other four describe what a module
+    contains; the certificate arrives once, for the course, when the last of the
+    eight is finished. Under a heading reading "Every module includes" it read as
+    a certificate per module.
+
+    It is its own line in the enrol rail now, under the list, which is also where
+    a reader deciding whether to start is asking what they end up holding.
+  */
+  completion: "Finish all eight and the certificate is issued the same day, free",
 } as const;
 
 /*
@@ -1194,11 +1204,50 @@ export const outcomes = {
         text: "The same measure taken before you launched and after, on one page.",
       },
       {
-        title: "A completion record",
-        text: "The brief, the build, the launch and the result, in one document you can share.",
+        title: "A certificate",
+        text: "Your name, the course and a reference anyone can check, issued the day you finish.",
       },
     ],
   },
+} as const;
+
+/**
+ * The certificate band, and why it is three sentences rather than a section.
+ *
+ * A certificate is a supporting reason to take a free course and never the
+ * reason. The page above it has already spent two sections on the workflow that
+ * runs and the measure that proves it, which is what the program is actually
+ * for, and a certificate given more room than that would be the site advertising
+ * the receipt instead of the result.
+ *
+ * So: a headline, one paragraph, and the four fields that are printed on it. The
+ * fields are the argument. Every credential claim on the internet asks to be
+ * believed; this one names exactly what it says and where to check it, which is
+ * the standard the rest of this site holds itself to.
+ *
+ * No sample image and no example reference. A certificate belongs to the person
+ * named on it, and a specimen on the homepage is either somebody's real record
+ * published as an advertisement or an invented one, and both are worse than the
+ * list below.
+ */
+export const certificate = {
+  label: "Certificate",
+  headline: "Finish a course and the certificate is issued the same moment",
+  intro:
+    "Ticking the last lesson issues it. It arrives with your name on it, downloads as a PDF or an image, and carries a reference that anyone you send it to can check on this site.",
+  fields: {
+    label: "What is printed on it",
+    items: [
+      { title: "Your name", text: "As it is on your account, with your photograph if you added one." },
+      { title: "The course", text: "Which of the five, and confirmation that every lesson in it is complete." },
+      { title: "A reference", text: "Unique, permanent, and readable aloud over a phone." },
+      { title: "The date", text: "The day you finished, recorded when it happened." },
+    ],
+  },
+  facts: ["Issued automatically", "PDF or image", "Free, like the courses"],
+  /* Points at the FAQ answer that states the price, because the question a
+     certificate raises on a free program is what it costs. */
+  action: { label: "What it costs", href: "/#faq" },
 } as const;
 
 export type Person = {
@@ -2660,22 +2709,29 @@ export const advisors = {
     one step with no software behind it. Step four is what the applicant sees,
     and they see it because the application page shows its own status.
   */
+  /*
+    Shortened 12 Aug, alongside the apply fold above it. Each body is one
+    sentence now. The step titles were already the clearest thing on either
+    page and are kept almost as they were; step two lost a clause that
+    explained the same idea twice, and step four now says who tells you rather
+    than who fails to.
+  */
   process: [
     {
       title: "Everything in one file",
-      body: "Your evidence, your links, your portrait and how to reach you, submitted from inside your account rather than emailed around.",
+      body: "Your evidence, your links, your portrait and how to reach you, sent from inside your account rather than emailed around.",
     },
     {
       title: "Read against the bar, not against the field",
-      body: "An application is measured against what the seat requires. It is not ranked against the other applications in the intake, so a strong intake does not lower the bar and a thin one does not raise it.",
+      body: "Your application is measured against what the seat requires, so a strong intake keeps the bar where it is and a thin one keeps it there too.",
     },
     {
       title: "A conversation, if it gets that far",
-      body: "Anyone the board is seriously considering talks to an advisor. For a teaching seat that includes watching you explain one thing you built.",
+      body: "Anyone the board is seriously considering talks to an advisor, and for a teaching seat that includes watching you explain one thing you built.",
     },
     {
       title: "An answer either way",
-      body: "The status of your application is on the page you submitted it from, and it changes when the board decides. Nobody is left to work it out from silence.",
+      body: "The page you applied from shows where your application stands, and it changes the day the board decides.",
     },
   ],
   members: [
@@ -2813,33 +2869,46 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       "Work a stranger can check without asking you: a repository, a product, a paper, a talk, a public profile with your name on it.",
       "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people who do not work with you.",
       "The ability to teach one thing well on camera, which is a separate skill from doing it well and is the one the board tests directly.",
-      "Time. One path is roughly eight modules of recording, plus reading the work that comes back.",
+      "Time. One course is roughly eight modules of recording, plus reading the work that comes back.",
     ],
     asked: [
-      "Record the deep dives on one path, in your own voice, against a curriculum you did not write.",
-      "Read the artifacts learners submit on that path and reply to each one.",
+      "Record the deep dives on one course, in your own voice, against a curriculum somebody else wrote.",
+      "Read the artifacts learners submit on that course and reply to each one.",
       "Sit for the board's review each term, on the same terms the curriculum does.",
     ],
+    /*
+      Rewritten 12 Aug. Each title was a clause with the action buried in it —
+      "Sign in, or make an account", "Fill in the rest of the form", "Add how to
+      reach you, then submit" — under a heading that described the site's own
+      architecture rather than telling anybody what to do. A reader could not
+      answer "what do I press first, and how long will this take" from the fold
+      that exists to answer exactly that.
+
+      Now each title is one imperative and each body is what that step asks for,
+      in the order the form asks for it. The reasons that used to be in the
+      titles are still here; they are in the bodies, which is where a reason
+      belongs when the reader has already decided to do the thing.
+    */
     steps: [
       {
         n: "01",
-        title: "Sign in, or make an account",
-        body: "The application lives inside the platform, behind your own login. The second half of it asks for your photograph and your phone number, and neither belongs in a form anyone on the internet can post to. The account is the same free one that opens the courses.",
+        title: "Create your free account",
+        body: "The same account that opens the courses. Your application lives behind your own login because the second half of it asks for your photograph and your phone number, and those belong somewhere only you can post to.",
       },
       {
         n: "02",
-        title: "Fill in the rest of the form",
-        body: "Your portrait, your profile links, the path you would record, and the evidence behind it. It saves as a draft every time, so you can leave it half done and come back to it.",
+        title: "Fill in the form",
+        body: "Your portrait, your profile links, the course you would record, and the evidence behind it. Every field saves as you go, so you can stop halfway and finish it another day.",
       },
       {
         n: "03",
-        title: "Add how to reach you, then submit",
-        body: "Phone and WhatsApp, whether you can sit on an in-person panel and in which city, whether you would also read curriculum each term, and anything else you want the board to know. Submitting sends it to the advisory board, and the page then shows you where it stands.",
+        title: "Send it to the board",
+        body: "Add your phone, whether you can sit on a panel in person and in which city, and anything else worth knowing. Pressing send puts it in front of the advisory board, and the same page then shows you where it stands.",
       },
     ],
     cta: "Apply to teach",
     resume: "Continue your application",
-    note: "Applying takes about fifteen minutes if your links are to hand.",
+    note: "Have your profile links and a portrait to hand before you start.",
   },
   judge: {
     id: "judge",
@@ -2869,25 +2938,29 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       "Score the outcome sheets learners submit, against the rubric, without being told whose work it is.",
       "Sit on the event panel when there is one.",
     ],
+    /* Steps 01 and 03 are word for word the instructor track's. That is
+       deliberate: it is one form and one board, and two descriptions of one
+       process is how they drift. Only 02 differs, because only 02 asks for
+       something different. */
     steps: [
       {
         n: "01",
-        title: "Sign in, or make an account",
-        body: "The application lives inside the platform, behind your own login. The second half of it asks for your photograph and your phone number, and neither belongs in a form anyone on the internet can post to. The account is the same free one that opens the courses.",
+        title: "Create your free account",
+        body: "The same account that opens the courses. Your application lives behind your own login because the second half of it asks for your photograph and your phone number, and those belong somewhere only you can post to.",
       },
       {
         n: "02",
-        title: "Fill in the rest of the form",
-        body: "Your portrait, your profile links, the discipline you would read, and the evidence behind it. It saves as a draft every time, so you can leave it half done and come back to it.",
+        title: "Fill in the form",
+        body: "Your portrait, your profile links, the discipline you would read, and the evidence behind it. Every field saves as you go, so you can stop halfway and finish it another day.",
       },
       {
         n: "03",
-        title: "Add how to reach you, then submit",
-        body: "Phone and WhatsApp, whether you can sit on an in-person panel and in which city, whether you would also read curriculum each term, and anything else you want the board to know. Submitting sends it to the advisory board, and the page then shows you where it stands.",
+        title: "Send it to the board",
+        body: "Add your phone, whether you can sit on a panel in person and in which city, and anything else worth knowing. Pressing send puts it in front of the advisory board, and the same page then shows you where it stands.",
       },
     ],
     cta: "Apply to judge",
     resume: "Continue your application",
-    note: "Applying takes about fifteen minutes if your links are to hand.",
+    note: "Have your profile links and a portrait to hand before you start.",
   },
 };
