@@ -342,7 +342,10 @@ export async function saveOutcomeSheet(formData: FormData): Promise<void> {
 
   revalidatePath(`/dashboard/outcome/${courseId}`);
   revalidatePath("/dashboard");
-  revalidatePath("/judge");
+  /* The scoring queue moved to /judge/curriculum when /judge became the events
+     console. Revalidating /judge here would refresh a page that no longer reads
+     an outcome sheet, and leave the one that does stale. */
+  revalidatePath("/judge/curriculum");
 
   if (submitting) redirect("/dashboard");
 }
@@ -418,8 +421,8 @@ export async function saveJudgement(formData: FormData): Promise<void> {
   }
 
   revalidatePath(`/judge/review/${sheetId}`);
-  revalidatePath("/judge");
-  redirect("/judge");
+  revalidatePath("/judge/curriculum");
+  redirect("/judge/curriculum");
 }
 
 /**
@@ -497,5 +500,5 @@ export async function saveCurriculumReview(formData: FormData): Promise<void> {
   );
   must("file curriculum review", error);
 
-  revalidatePath("/judge");
+  revalidatePath("/judge/curriculum");
 }

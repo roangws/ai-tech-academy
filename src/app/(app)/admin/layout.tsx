@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  CalendarCheckIcon,
   ChartLineUpIcon,
   EnvelopeSimpleIcon,
   GavelIcon,
@@ -49,6 +50,11 @@ const SECTIONS = [
   /* Was "Judge seats", and was one page showing one of the three things being a
      judge consists of. See the note at the head of admin/judging/page.tsx. */
   { href: "/admin/judging", label: "Judging", Icon: GavelIcon },
+  /* Directly under Judging, because it is what the seats and the roles are FOR.
+     A judging event is the one thing /review-judge-board has always promised a
+     judge they would be asked to do, and until this page existed there was
+     nowhere to ask them. */
+  { href: "/admin/events", label: "Judging events", Icon: CalendarCheckIcon },
   { href: "/admin/learners", label: "Learners", Icon: GraduationCapIcon },
   /* Directly under Learners, because it is the same people seen through the one
      question the learners table cannot answer: who holds a completion record

@@ -5,7 +5,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArticleIcon,
-  CaretRightIcon,
   CheckCircleIcon,
   CircleIcon,
   FlaskIcon,
@@ -19,7 +18,6 @@ import { getViewer } from "@/lib/auth";
 import { getModuleView, bySlug, type LessonWithKinds } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { lessonCount } from "@/lib/content";
-import { saveArtifact } from "@/app/actions/lms";
 
 export const dynamic = "force-dynamic";
 
@@ -89,9 +87,26 @@ export default async function ModulePage({
 
   if (!view) notFound();
 
-  const { course, module, lessons, done, artifact, prev, next } = view;
+  const { course, module, lessons, done, prev, next } = view;
   const signedIn = Boolean(viewer);
   const path = `/learn/${slug}/${n}`;
+
+  /*
+    Which lesson the primary control opens.
+
+    The first one they have not finished, or the first one full stop. `done` is
+    empty for a signed-out reader, so on the free module this is always lesson
+    one — which is right: there is nothing to resume when nothing is stored.
+
+    A module whose every lesson is ticked resumes at the last one rather than
+    offering nothing, because "I want to reread the last lesson" is a real
+    reason to be on this page and an absent button is not an answer to it.
+  */
+  const firstUnfinished = lessons.findIndex((l) => !done.has(l.id));
+  const startIndex = firstUnfinished === -1 ? lessons.length - 1 : firstUnfinished;
+  const start = lessons.length
+    ? { lesson: lessons[startIndex], index: startIndex, resumed: startIndex > 0 }
+    : null;
 
   /*
     `?from=` IS GONE, and so is the banner it fed.
@@ -131,13 +146,28 @@ export default async function ModulePage({
 
       <div className="mt-5 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            {/* `t-label`, not `t-stat` — the 44px exception belongs to the
-                outcomes figure alone. See the note on the course board. */}
-            <span className="t-label tabular-nums text-ink-muted">Module {module.n}</span>
+          {/*
+            "MODULE 02", AT A SIZE SOMEBODY READS.
+
+            Roan: "make it very clear 'Module 02'". It was `t-label` — 11px,
+            uppercase, `--ink-muted` — sitting above the module's name in `t-h2`,
+            which is 32px of ink. So the one fact that says where you are in an
+            eight-module course was the quietest thing on the page, and the
+            breadcrumb above it says "Module 02" in the same 11px muted grey.
+            Two whispers do not add up to a statement.
+
+            It is a bordered chip in the accent now, on its own line, directly
+            above the name. Not `t-stat`: the 44px exception belongs to the
+            outcomes figure alone, and this has to sit beside a status chip
+            without either shouting the other down.
+          */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="t-label inline-flex h-7 items-center rounded-full border border-accent/35 bg-accent-tint px-3 tabular-nums text-accent">
+              Module {module.n}
+            </span>
             {module.access === "open" ? <StatusChip open>Open, no account</StatusChip> : null}
           </div>
-          <h1 className="t-h2 mt-1.5 text-ink">{module.name}</h1>
+          <h1 className="t-h2 mt-2.5 text-ink">{module.name}</h1>
           {module.summary ? (
             <p className="t-body mt-3 max-w-[62ch] text-ink-secondary">{module.summary}</p>
           ) : null}
@@ -148,6 +178,51 @@ export default async function ModulePage({
                 console can create a module with one lesson in it. */
             items={[lessonCount({ lessons }), course.badge, module.step ? `Step ${module.step}` : ""].filter(Boolean)}
           />
+
+          {/* --------------------------------------------------------- the way in */}
+          {/*
+            THE PAGE'S ONE PRIMARY CONTROL, AND IT STARTS THE CLASS.
+
+            Roan: "the cta has to be start 'Ideation and the logline lab', the
+            first class, because it is very complicated for a user to know that
+            he needs to start the class and he ends up going to the next module,
+            which is not right."
+
+            That was exactly what the page did. The lesson list is a list of text
+            links; the only filled control on the screen was "Next module" in the
+            navigation at the bottom, put there in a previous pass because the
+            complaint then was that there was no way to move between modules. So
+            the one thing that looked like the way forward skipped every lesson
+            in the module, and a reader following the loudest control read eight
+            module summaries and no lessons.
+
+            Both complaints are real and they are not in conflict. Starting the
+            module is the primary act and it is at the top, filled, named after
+            the lesson it opens. Moving to the next module is a real control and
+            it stays at the bottom, outlined — where a reader who has finished
+            the lessons will look for it, and where nobody mistakes it for the
+            way in.
+
+            It names the lesson, and the lesson's kind, because "Start" alone
+            does not tell you what you are starting. For somebody part way
+            through it names the first lesson they have not finished instead, so
+            the control is never "start" for work already done.
+          */}
+          {start ? (
+            <div className="mt-7">
+              <Link
+                href={`/learn/${slug}/${n}/${start.lesson.slug}`}
+                className="t-button inline-flex h-12 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-6 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+              >
+                {start.resumed ? "Continue" : "Start"}: {start.lesson.name}
+                <ArrowRightIcon size={15} weight="bold" aria-hidden="true" className="flex-none" />
+              </Link>
+              <p className="t-meta mt-2 text-ink-muted">
+                Lesson {start.index + 1} of {lessons.length} · {start.lesson.kind}
+                {start.lesson.minutes ? ` · ${start.lesson.minutes} min` : ""}
+              </p>
+            </div>
+          ) : null}
 
           {/* ---------------------------------------------------------- lessons */}
           <ul className="mt-8 divide-y divide-line border-y border-line">
@@ -216,15 +291,22 @@ export default async function ModulePage({
 
           {/* ------------------------------------------------------ pagination */}
           {/*
-            THE WAY THROUGH THE COURSE, and it is a filled control now.
+            THE WAY THROUGH THE COURSE. Outlined, not filled — and that is a
+            reversal of the previous pass, on the same page, for a report that
+            does not contradict the one before it.
 
-            Both of these were 14px text links in a row, the forward one in accent
-            with a small arrow. Roan's report was that he could not tell how to
-            move between modules, and that is what a pair of matched text links
-            does: it reads as a footer, not as the route. A module page has no other
-            primary control on it — the lessons are a list and the hand-in is
-            optional — so this is the page's one filled affordance and it is on the
-            far right, which is where the same control sits on the lesson page.
+            Both of these started as 14px text links in a row. Roan could not
+            tell how to move between modules, so the forward one became the
+            page's one filled control. It was then the ONLY filled control on a
+            page whose actual purpose is the four lessons above it, so the next
+            reader followed it straight past them — "it is very complicated for a
+            user to know that he needs to start the class and he ends up going to
+            the next module".
+
+            Both complaints are answered by rank rather than by presence. Start
+            the module is filled and at the top; next module is outlined and at
+            the bottom, still obviously a control and no longer the loudest thing
+            on the screen. Nothing was removed either time.
 
             `justify-between` with a `<span />` placeholder, so a module with no
             previous still puts the forward control on the right rather than
@@ -248,7 +330,7 @@ export default async function ModulePage({
             {next ? (
               <Link
                 href={`/learn/${slug}/${next.n}`}
-                className="t-button inline-flex h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+                className="t-button inline-flex h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary no-underline transition-colors hover:border-line-strong hover:text-ink"
               >
                 Next module: {next.n} {next.name}
                 <ArrowRightIcon size={15} weight="bold" aria-hidden="true" className="flex-none" />
@@ -258,7 +340,7 @@ export default async function ModulePage({
                  honest destination is where a finished course is claimed. */
               <Link
                 href="/dashboard/certifications"
-                className="t-button inline-flex h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover"
+                className="t-button inline-flex h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary no-underline transition-colors hover:border-line-strong hover:text-ink"
               >
                 Finish the course
                 <ArrowRightIcon size={15} weight="bold" aria-hidden="true" className="flex-none" />
@@ -266,162 +348,40 @@ export default async function ModulePage({
             )}
           </nav>
 
-          {/* --------------------------------------------------------- artifact */}
           {/*
-            THE HAND-IN, MOVED AND FOLDED AWAY, 9 Aug.
+            THE HAND-IN IS GONE FROM THIS PAGE, 9 Aug.
 
-            Roan, on what used to be here: "no idea what's this bs, remove it […] i
-            want to go to the next one instead."
+            Roan: "let's remove this section completely […] i dont want it!" —
+            the heading, the "Optional" chip, the "build it wherever you normally
+            work, paste it in" line, the textarea, "Save draft" and "Submit for
+            review". All of it.
 
-            What he was reading was the destination of the last lesson in the
-            module: an `<h2>` reading "What to hand in for module 01", the artifact
-            name restated under it, two paragraphs about building the thing
-            elsewhere and pasting it in, a ten-row textarea and two submit buttons —
-            roughly a screen and a half, standing between the end of module 01 and
-            the start of module 02, in a course whose modules are meant to be read
-            in order.
+            This is the second pass at the same complaint. The first one moved it
+            below the module navigation and folded it into a `<details>`, on the
+            reasoning that deleting the form would take /instructor and the
+            outcome sheet down with it. Folding something away is what you do
+            when the answer is "not here, not now"; the answer was "not at all",
+            and a one-line summary a reader has to scroll past is still a thing
+            on the page.
 
-            Three things changed and only one of them is deletion:
+            WHAT WENT WITH IT, deliberately, because a form with no reader is
+            worse than no form:
 
-              1. It is no longer on the path. The forward control goes to the next
-                 module (lesson-advance.tsx) and this section now sits BELOW the
-                 module navigation rather than above it, so nobody has to get past
-                 it to keep reading.
-              2. It is folded. A `<details>` — native, works with no JavaScript,
-                 announces its own state — so the default rendering is one line
-                 instead of a screen and a half. It opens itself for anybody who
-                 already has a draft, a submission or feedback waiting, because for
-                 them it is not clutter, it is their work.
-              3. The copy is one sentence. The two paragraphs said the same thing
-                 twice and the second explained the outcome sheet, which is a
-                 different feature with its own page.
+              * the review queue on /instructor, which read nothing but this;
+              * the two dashboard prompts that pointed back here — "Send your X
+                artifact" linked to a page with nowhere to send it.
 
-            WHAT IS DELIBERATELY NOT DELETED is the hand-in itself. It is the only
-            way an artifact row is ever written, and artifacts are what /instructor
-            reads and what the outcome sheet is assembled from — removing the form
-            outright would take two working features down with it, quietly. If the
-            artifact is meant to go entirely, `modules.artifact` is the switch and
-            it is a data change, not a code one: this whole section renders nothing
-            for a module that has no artifact set.
+            WHAT DID NOT GO. `artifacts`, its policies, its guard trigger,
+            `saveArtifact` and `leaveFeedback` are all untouched, and so is the
+            one row already in the table. Nothing is dropped and nothing is
+            migrated away, so this is a rendering decision that can be reversed
+            by putting the section back — which is the whole reason to leave the
+            schema alone rather than write a migration for a UI complaint.
+
+            `modules.artifact` still holds the artifact's name on every module,
+            and the course board still reads it as a description of what the
+            module produces. It is prose now, not a form.
           */}
-          {module.artifact ? (
-            <section aria-labelledby="artifact-heading" className="mt-10">
-              <details
-                /* Open when there is something of theirs in it. A collapsed
-                   summary hiding a reviewer's feedback would be the worst version
-                   of this. */
-                open={Boolean(artifact?.body || artifact?.instructor_feedback)}
-                className="group rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-5"
-              >
-                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1.5">
-                  {/* `list-none` plus an explicit chevron: the native marker is a
-                      different glyph in every browser and sits on the text
-                      baseline rather than on the heading's optical centre. */}
-                  <CaretRightIcon
-                    size={15}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="flex-none text-ink-muted transition-transform group-open:rotate-90"
-                  />
-                  <h2 id="artifact-heading" className="t-card-title text-ink">
-                    Hand in your {module.artifact.toLowerCase()}
-                  </h2>
-                  <span className="t-meta text-ink-muted">Optional</span>
-                  {artifact ? (
-                    <span className="ml-auto">
-                      <StatusChip>
-                        {artifact.status === "draft"
-                          ? "Draft saved"
-                          : artifact.status === "submitted"
-                            ? "Submitted"
-                            : "Reviewed"}
-                      </StatusChip>
-                    </span>
-                  ) : null}
-                </summary>
-
-                <p className="t-body-sm mt-3 max-w-[62ch] text-ink-secondary">
-                  Build it wherever you normally work, paste it in, and it stays private
-                  until you send it.
-                </p>
-
-              {signedIn ? (
-                <form action={saveArtifact} className="mt-4">
-                  <input type="hidden" name="moduleId" value={module.id} />
-                  <input type="hidden" name="slug" value={slug} />
-                  <input type="hidden" name="n" value={n} />
-
-                  {/* Visually hidden: the summary above has already named this,
-                      and printing it a second time directly over the box was the
-                      redundancy Roan flagged. The field still needs a
-                      programmatic label. */}
-                  <label htmlFor="artifact-body" className="sr-only">
-                    Your {module.artifact.toLowerCase()}
-                  </label>
-                  <textarea
-                    id="artifact-body"
-                    name="body"
-                    /* 6, not 10. A ten-row box is what made this read as the main
-                       event on a page whose main event is the lessons. */
-                    rows={6}
-                    defaultValue={artifact?.body ?? ""}
-                    className="t-body w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
-                    placeholder="Paste it here. Nobody can read this until you send it."
-                  />
-
-                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3">
-                    {/*
-                      Two submits on one form, told apart by `name`/`value` on the
-                      buttons. Saving keeps it private; submitting is the act that
-                      lets an instructor read it, which the RLS policy enforces by
-                      testing `status <> 'draft'`. That is why they are two
-                      deliberate buttons and not an autosave.
-                    */}
-                    <button
-                      type="submit"
-                      name="intent"
-                      value="save"
-                      className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
-                    >
-                      Save draft
-                    </button>
-                    <button
-                      type="submit"
-                      name="intent"
-                      value="submit"
-                      className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink transition-colors hover:border-line-strong"
-                    >
-                      Submit for review
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <p className="t-body-sm mt-4 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-ink-secondary">
-                  Module 1 is open with no account. Saving what you produce needs one, because there is
-                  nowhere to keep it.{" "}
-                  <Link href={unlockHref(path)} className="text-accent no-underline hover:underline">
-                    A free account
-                  </Link>{" "}
-                  keeps this and opens modules 2 to 8.
-                </p>
-              )}
-
-              {/* Neutral ground, not the accent. DESIGN-SPEC.md rules `--accent`
-                  out as a card background, a card border and a label colour, and
-                  this block was using it as all three. The note blocks elsewhere
-                  in this file already use the neutral anatomy, so it was also
-                  inconsistent with itself. */}
-              {artifact?.instructor_feedback ? (
-                <div className="mt-5 rounded-[var(--radius-card)] border border-line border-l-2 border-l-line-strong bg-surface p-4">
-                  <p className="t-label text-ink-muted">Instructor feedback</p>
-                  <p className="t-body-sm mt-1.5 whitespace-pre-wrap text-ink">
-                    {artifact.instructor_feedback}
-                  </p>
-                </div>
-              ) : null}
-              </details>
-            </section>
-          ) : null}
         </div>
 
         {/* ------------------------------------------------------------- aside */}

@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRightIcon,
-  ChatCircleTextIcon,
-  PencilSimpleLineIcon,
   SealCheckIcon,
   TableIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -59,29 +57,24 @@ type Action = { key: string; href: string; label: string; detail: string; Icon: 
 function nextActions(rows: DashboardCourse[]): Action[] {
   const out: Action[] = [];
 
-  for (const row of rows) {
-    for (const a of row.feedback) {
-      out.push({
-        key: `fb-${a.id}`,
-        href: `/learn/${row.course.slug}/${a.modules.n}`,
-        label: `Your instructor replied on ${a.modules.name}`,
-        detail: row.course.title,
-        Icon: ChatCircleTextIcon,
-      });
-    }
-  }
+  /*
+    THE TWO ARTIFACT PROMPTS ARE GONE, 9 Aug.
 
-  for (const row of rows) {
-    for (const a of row.drafts) {
-      out.push({
-        key: `dr-${a.id}`,
-        href: `/learn/${row.course.slug}/${a.modules.n}`,
-        label: `Send your ${a.modules.name} artifact`,
-        detail: "Started, not submitted",
-        Icon: PencilSimpleLineIcon,
-      });
-    }
-  }
+    They were the first two entries in this list: "Your instructor replied on
+    <module>" and "Send your <module> artifact", both linking to the module page.
+    The module hand-in was removed from that page on the same day — Roan: "remove
+    this section completely […] i dont want it!" — so both of these now point at
+    a screen with no form on it. The first would send somebody to read a reply
+    that is not rendered anywhere; the second would ask them to send something
+    they cannot send.
+
+    A prompt whose destination cannot resolve it is worse than no prompt, and
+    this list is capped at four, so each dead one also displaced a live one.
+
+    `artifacts` and everything around it is untouched, and `getDashboard` still
+    reads `feedback` and `drafts`. Putting the hand-in back means putting these
+    back with it, which is why the query keeps returning them.
+  */
 
   /*
     FIRST, because it is the only one of these that is a reward rather than a

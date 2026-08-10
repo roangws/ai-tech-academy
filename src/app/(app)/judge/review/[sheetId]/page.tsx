@@ -43,7 +43,10 @@ export default async function ReviewSheetPage({
   params: Promise<{ sheetId: string }>;
 }) {
   const { sheetId } = await params;
-  const viewer = await requireRole("admin", `/judge/review/${sheetId}`);
+  /* `judge`, not `admin`. The argument order was right and the role was wrong on
+     all three judging screens, so a seated judge opening their own scoring page
+     was redirected to /dashboard. See the note on /judge. */
+  const viewer = await requireRole("judge", `/judge/review/${sheetId}`);
 
   const seat = await getMySeat();
   if (!seat) notFound();
@@ -77,7 +80,9 @@ export default async function ReviewSheetPage({
   return (
     <Container className="py-12 md:py-16">
       <nav aria-label="Breadcrumb" className="t-meta text-ink-muted">
-        <Link href="/judge" className="text-ink-secondary no-underline hover:underline">
+        {/* /judge/curriculum, which is where the queue that linked here lives
+            now. /judge is the events console. */}
+        <Link href="/judge/curriculum" className="text-ink-secondary no-underline hover:underline">
           {seat.seat}
         </Link>
         <span className="px-1.5 text-line-strong">/</span>

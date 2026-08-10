@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Container, FactsLine, StatusChip } from "@/components/ui";
+import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
+import { Container, FactsLine } from "@/components/ui";
 import { CourseGlyph } from "@/components/course/icons";
 import { Empty } from "@/components/lms/ui";
 import { requireRole } from "@/lib/auth";
-import { getTaughtCourses, getSubmittedWork } from "@/lib/lms/queries";
-import { getCatalog } from "@/lib/catalog";
-import { leaveFeedback } from "@/app/actions/lms";
+import { getTaughtCourses } from "@/lib/lms/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -16,65 +15,80 @@ export const metadata: Metadata = {
 };
 
 /**
- * The instructor console: assigned courses, and the work waiting on a reply.
+ * The instructor console: the courses this person was assigned, and the way in.
  *
- * ------------------------------------------------------------ what it can see
+ * ------------------------------------------------------------ the role, fixed
  *
- * Only submitted artifacts, and only for courses this person is assigned to.
- * Neither of those is a filter written on this page — both are RLS policies, and
- * `getSubmittedWork` deliberately does not repeat them. A drafted artifact is
- * invisible here because Postgres refuses to return it, not because a query
- * remembered to say `neq("status", "draft")`.
+ * `requireRole("instructor")` — it was `requireRole("admin", "/instructor")`,
+ * which has the argument order right and the role wrong. The effect was that
+ * being made an instructor gave you nothing: `assignInstructor` grants the role
+ * and writes the assignment, `teaches_course()` and every policy under it agree,
+ * and then the page itself redirected the person to /dashboard because they were
+ * not an administrator. The header hid the link on the same test, so there was
+ * not even a door to be turned away at.
  *
- * ------------------------------------------------------- the empty state is real
+ * Admins still pass, because `requireRole` lets an admin pass every check —
+ * there is no separate console, and an admin locked out of the view they are
+ * meant to be administering has to grant themselves a role to do their job.
  *
- * [FILL: instructor to course mapping.] Nobody is assigned to anything yet.
- * content.ts names five instructors and, by policy, gives four of them no course
- * — the gap src/lib/seo.ts:67 already documents in prose. So the honest first
- * screen for a real instructor today is "you have no courses assigned", and it
- * says who can fix that rather than rendering an empty table and letting them
- * wonder whether it is broken.
+ * --------------------------------------------------------- the courses are links
+ *
+ * Roan: "i want the /instructor user instructor to have access to the course he
+ * has access to (that the admin granted him access)."
+ *
+ * The grant was already real — five rows in `instructor_assignments`, and the
+ * cards were already drawn from them. What was missing is that the cards were
+ * inert: a glyph, a badge, a title and a level, and no way to open the thing
+ * they name. An instructor could see that they had been given a course and could
+ * not read it. Every card is a link into the course now.
+ *
+ * ---------------------------------------------------------- the review queue
+ *
+ * GONE, 9 Aug, along with the module hand-in it read from. Roan, on the queue:
+ * "disable 'Awaiting your review (1) … Your feedback'", and on the form that
+ * fed it: "remove it, i dont want it."
+ *
+ * The two are one decision. `artifacts` is the only table this section ever
+ * read, the module page was the only screen that ever wrote to it, and a review
+ * queue over a form nobody can reach is a queue that can only ever hold what is
+ * already in it — which was one row, of the word "sdfsf".
+ *
+ * The table, its policies and `leaveFeedback` are untouched. Nothing is dropped
+ * and the row is still there; if the hand-in comes back, this comes back with
+ * it. See the same note on the module page.
  */
 export default async function InstructorPage() {
-  const viewer = await requireRole("admin", "/instructor");
+  const viewer = await requireRole("instructor", "/instructor");
   const taught = await getTaughtCourses(viewer.id);
-  const work = await getSubmittedWork(taught.map((c) => c.id));
-
-  /* Course badges, resolved once. The catalogue is a query now, so a lookup
-     inside the render loop would be a promise per row. */
-  const badges = new Map((await getCatalog()).map((c) => [c.id, c.badge]));
-
-  const awaiting = work.filter((w) => w.status === "submitted");
-  const reviewed = work.filter((w) => w.status === "reviewed");
 
   return (
     <Container className="py-12 md:py-16">
       <h1 className="t-display text-ink">Instructor</h1>
       <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
-        The courses you record and review, and the work learners have submitted from them.
+        The courses you record and review. Open one to read it exactly as a learner does.
       </p>
 
-      {/* --------------------------------------------------------- courses */}
       <h2 className="t-h3 mt-12 text-ink">Your courses</h2>
       {taught.length === 0 ? (
         <div className="mt-5">
           <Empty title="No courses assigned yet">
-            Course assignments are made by an administrator, in{" "}
-            <code className="t-meta rounded bg-surface-subtle px-1.5 py-0.5">
-              instructor_assignments
-            </code>
-            . Until one exists there is nothing here to read, and no learner work is visible
-            to you.
+            Course assignments are made by an administrator, on{" "}
+            <Link href="/admin/people" className="text-accent no-underline hover:underline">
+              People
+            </Link>
+            . Until one exists there is nothing here to read.
           </Empty>
         </div>
       ) : (
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {taught.map((course) => {
-            const pending = awaiting.filter((w) => w.courseId === course.id).length;
-            return (
-              <li
-                key={course.id}
-                className="rounded-[var(--radius-card)] border border-line bg-surface p-5"
+          {taught.map((course) => (
+            <li key={course.id}>
+              {/* The whole card is the link, not a "View course" line under it.
+                  A card that names a course and cannot be pressed is the defect
+                  this page had. */}
+              <Link
+                href={`/learn/${course.slug}`}
+                className="group flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-surface p-5 no-underline transition-shadow hover:shadow-e1"
               >
                 {/* Monochrome, per the icon rule. See the note on the dashboard. */}
                 <span
@@ -84,93 +98,20 @@ export default async function InstructorPage() {
                   <CourseGlyph id={course.id} size={18} />
                 </span>
                 <p className="t-label mt-3 text-ink-muted">{course.badge}</p>
-                <p className="t-card-title mt-0.5 text-ink">{course.title}</p>
+                <p className="t-card-title mt-0.5 text-ink group-hover:text-accent">{course.title}</p>
                 <FactsLine
                   className="mt-2"
-                  items={[course.level, pending ? `${pending} awaiting review` : "Nothing waiting"]}
+                  items={[course.level, `${course.curriculum.length} modules`]}
                 />
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {/* ------------------------------------------------------ submissions */}
-      <h2 className="t-h3 mt-14 text-ink">
-        Awaiting your review
-        {awaiting.length ? <span className="text-ink-muted"> ({awaiting.length})</span> : null}
-      </h2>
-
-      {awaiting.length === 0 ? (
-        <div className="mt-5">
-          <Empty title="Nothing waiting">
-            Submitted artifacts appear here. A learner&rsquo;s draft stays private until they send it, so work becomes
-            visible to you at the moment they choose to submit it, and not before.
-          </Empty>
-        </div>
-      ) : (
-        <ul className="mt-5 grid gap-5">
-          {awaiting.map((item) => (
-            <li key={item.id} className="rounded-[var(--radius-feature)] border border-line bg-surface p-6">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <p className="t-card-title text-ink">
-                  {badges.get(item.courseId) ?? item.courseId} · Module {item.moduleNumber} ·{" "}
-                  {item.moduleName}
-                </p>
-                <p className="t-meta text-ink-muted">
-                  {item.learner
-                    ? `${item.learner.first_name ?? ""} ${item.learner.last_name ?? ""}`.trim() ||
-                      item.learner.email
-                    : "Learner"}
-                  {item.submitted_at ? ` · ${new Date(item.submitted_at).toLocaleDateString("en-US")}` : ""}
-                </p>
-              </div>
-
-              <div className="mt-4 whitespace-pre-wrap rounded-[var(--radius-card)] border border-line bg-surface-subtle p-4">
-                <p className="t-body-sm text-ink">{item.body || "(submitted empty)"}</p>
-              </div>
-
-              <form action={leaveFeedback} className="mt-5">
-                <input type="hidden" name="artifactId" value={item.id} />
-                <label htmlFor={`fb-${item.id}`} className="t-field block text-ink-secondary">
-                  Your feedback
-                </label>
-                <textarea
-                  id={`fb-${item.id}`}
-                  name="feedback"
-                  rows={4}
-                  required
-                  defaultValue={item.instructor_feedback ?? ""}
-                  className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
-                  placeholder="What is working, and the one thing to change before it runs live."
-                />
-                <button
-                  type="submit"
-                  className="t-button mt-3 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
-                >
-                  Send feedback
-                </button>
-              </form>
+                <span className="t-button mt-4 inline-flex items-center gap-1.5 text-accent">
+                  Open the course
+                  <ArrowRightIcon size={13} weight="bold" aria-hidden="true" />
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
       )}
-
-      {reviewed.length > 0 ? (
-        <>
-          <h2 className="t-h3 mt-14 text-ink">Reviewed</h2>
-          <ul className="mt-5 divide-y divide-line border-y border-line">
-            {reviewed.map((item) => (
-              <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-                <span className="t-body-sm text-ink">
-                  Module {item.moduleNumber} · {item.moduleName}
-                </span>
-                <StatusChip>Reviewed</StatusChip>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
 
       <p className="t-body-sm mt-12 border-t border-line pt-6 text-ink-secondary">
         Looking for the courses as a learner sees them?{" "}

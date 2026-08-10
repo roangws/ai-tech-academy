@@ -1,310 +1,311 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  CalendarBlankIcon,
+  CaretRightIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+  UsersThreeIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { Container, FactsLine, StatusChip } from "@/components/ui";
 import { Empty } from "@/components/lms/ui";
 import { requireRole } from "@/lib/auth";
-import {
-  getCurriculumReviews,
-  getMySeat,
-  getSheetsForReview,
-  byId,
-} from "@/lib/lms/queries";
-import { saveCurriculumReview } from "@/app/actions/lms";
-import { getCatalog } from "@/lib/catalog";
+import { listInvitations, type InvitationWithEvent } from "@/lib/lms/events";
+import { formatEventTime, formatEventDate } from "@/lib/lms/time";
+import { respondToEvent } from "@/app/actions/events";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Review board",
+  title: "Judging opportunities",
   robots: { index: false, follow: false },
 };
 
 /**
  * The judge console.
  *
- * ------------------------------------------------------------ two jobs, both
+ * ------------------------------------------------------------- what it is now
  *
- * content.ts:2562 says exactly what a judge does, and it is two things:
+ * Events, and only events. Roan: "for judge I'll pivot internally, only judge
+ * has access to this page, and I want to focus only on events for phase 1. I
+ * want to issue an event, and all the judges receive a notification, it will be
+ * opportunities for hackathon judging."
  *
- *   "They read the courses each term, the lessons, the labs and the outcome
- *    sheet a learner leaves with, and they sit on the panel that judges the
- *    events where learners present the workflows they deployed."
+ * So this page is one question asked well — are you available for this — and
+ * everything else that used to be on it moved to /judge/curriculum rather than
+ * being deleted. Both of those features work, both are read by other screens,
+ * and neither is what a judge opens this console for in phase one.
  *
- * So this page has two halves. The curriculum review is the first job — one
- * document per seat per term, written against the seat's own `checks` sentence,
- * which is the closest thing to a criterion the board has. The scoring queue is
- * the second, minus the event: what a learner "presents" that exists in this
- * system is their submitted outcome sheet.
+ * The [FILL: events.] note that stood at the top of this file for the whole life
+ * of the project is gone with it. content.ts:2562 says a judge "sits on the
+ * panel that judges the events where learners present the workflows they
+ * deployed", and until this week that sentence described nothing. It describes
+ * this.
  *
- * [FILL: events.] content.ts:2550 already flags the gap — the board copy
- * promises a panel judging events and no event exists anywhere else on the site.
- * Nothing here invents one. Either the copy or the feature has to give, and that
- * is not a decision a console should make on its own.
+ * ------------------------------------------------------------- the role, fixed
  *
- * ------------------------------------------------------------- seat, not role
+ * `requireRole("judge")` — it was `requireRole("admin")`, which is the argument
+ * order right and the role wrong, so for as long as this page has existed a
+ * judge holding the judge role and a bound seat was redirected to /dashboard by
+ * their own console. Only the owner could open it. Same defect, same line, on
+ * /instructor and /judge/review.
  *
- * Everything on this page keys off the *seat*, not the judge role. Holding the
- * role gets you here; holding the revenue-operations seat is what lets you file
- * the revenue-operations review, and the RLS policy tests the same thing. A
- * judge with no seat sees the empty state below, which is the honest answer:
- * every seat on the site is unbound today.
+ * ------------------------------------------------------------- no seat needed
+ *
+ * A seat says which course's curriculum somebody reads each term. Being asked to
+ * a hackathon panel is not that, and there are six seats in existence — gating
+ * events on one would mean six people can ever be invited to anything. The role
+ * is the whole condition, which is also what `issue_judge_event` fans out to.
  */
 export default async function JudgePage() {
-  const viewer = await requireRole("admin", "/judge");
-  const seat = await getMySeat();
+  const viewer = await requireRole("judge", "/judge");
+  /*
+    The viewer's id is passed, and it is not decoration: an administrator can
+    read every judge's invitation, and every account on this site holds both
+    roles — so without it this page renders the same event once per judge
+    notified, which is exactly what QA saw. `listInvitations` has the note.
 
-  if (!seat) {
-    return (
-      <Container className="py-12 md:py-16">
-        <h1 className="t-display text-ink">Review board</h1>
-        <div className="mt-8 max-w-[640px]">
-          <Empty
-            title="You do not hold a seat yet"
-            action={
-              /* /admin/judging, not /review-judge-board. This pointed at the public
-                 board to "see the six seats" and that page has never listed a seat
-                 in its life — it lists the judges. So the one screen a seatless
-                 judge was sent to could not answer the question the empty state
-                 raised, which is Roan's report. Judging is where seats are bound and
-                 where all three facts about a judge are visible at once. */
-              <Link href="/admin/judging" className="t-button text-accent no-underline hover:underline">
-                Where seats are assigned
-              </Link>
-            }
-          >
-            The board has six seats and each one reads a particular course. An administrator
-            binds a seat to a person, and until one is bound to you there is no curriculum to
-            review under your name and no sheets to score.
-          </Empty>
-        </div>
-      </Container>
-    );
-  }
+    Split at the present moment inside the query, too. A component that reads the
+    clock is a component that can render two different answers to one question.
+  */
+  const { upcoming, past } = await listInvitations(viewer.id);
 
-  /* A null reviews_course_id is the learning-design seat, which reads assessment
-     across all five rather than one course. getSheetsForReview treats it as
-     "every course", and holds_seat() in Postgres agrees. */
-  const course = seat.reviews_course_id ? await byId(seat.reviews_course_id) : null;
-  /* Badges for the queue below, resolved once rather than per sheet. */
-  const catalog = await getCatalog();
-  const badges = new Map(catalog.map((c) => [c.id, c.badge]));
-
-  const [sheets, reviews] = await Promise.all([
-    getSheetsForReview(seat.reviews_course_id, viewer.id),
-    getCurriculumReviews(seat.id),
-  ]);
-
-  /* "To score" means this judge has not scored it — not that nobody has.
-     Filtering on `status === "submitted"` was the same number before and after
-     a judge worked through the whole queue. */
-  const unscored = sheets.filter((s) => !s.scoredByMe);
+  /* "Upcoming" is about the event, not the answer. A judge who said yes still
+     needs the date in front of them, and one who said no should be able to
+     change their mind while it is still ahead. */
+  const waiting = upcoming.filter((i) => i.response === null);
 
   return (
     <Container className="py-12 md:py-16">
-      <h1 className="t-display text-ink">{seat.seat}</h1>
-      <p className="t-body mt-3 max-w-[62ch] text-ink-secondary">{seat.checks}</p>
+      <h1 className="t-display text-ink">Judging opportunities</h1>
+      <p className="t-body mt-3 max-w-[62ch] text-ink-secondary">
+        Hackathons, demo days and review panels you have been invited to judge. Answering tells the
+        organiser whether to count on you.
+      </p>
       <FactsLine
         className="mt-4"
         items={[
-          course ? `Reads ${course.badge} · ${course.title}` : seat.reviews_label ?? "All courses",
-          `${reviews.length} review${reviews.length === 1 ? "" : "s"} filed`,
-          `${unscored.length} sheet${unscored.length === 1 ? "" : "s"} to score`,
-        ]}
+          `${upcoming.length} upcoming`,
+          waiting.length
+            ? `${waiting.length} waiting on your answer`
+            : upcoming.length
+              ? "All answered"
+              : "",
+        ].filter(Boolean)}
       />
 
-      {/* ------------------------------------------------- 1. curriculum review */}
-      <section aria-labelledby="curriculum-heading" className="mt-14">
-        <h2 id="curriculum-heading" className="t-h3 text-ink">
-          Curriculum review
+      {/* ---------------------------------------------------------- upcoming */}
+      <section aria-labelledby="upcoming-heading" className="mt-12">
+        <h2 id="upcoming-heading" className="t-h3 text-ink">
+          Upcoming
         </h2>
-        <p className="t-body-sm mt-2 max-w-[62ch] text-ink-secondary">
-          Read the course this term, the lessons, the labs and the artifact each module
-          asks for, against the sentence above. One review per term; filing again revises
-          the one already there.
-        </p>
 
-        <form action={saveCurriculumReview} className="mt-6 max-w-[720px]">
-          {/*
-            A seat that reads one course files against that course, and the
-            action takes it from the seat rather than from here — a hidden field
-            naming the course was mass assignment, and a judge could file their
-            term's review against a course they do not read.
-
-            A seat that reads all five genuinely has to choose, and this is the
-            case that used to be broken outright: the hidden input was rendered
-            only when a course existed, so the learning-design seat submitted no
-            course, the action returned silently, and the judge filled the whole
-            form in and watched nothing happen.
-          */}
-          {seat.reads_all_courses ? (
-            <div className="mb-5">
-              <label htmlFor="courseId" className="t-field block text-ink-secondary">
-                Course
-              </label>
-              <select
-                id="courseId"
-                name="courseId"
-                required
-                defaultValue=""
-                className="t-body mt-1.5 h-11 w-full max-w-[380px] rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
-              >
-                <option value="" disabled>
-                  Pick the course this review is about
-                </option>
-                {catalog.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.badge} · {c.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
-
-          <div className="grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
-            <div>
-              <label htmlFor="term" className="t-field block text-ink-secondary">
-                Term
-              </label>
-              {/* [FILL: term definition.] The board "reads the courses each term"
-                  and nothing on the site says what a term is, so it is free text
-                  with a shape suggested rather than an enum guessing at a calendar. */}
-              <input
-                id="term"
-                name="term"
-                type="text"
-                required
-                placeholder="2026-H2"
-                className="t-body mt-1.5 h-11 w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
-              />
-            </div>
-            {/*
-              A real `<fieldset>` and `<legend>`, which is what natively groups
-              controls and what a screen reader announces when focus enters the
-              group. This was a bare `<span>` beside a `<div>`, so focus landed
-              on "pass, radio button, 1 of 3" with no indication of the question
-              — three unlabelled adjectives on a form that also has a Term field
-              and a Notes field. `pass` is pre-checked, so a judge who never
-              perceived the group filed a passing verdict by default.
-
-              `ChoiceGroup` in sign-up-steps.tsx already establishes the pattern
-              and its doc comment gives this exact argument; this was the one
-              place that copied the pills and dropped the semantics.
-            */}
-            <fieldset>
-              <legend className="t-field text-ink-secondary">Verdict</legend>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {(["pass", "concerns", "fail"] as const).map((v, i) => (
-                  <div key={v}>
-                    {/*
-                      Radios styled as pills, matching the pattern sign-up-steps.tsx
-                      established: a real `<input type="radio">` kept off-screen with
-                      `sr-only` rather than `display: none`, so it stays focusable,
-                      stays in the tab order, is announced, and arrow keys still move
-                      within the group. `peer-checked` does the appearance.
-                    */}
-                    <input
-                      type="radio"
-                      id={`verdict-${v}`}
-                      name="verdict"
-                      value={v}
-                      defaultChecked={i === 0}
-                      className="peer sr-only"
-                    />
-                    <label
-                      htmlFor={`verdict-${v}`}
-                      className="t-body-sm inline-flex min-h-[38px] cursor-pointer items-center rounded-full border border-line-control bg-surface px-3.5 capitalize text-ink-secondary transition-colors hover:border-line-strong peer-checked:border-accent peer-checked:bg-accent-tint peer-checked:text-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus)]"
-                    >
-                      {v}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </fieldset>
-          </div>
-
+        {upcoming.length === 0 ? (
           <div className="mt-5">
-            <label htmlFor="notes" className="t-field block text-ink-secondary">
-              What you checked, and what you found
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={5}
-              className="t-body mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3.5 text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/25"
-              placeholder={seat.checks}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="t-button mt-5 h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
-          >
-            File review
-          </button>
-        </form>
-
-        {reviews.length > 0 ? (
-          <ul className="mt-8 divide-y divide-line border-y border-line">
-            {reviews.map((r) => (
-              <li key={r.id} className="py-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="t-card-title text-ink">{r.term}</span>
-                  <StatusChip>{r.verdict}</StatusChip>
-                </div>
-                {r.notes ? (
-                  <p className="t-body-sm mt-1.5 whitespace-pre-wrap text-ink-secondary">{r.notes}</p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </section>
-
-      {/* ----------------------------------------------------- 2. scoring queue */}
-      <section aria-labelledby="sheets-heading" className="mt-16">
-        <h2 id="sheets-heading" className="t-h3 text-ink">
-          Outcome sheets to score
-        </h2>
-        <p className="t-body-sm mt-2 max-w-[62ch] text-ink-secondary">
-          What a learner deployed and measured, scored against the rubric. Sheets appear
-          here when they are submitted; a draft never does.
-        </p>
-
-        {sheets.length === 0 ? (
-          <div className="mt-6">
-            <Empty title="No sheets submitted yet">
-              A learner submits an outcome sheet once their workflow is running live and they
-              have measured it twice: a baseline in module 1, and the same measure again
-              afterwards.
+            <Empty title="Nothing to judge yet">
+              When an event is issued you are notified here, with what it is, when it runs and what
+              the panel is being asked to do. Nothing is sent by email, so this page is where to
+              look.
             </Empty>
           </div>
         ) : (
-          <ul className="mt-6 grid gap-4">
-            {sheets.map((sheet) => (
-              <li key={sheet.id}>
-                <Link
-                  href={`/judge/review/${sheet.id}`}
-                  className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-card)] border border-line bg-surface p-5 no-underline transition-shadow hover:shadow-e1"
-                >
-                  <span className="min-w-0">
-                    <span className="t-card-title block text-ink">{sheet.title || "Untitled workflow"}</span>
-                    {/* The reference, never a name. A judge scores a deployed
-                        workflow against a rubric, and knowing whose it is can
-                        only bias that — which is why the profiles policy does not
-                        extend to judges and why nothing here asks. */}
-                    <span className="t-meta mt-1 block text-ink-muted">
-                      {sheet.reference} · {badges.get(sheet.course_id) ?? sheet.course_id} ·{" "}
-                      {sheet.rows.length} measure{sheet.rows.length === 1 ? "" : "s"}
-                      {sheet.measured_after_days ? ` · measured after ${sheet.measured_after_days} days` : ""}
-                    </span>
-                  </span>
-                  <StatusChip>{sheet.scoredByMe ? "You have scored this" : "Awaiting your score"}</StatusChip>
-                </Link>
+          <ul className="mt-5 grid gap-5">
+            {upcoming.map((invitation) => (
+              <li key={invitation.id}>
+                <EventCard invitation={invitation} />
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {/* -------------------------------------------------------------- past */}
+      {past.length > 0 ? (
+        <section aria-labelledby="past-heading" className="mt-16">
+          <h2 id="past-heading" className="t-h3 text-ink">
+            Been and gone
+          </h2>
+          <ul className="mt-5 divide-y divide-line border-y border-line">
+            {past.map((invitation) => (
+              <li
+                key={invitation.id}
+                className="flex flex-wrap items-center justify-between gap-3 py-4"
+              >
+                <span className="min-w-0">
+                  <span className="t-body-sm block text-ink">{invitation.event.title}</span>
+                  <span className="t-meta block text-ink-muted">
+                    {formatEventDate(invitation.event.starts_at, invitation.event.timezone)}
+                    {invitation.event.host ? ` · ${invitation.event.host}` : ""}
+                  </span>
+                </span>
+                <StatusChip>{answerLabel(invitation.response)}</StatusChip>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {/*
+        The rest of the seat's work, one link away.
+
+        It was the whole of this page and it is not gone — a curriculum review is
+        still filed here and a submitted outcome sheet is still scored here. It is
+        one line at the bottom because phase one is events, and because a console
+        that opens on two unrelated jobs is a console where neither reads as the
+        job.
+      */}
+      <p className="t-body-sm mt-14 border-t border-line pt-6 text-ink-secondary">
+        <Link href="/judge/curriculum" className="text-accent no-underline hover:underline">
+          Curriculum review and outcome sheets
+        </Link>{" "}
+        — the work that comes with a seat on the board.
+      </p>
     </Container>
   );
 }
+
+function answerLabel(response: InvitationWithEvent["response"]): string {
+  if (response === "available") return "You were available";
+  if (response === "unavailable") return "You could not make it";
+  return "Never answered";
+}
+
+/* ------------------------------------------------------------------- card */
+
+function EventCard({ invitation }: { invitation: InvitationWithEvent }) {
+  const { event, response, note } = invitation;
+  const answered = response !== null;
+
+  return (
+    <article className="rounded-[var(--radius-feature)] border border-line bg-surface p-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          {event.host ? <p className="t-label text-ink-muted">{event.host}</p> : null}
+          <h3 className="t-card-title mt-0.5 text-ink">{event.title}</h3>
+        </div>
+        {/* The accent, not green. Green on this site means "open with no
+            account" and nothing else — the note on ModuleState has the rule. */}
+        {answered ? (
+          <span
+            className={`t-label inline-flex h-6 items-center gap-1 rounded-full px-2.5 ${
+              response === "available" ? "bg-accent-tint text-accent" : "bg-surface-subtle text-ink-muted"
+            }`}
+          >
+            {response === "available" ? (
+              <CheckCircleIcon size={12} weight="fill" aria-hidden="true" />
+            ) : null}
+            {response === "available" ? "You are on the panel" : "You said no"}
+          </span>
+        ) : (
+          <StatusChip>Awaiting your answer</StatusChip>
+        )}
+      </div>
+
+      <ul className="t-body-sm mt-4 flex flex-col gap-1.5 text-ink-secondary">
+        <li className="flex items-center gap-2">
+          <CalendarBlankIcon size={15} aria-hidden="true" className="flex-none text-ink-muted" />
+          {formatEventTime(event.starts_at, event.timezone)}
+          {event.ends_at ? ` to ${formatEventTime(event.ends_at, event.timezone)}` : ""}
+        </li>
+        {event.location || event.format ? (
+          <li className="flex items-center gap-2">
+            <MapPinIcon size={15} aria-hidden="true" className="flex-none text-ink-muted" />
+            {[event.location, FORMAT_LABEL[event.format]].filter(Boolean).join(" · ")}
+          </li>
+        ) : null}
+        {event.judges_needed ? (
+          <li className="flex items-center gap-2">
+            <UsersThreeIcon size={15} aria-hidden="true" className="flex-none text-ink-muted" />
+            {event.judges_needed} judge{event.judges_needed === 1 ? "" : "s"} needed
+          </li>
+        ) : null}
+      </ul>
+
+      {event.summary ? (
+        <p className="t-body mt-4 max-w-[62ch] text-ink">{event.summary}</p>
+      ) : null}
+
+      {/* Folded, because a brief is a page of reading and the question on this
+          card is one word long. `<details>` is native, needs no JavaScript and
+          announces its own state. */}
+      {event.brief ? (
+        <details className="group mt-4">
+          <summary className="t-body-sm flex cursor-pointer list-none items-center gap-1.5 text-accent">
+            <CaretRightIcon
+              size={13}
+              weight="bold"
+              aria-hidden="true"
+              className="transition-transform group-open:rotate-90"
+            />
+            What the panel is asked to do
+          </summary>
+          <p className="t-body-sm mt-2.5 max-w-[62ch] whitespace-pre-wrap text-ink-secondary">
+            {event.brief}
+          </p>
+        </details>
+      ) : null}
+
+      {/* ---------------------------------------------------------- answering */}
+      <form action={respondToEvent} className="mt-5 border-t border-line pt-5">
+        <input type="hidden" name="eventId" value={event.id} />
+
+        <label htmlFor={`note-${event.id}`} className="t-field block text-ink-secondary">
+          Anything the organiser should know
+          <span className="t-meta text-ink-muted"> — optional</span>
+        </label>
+        <textarea
+          id={`note-${event.id}`}
+          name="note"
+          rows={2}
+          defaultValue={note ?? ""}
+          className="t-body-sm mt-1.5 w-full rounded-[var(--radius-card)] border border-line-control bg-surface p-3 text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/25"
+          placeholder="I can do the morning only."
+        />
+
+        {/*
+          Two submits on one form, told apart by `value` on the buttons — the
+          same shape the module hand-in used, and for the same reason: they are
+          two different answers to one question, not a state toggle.
+
+          The one you have already given is the outlined control and the other is
+          filled, so the card always offers the change rather than re-offering
+          what you already said.
+        */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            name="response"
+            value="available"
+            className={
+              response === "available"
+                ? "t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+                : "t-button h-11 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent transition-colors hover:bg-accent-hover"
+            }
+          >
+            {response === "available" ? "Update my note" : "I am available"}
+          </button>
+          <button
+            type="submit"
+            name="response"
+            value="unavailable"
+            className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink"
+          >
+            {response === "unavailable" ? "Still cannot make it" : "I cannot make it"}
+          </button>
+
+          {event.respond_by ? (
+            <span className="t-meta text-ink-muted">
+              Answer by {formatEventDate(event.respond_by, event.timezone)}
+            </span>
+          ) : null}
+        </div>
+      </form>
+    </article>
+  );
+}
+
+const FORMAT_LABEL: Record<string, string> = {
+  online: "Online",
+  in_person: "In person",
+  hybrid: "Hybrid",
+};

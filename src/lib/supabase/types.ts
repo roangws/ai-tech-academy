@@ -417,3 +417,59 @@ export type CurriculumReview = {
   created_at: string;
   updated_at: string;
 };
+
+/* ------------------------------------------------------------------- events */
+
+/**
+ * A judging opportunity, and one judge's copy of it.
+ *
+ * These two are the whole of phase one: an administrator writes an event, issues
+ * it, and every judge gets an invitation row. The invitation IS the notification
+ * — there is no separate notifications table, because a notification with no
+ * subject and no answer attached to it would be a second place to keep the same
+ * fact.
+ *
+ * `status`, `format` and `response` are text with check constraints rather than
+ * Postgres enums, which is the one place this schema departs from the pattern
+ * above. An enum needs a migration and a lock to add a value to; these three are
+ * young enough that "hybrid" or "tentative" is a plausible next week.
+ */
+export type JudgeEventStatus = "draft" | "issued" | "closed";
+export type JudgeEventFormat = "online" | "in_person" | "hybrid";
+export type JudgeEventResponse = "available" | "unavailable";
+
+export type JudgeEvent = {
+  id: string;
+  title: string;
+  host: string | null;
+  summary: string | null;
+  brief: string | null;
+  location: string | null;
+  format: JudgeEventFormat;
+  /** IANA name. Every instant on this row is entered and rendered through it. */
+  timezone: string;
+  starts_at: string;
+  ends_at: string | null;
+  respond_by: string | null;
+  judges_needed: number | null;
+  status: JudgeEventStatus;
+  issued_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * `notified_at` is when this judge was told, and it is pinned by the guard
+ * trigger — a judge may write `response` and `note`, and nothing else on their
+ * own row.
+ */
+export type JudgeEventInvitation = {
+  id: string;
+  event_id: string;
+  judge_id: string;
+  notified_at: string;
+  response: JudgeEventResponse | null;
+  responded_at: string | null;
+  note: string | null;
+};

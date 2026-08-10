@@ -173,6 +173,12 @@ judgements(id, sheet_id, judge_id, criterion_id, score, notes)
            UNIQUE (sheet_id, judge_id, criterion_id)
 curriculum_reviews(id, seat_id, judge_id, course_id, term, verdict, notes)
                    UNIQUE (seat_id, term)
+judge_events(id, title, host, summary, brief, location, format, timezone,
+             starts_at, ends_at, respond_by, judges_needed, status, issued_at,
+             created_by)
+judge_event_invitations(id, event_id, judge_id, notified_at, response,
+                        responded_at, note)
+                        UNIQUE (event_id, judge_id)
 ```
 
 `instructor_assignments.kind` is `'lead' | 'specialist'` — the distinction
@@ -193,6 +199,20 @@ is the criterion, `term` is the period, `verdict` is `pass | concerns | fail`.
 `judgements` gives it the second: scoring what a learner deployed, one row per
 criterion per judge, so two judges scoring the same sheet is a natural join and
 not a conflict.
+
+`judge_events` closes the third, which was carried as [FILL: events] from the first draft of this document to
+this build. An
+administrator writes an event as a draft, and `issue_judge_event(uuid)` — the
+only thing that ever writes `judge_event_invitations` — flips it to `issued` and
+inserts one invitation per holder of the `judge` role. The invitation IS the
+notification: nothing is emailed, so an unanswered invitation is what the badge
+in the app header counts. Re-issuing is idempotent and picks up judges appointed
+since, which is why the fan-out is a snapshot of `user_roles` rather than a view
+over it. A judge answers `available | unavailable` with an optional note, and a
+guard trigger pins every other column on their own row.
+
+No seat is involved. A seat says which course somebody reads each term; a
+hackathon panel is not that, and there are six seats in existence.
 
 ### Enums
 
@@ -296,12 +316,13 @@ The change is `onSubmit={e => e.preventDefault()}` becoming a Server Action via
 /sign-in, /sign-up          unchanged UI, live submit
 /dashboard                  student home — enrolments, continue, outcome sheets
 /learn/[slug]               course contents, gate state per module
-/learn/[slug]/[module]      the player: lessons, completion, artifact
+/learn/[slug]/[module]      the player: lessons and completion
 /dashboard/outcome/[id]     outcome sheet editor
-/instructor                 assigned courses + roster
-/instructor/[slug]          submitted artifacts, feedback
-/judge                      seat, curriculum review, sheets awaiting score
+/instructor                 assigned courses, linked into the player
+/judge                      judging opportunities: events issued to this judge
+/judge/curriculum           seat, curriculum review, sheets awaiting score
 /judge/review/[sheetId]     score against rubric criteria
+/admin/events               write, issue and close judging events
 /auth/signout               POST-only sign-out route handler
 ```
 
@@ -335,9 +356,10 @@ Real gaps, carried as placeholders rather than invented:
   durability / documentation) and is explicitly a proposal.
 - **[FILL: term definition]** — the board "reads the courses each term". Term is
   stored as free text (`2026-H2`) until someone defines the calendar.
-- **[FILL: events]** — `content.ts:2550` already flags this: the board copy
-  promises a panel judging events, and no event exists anywhere else on the site.
-  Not modelled. Either the copy or the feature has to give.
+- **[FILL: event notification channel]** — events are modelled and issued now
+  (`judge_events`), but the notification is in-app only: a badge on the Judge
+  nav item and the card on `/judge`. A judge who does not open the console is
+  never told. Email needs the SMTP provider the first gap above is waiting on.
 - ~~[FILL: completion record]~~ **Answered 12 Aug. A page, a print and a
   verifiable URL.** `components/lms/certificate.tsx` is the document, sized in
   millimetres at A4 landscape so what is on screen is what prints; the browser's

@@ -5,6 +5,7 @@ import { brand } from "@/lib/content";
 import { Container } from "@/components/ui";
 import { AccountMenu } from "@/components/lms/account-menu";
 import { getViewer } from "@/lib/auth";
+import { openInvitationCount } from "@/lib/lms/events";
 import { getTheme } from "@/lib/theme";
 import { ThemeToggle } from "@/components/lms/theme-toggle";
 import { HeaderLink } from "@/components/lms/header-link";
@@ -35,11 +36,24 @@ import { signOut } from "@/app/actions/auth";
  * courtesy, not a control: `requireRole` guards the routes and row-level
  * security guards the data, and a reader who types /judge without the role gets
  * a redirect whether or not a link was drawn for them.
+ *
+ * ------------------------------------------------------------- the judge count
+ *
+ * The one badge in this bar, and it is the whole notification mechanism for
+ * judging events: nothing is emailed, so a judge who does not open /judge is
+ * never told anything. `openInvitationCount` counts invitations with no answer
+ * on an event that is still open — not unread, because nothing here tracks
+ * whether a page was looked at and a badge that clears when you glance at it
+ * reports nothing. It clears when they have actually replied.
+ *
+ * One extra query, for judges only, on pages a judge is looking at.
  */
 export async function AppHeader() {
   const viewer = await getViewer();
 
   const theme = await getTheme();
+
+  const judgeCount = viewer?.is("judge") ? await openInvitationCount(viewer.id) : 0;
 
   /*
     Signed out, this offered "Dashboard" and "Account" — two links whose only
@@ -49,7 +63,7 @@ export async function AppHeader() {
     word. Instructor and Judge were already gated on the viewer; the other two
     simply were not.
   */
-  const links = viewer
+  const links: { href: string; label: string; count?: number }[] = viewer
     ? [
         { href: "/dashboard", label: "Dashboard" },
         /* The tab Roan asked for. It sits beside Dashboard rather than inside it
@@ -58,16 +72,28 @@ export async function AppHeader() {
            a destination you visit on purpose is a nav item, not a section of
            another page. */
         { href: "/dashboard/certifications", label: "Certifications" },
-/* Admin only, for now. Both consoles read other people's work, and
-           until there are real instructors and seated judges the safest default
-           is that only the owner can open them. RLS is still the boundary
-           underneath; this is the door. */
-        ...(viewer.is("admin")
-          ? [
-              { href: "/admin", label: "Admin" },
-              { href: "/instructor", label: "Instructor" },
-              { href: "/judge", label: "Judge" },
-            ]
+        ...(viewer.is("admin") ? [{ href: "/admin", label: "Admin" }] : []),
+        /*
+          BY ROLE, not by admin.
+
+          These three lines used to sit inside `viewer.is("admin")` with a note
+          saying that until there were real instructors and seated judges the
+          safest default was that only the owner could open them. That default
+          outlived its reason and became the defect: an instructor assigned to a
+          course by the console, and a judge bound to a seat, had no link to
+          their own console — and `requireRole("admin", "/instructor")` on the
+          pages themselves meant that typing the address redirected them to the
+          dashboard as well. The role granted them nothing.
+
+          `requireRole` on each page is still the door and RLS is still the
+          boundary. An admin sees both consoles because `requireRole` lets an
+          admin pass every check, which is the rule that file states.
+        */
+        ...(viewer.is("instructor") || viewer.is("admin")
+          ? [{ href: "/instructor", label: "Instructor" }]
+          : []),
+        ...(viewer.is("judge") || viewer.is("admin")
+          ? [{ href: "/judge", label: "Judge", count: judgeCount }]
           : []),
       ]
     : [{ href: "/courses", label: "Courses" }];
@@ -128,6 +154,7 @@ export async function AppHeader() {
                  the note. */
               <HeaderLink key={l.href} href={l.href} siblings={hrefs}>
                 {l.label}
+                <Count n={l.count} />
               </HeaderLink>
             ))}
           </nav>
@@ -209,12 +236,38 @@ export async function AppHeader() {
           {links.map((l) => (
             <HeaderLink key={l.href} href={l.href} siblings={hrefs}>
               {l.label}
+              <Count n={l.count} />
             </HeaderLink>
           ))}
           {viewer ? <ThemeToggle theme={theme} className="ml-auto" /> : null}
         </Container>
       </nav>
     </header>
+  );
+}
+
+/**
+ * The count beside a nav item, when there is something waiting.
+ *
+ * The number is repeated in `sr-only` text with a word after it, because "Judge
+ * 2" read aloud is a heading level, a version, or nothing. `aria-hidden` on the
+ * pill itself so the digit is not announced twice.
+ *
+ * `--accent-tint`, not a red dot. Nothing here is an alert; it is work waiting,
+ * which is what the accent means everywhere else in this product.
+ */
+function Count({ n }: { n?: number }) {
+  if (!n) return null;
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className="t-micro ml-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 tabular-nums text-on-accent"
+      >
+        {n > 9 ? "9+" : n}
+      </span>
+      <span className="sr-only">, {n} waiting on your answer</span>
+    </>
   );
 }
 
