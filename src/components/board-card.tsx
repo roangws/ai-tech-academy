@@ -151,20 +151,48 @@ export function BoardCard({
       </span>
 
       {/*
-        Reading scrim, and it sits ABOVE the hover face rather than below it.
+        TWO SCRIMS, and it was one, split on 9 Aug because the single one was
+        shading the faces.
 
-        That order is the whole reason the pattern can be as strong as it is. The
-        scrim was directly on the photograph, so hovering covered it and left the
-        name, the role and the employer sitting on bare pattern — which caps how
-        bold the pattern may be, because every part of it has to stay dark enough
-        for white text. Moving it up puts one dark wash over both states: the
-        photograph and the pattern each get the same guaranteed contrast at the
-        bottom of the card, and the top of the card, where no text goes, is free
-        to show the motif at full strength.
+        Roan: "its hard to see the pic, i think there is a shade in their faces,
+        correct it."
+
+        Measured, and he is right. The one scrim ran `0.94` at the bottom to `0.34`
+        at 56% to `0.05` at the top, so it was a dark wash over the ENTIRE card. On a
+        3:4 head-and-shoulders frame the face sits between roughly 15% and 50% from
+        the top, which is exactly the stretch where that gradient is still carrying
+        15 to 30 percent black. Every portrait on the board was rendering behind a
+        grey veil, on the one page whose subject is other people.
+
+        The reason it covered the whole card was the hover state. The scrim sits ABOVE
+        the hover face rather than below it, which is what lets the wave pattern be as
+        bold as it is: one wash guarantees contrast over the photograph and over the
+        pattern alike. But the hover state needs a taller wash than the resting state
+        does, because the summary opens upward and occupies about 45% of the card,
+        while at rest the text only reaches 30%. Sizing one gradient for the taller
+        case is what cost the resting photograph.
+
+        So there are two, and the second is the hover-only difference:
+
+          1. THE BASE, clear above 48%. Strong enough at the bottom for the name, the
+             role, the employer and the location, and gone by the time it reaches a
+             chin.
+          2. THE EXTRA, faded in with the pattern and reaching 66%, which is what
+             carries the summary over the waves. It is also on permanently below `sm`,
+             where the face is on permanently because a phone fires no hover.
+
+        Both are `to-transparent` rather than to a low alpha. `to-[rgb(13_26_34/0.05)]`
+        reads as nothing and is not nothing: it is a 5% black film over the brightest
+        part of every photograph, and five of them on one page is what made the whole
+        grid look flat.
       */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.94)] via-[rgb(13_26_34/0.34)] via-56% to-[rgb(13_26_34/0.05)]"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.95)] from-0% via-[rgb(13_26_34/0.55)] via-22% to-transparent to-48%"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[rgb(13_26_34/0.55)] from-0% via-[rgb(13_26_34/0.42)] via-34% to-transparent to-66% opacity-0 transition-opacity duration-200 group-hover/card:opacity-100 max-sm:opacity-100"
       />
 
       {/*

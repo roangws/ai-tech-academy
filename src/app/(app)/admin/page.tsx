@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Empty } from "@/components/lms/ui";
 import {
   getInsights,
-  getWeeks,
+  getMonths,
   listApplications,
   listLearners,
   listSeats,
@@ -28,16 +28,20 @@ export const metadata: Metadata = { title: "Admin", robots: { index: false, foll
  * you have to go and find.
  */
 export default async function AdminOverview() {
-  const [people, seats, learners, insights, weeks, applications] = await Promise.all([
+  const [people, seats, learners, insights, months, applications] = await Promise.all([
     listPeople(),
     listSeats(),
     listLearners(),
     getInsights(),
-    getWeeks(),
+    getMonths(),
     listApplications(),
   ]);
 
-  const newThisWeek = weeks.at(-1)?.signups ?? 0;
+  /* The current month's signups, and the tile below says "this month". It was
+     `weeks.at(-1)` against a weekly series; the series is monthly now and a label
+     saying "week" over a month's count is the kind of quiet wrongness an operations
+     screen must not have. */
+  const newThisMonth = months.at(-1)?.signups ?? 0;
 
   /* The course with the most people in it is the one whose drop-off is worth
      drawing. With nothing enrolled anywhere it falls back to the first, so the
@@ -50,27 +54,29 @@ export default async function AdminOverview() {
   const unassignedInstructors = people.filter(
     (p) => p.roles.includes("instructor") && p.courses.length === 0,
   ).length;
-  const sheetsAwaiting = insights.reduce((n, i) => n + (i.submittedSheets - i.scoredSheets), 0);
 
   const tiles = [
     {
       label: "People",
       value: people.length,
       href: "/admin/people",
-      note: newThisWeek ? `${newThisWeek} new this week` : "none new this week",
+      note: `${newThisMonth} new this month`,
     },
-    {
-      label: "Artifacts awaiting review",
-      value: awaitingReview,
-      href: "/admin/learners",
-      note: unassignedInstructors ? `${unassignedInstructors} instructor with no course` : "all assigned",
-    },
-    {
-      label: "Sheets awaiting a score",
-      value: sheetsAwaiting,
-      href: "/admin/judging",
-      note: unboundSeats ? `${unboundSeats} of 6 seats unbound` : "all seats bound",
-    },
+    /*
+      TWO TILES CAME OUT, 9 Aug. Roan, quoting them back: "1 / Artifacts awaiting
+      review / all assigned / 0 / Sheets awaiting a score / 5 of 6 seats unbound — i
+      dont want that info."
+
+      They were queue depths presented as headline statistics, and a queue of one is
+      not a statistic. Worse, both spent their sub-line on a fact that only matters
+      when it is a problem: "all assigned" and "all seats bound" are four tiles' worth
+      of pixels saying nothing is wrong. When something IS wrong the "Needs a decision"
+      list below says so in a sentence, which is the screen that should own it, and
+      both numbers are one click away on the pages they linked to.
+
+      "5 of 6 seats unbound" also hardcoded the seat count, which is a row count.
+      Nothing left on this screen types a total by hand.
+    */
     {
       label: "Enrolments",
       value: learners.length,
@@ -98,8 +104,12 @@ export default async function AdminOverview() {
   if (awaitingReview > 0 && instructors === 0) {
     blocking.push(`${awaitingReview} artifact${awaitingReview === 1 ? "" : "s"} submitted with no instructor to read them`);
   }
-  if (unboundSeats === 6) {
-    blocking.push("no judge seat is bound, so no outcome sheet can be scored");
+  /* Derived from the table rather than compared against a literal 6, which is what
+     this said and which would have gone quietly wrong the first time a seventh seat
+     was added or a sixth removed. Phrased forwards, per the copy rule: it names what
+     has to happen rather than what is absent. */
+  if (seats.length > 0 && unboundSeats === seats.length) {
+    blocking.push("Every judge seat still needs a person bound to it before a sheet can be scored");
   }
   /* An application waiting is the one item on this list that costs a person
      rather than the platform: somebody put their evidence and their phone number
@@ -160,7 +170,7 @@ export default async function AdminOverview() {
       <div className="mt-8 grid gap-4 xl:grid-cols-2">
         <BarChart
           caption="Who arrived, and who came back"
-          bars={weeks.map((w) => ({ label: w.label, value: w.signups, sub: w.active }))}
+          bars={months.map((m) => ({ label: m.label, value: m.signups, sub: m.active }))}
           unit=" signups"
         />
         {/* The busiest course, named. A funnel with no course on it is a funnel
@@ -175,11 +185,23 @@ export default async function AdminOverview() {
         />
       </div>
 
+      {/*
+        ONE LINE, from four. Roan: "too mych text."
+
+        It ran to four sentences, and three of them explained the schema: that there is
+        no session table, no page views, and that `lessons.minutes` is an editorial
+        estimate so a "time spent" figure would be meaningless. All true, all reasons
+        this chart shows what it shows rather than something better, and none of it is
+        something the reader of an operations screen needs at the moment they are
+        reading two bars. The argument belongs where the data is assembled, so it moved
+        into the docblock on `getMonths`.
+
+        What survives is the only sentence that helps somebody read the chart, which is
+        which bar is which.
+      */}
       <p className="t-meta mt-2 max-w-[70ch] text-ink-muted">
-        The solid bar is accounts created; the pale one behind it is people who completed at least
-        one lesson that week. There is no session table and no page views, so those two are the
-        only honest activity signals the schema has. `lessons.minutes` is an editorial
-        estimate, so any &ldquo;time spent&rdquo; figure would be a number with nothing behind it.
+        The solid bar is accounts created. The pale one behind it is people who finished at
+        least one lesson that month.
       </p>
 
       {/* ---------------------------------------------------------- per course */}

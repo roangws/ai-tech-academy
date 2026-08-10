@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ButtonLink, CheckList, Panel, Section, SectionHeader } from "@/components/ui";
 import type { ApplyTrack } from "@/lib/content";
 
@@ -98,20 +97,18 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
               </ButtonLink>
 
               {/*
-                The same destination, said the other way round.
+                "CONTINUE YOUR APPLICATION" IS GONE, removed 9 Aug on Roan's
+                instruction: "remove 'Continue your application' because its the
+                same."
 
-                The page behind it knows whether there is a draft, a submitted
-                application or nothing at all, and shows the right one. A reader
-                who has already started has no way to guess that from a button
-                labelled "Apply", so the second affordance is a sentence rather
-                than a second route.
+                He is right that it is the same. It pointed at `track.href`, which is
+                the button directly above it, and it existed to reassure a reader who
+                had already started that the button would find their draft. That is a
+                job for the destination, and the destination already does it: the
+                apply page knows whether there is a draft, a submitted application or
+                nothing, and opens the right one. Two links to one URL, stacked, with
+                the second one whispering, reads as two different actions.
               */}
-              <Link
-                href={track.href}
-                className="t-button mt-4 w-fit text-white/75 no-underline underline-offset-4 transition-colors hover:text-white hover:underline"
-              >
-                {track.resume}
-              </Link>
 
               <p className="t-micro mt-4 text-white/55">{track.note}</p>
             </div>
@@ -148,7 +145,7 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
           id={stepsId}
           label="How to apply"
           heading="Create an account, fill in the form, send it"
-          intro="About fifteen minutes in total, and you do not have to do it in one sitting: every field saves as you type, and nothing reaches anyone until you press send. The advisory board reads every application that arrives."
+          intro="About fifteen minutes in total, and you can spread it over as many sittings as you like: every field saves as you type, and it reaches the board the moment you press send. The advisory board reads every application that arrives."
         />
 
         {/*

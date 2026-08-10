@@ -316,25 +316,53 @@ export async function getInsights(): Promise<Insight[]> {
 
 /* ------------------------------------------------------------------ signups */
 
-export type Week = { start: string; label: string; signups: number; enrolments: number; active: number };
+export type Period = {
+  start: string;
+  label: string;
+  signups: number;
+  enrolments: number;
+  active: number;
+};
 
 /**
- * Twelve weeks of arrivals.
+ * Twelve months of arrivals.
  *
  * Roan asked to see new students on the dashboard, and nothing tracked them:
- * `profiles.created_at` has recorded every account since the trigger was
- * written and no screen has ever read it.
+ * `profiles.created_at` has recorded every account since the trigger was written and
+ * no screen has ever read it.
  *
- * Bucketed in TypeScript rather than SQL because it is three columns over a
- * table that will hold thousands, not millions, and a `date_trunc` group-by
- * behind PostgREST needs an RPC for what a loop does in one pass.
+ * ------------------------------------------------------------ MONTHS, NOT WEEKS
  *
- * "Active" is a learner who completed at least one lesson that week. It is the
- * only honest activity signal the schema has: there is no session table, no page
- * views, and `lessons.minutes` is an editorial estimate, so any "time on site"
- * figure would be a number with nothing behind it.
+ * This bucketed by Monday-start week until 9 Aug. Roan: "on 'Who arrived, and who
+ * came back' make it more sequential, maybe monthly."
+ *
+ * Weeks were the wrong unit for this program and the chart said so: twelve weekly
+ * columns spanned under three months, so eleven of them were empty and the twelfth
+ * held everything. A course measured in weeks, taken by a handful of people, produces
+ * a signal that only becomes a shape at month scale. Twelve months also reads as a
+ * sequence a person recognises, which is what "more sequential" is asking for: Sep,
+ * Oct, Nov is a run, and "25 May, 1 Jun, 8 Jun" is arithmetic.
+ *
+ * Calendar months rather than 30-day windows, because the label has to be a month
+ * name for that recognition to work, and "Jun" has to mean June.
+ *
+ * ------------------------------------------------------------------ the bucketing
+ *
+ * In TypeScript rather than SQL, because it is three columns over a table that will
+ * hold thousands, not millions, and a `date_trunc` group-by behind PostgREST needs an
+ * RPC for what a loop does in one pass.
+ *
+ * The index is derived from the year and month rather than by dividing a duration,
+ * which is what a month bucket makes necessary: months are 28 to 31 days long, so
+ * `floor(elapsed / MONTH)` drifts by a day per bucket and eventually files a record
+ * under its neighbour.
+ *
+ * "Active" is a learner who completed at least one lesson that month. It is the only
+ * honest activity signal the schema has: there is no session table, no page views,
+ * and `lessons.minutes` is an editorial estimate, so any "time on site" figure would
+ * be a number with nothing behind it.
  */
-export async function getWeeks(count = 12): Promise<Week[]> {
+export async function getMonths(count = 12): Promise<Period[]> {
   const supabase = await createClient();
 
   const [{ data: profiles }, { data: enrolments }, { data: progress }] = await Promise.all([
@@ -343,19 +371,28 @@ export async function getWeeks(count = 12): Promise<Week[]> {
     supabase.from("lesson_progress").select("user_id, completed_at"),
   ]);
 
-  /* Monday-start weeks, most recent last, so the row reads left to right the way
-     a person reads a date. */
+  /* Most recent last, so the row reads left to right the way a person reads a date. */
   const now = new Date();
-  const day = (now.getUTCDay() + 6) % 7;
-  const thisMonday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day);
-  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  const thisYear = now.getUTCFullYear();
+  const thisMonth = now.getUTCMonth();
+  /* Months since a fixed origin, so one subtraction gives the offset between any two
+     calendar months without touching day lengths at all. */
+  const ordinal = (y: number, m: number) => y * 12 + m;
+  const newest = ordinal(thisYear, thisMonth);
 
-  const weeks: Week[] = [];
-  for (let i = count - 1; i >= 0; i -= 1) {
-    const start = new Date(thisMonday - i * WEEK);
-    weeks.push({
+  const months: Period[] = [];
+  for (let k = count - 1; k >= 0; k -= 1) {
+    const start = new Date(Date.UTC(thisYear, thisMonth - k, 1));
+    months.push({
       start: start.toISOString(),
-      label: `${start.getUTCDate()} ${start.toLocaleString("en-GB", { month: "short", timeZone: "UTC" })}`,
+      /* The year only where the run crosses one, so a twelve-month row is not twelve
+         repetitions of the same four digits. January carries it, and so does the
+         first column whatever month it is, because that is where a reader looks to
+         see when the run begins. */
+      label:
+        start.getUTCMonth() === 0 || k === count - 1
+          ? `${start.toLocaleString("en-GB", { month: "short", timeZone: "UTC" })} ${String(start.getUTCFullYear()).slice(2)}`
+          : start.toLocaleString("en-GB", { month: "short", timeZone: "UTC" }),
       signups: 0,
       enrolments: 0,
       active: 0,
@@ -364,23 +401,26 @@ export async function getWeeks(count = 12): Promise<Week[]> {
 
   const bucket = (iso: string | null) => {
     if (!iso) return -1;
-    const t = Date.parse(iso);
-    if (Number.isNaN(t)) return -1;
-    const i = Math.floor((thisMonday - t) / WEEK);
-    return i >= 0 && i < count ? count - 1 - i : t > thisMonday ? count - 1 : -1;
+    const t = new Date(iso);
+    if (Number.isNaN(t.getTime())) return -1;
+    const back = newest - ordinal(t.getUTCFullYear(), t.getUTCMonth());
+    /* A future timestamp lands in the current month rather than nowhere: clock skew
+       between the database and this process should not lose a signup. */
+    if (back < 0) return count - 1;
+    return back < count ? count - 1 - back : -1;
   };
 
   for (const row of profiles ?? []) {
     const i = bucket(row.created_at);
-    if (i >= 0) weeks[i].signups += 1;
+    if (i >= 0) months[i].signups += 1;
   }
   for (const row of enrolments ?? []) {
     const i = bucket(row.enrolled_at);
-    if (i >= 0) weeks[i].enrolments += 1;
+    if (i >= 0) months[i].enrolments += 1;
   }
 
-  /* One per learner per week, not one per lesson: the question is how many
-     people showed up, and somebody ticking nine lessons on a Tuesday is one. */
+  /* One per learner per month, not one per lesson: the question is how many people
+     showed up, and somebody ticking nine lessons on a Tuesday is one. */
   const seen = new Set<string>();
   for (const row of (progress ?? []) as { user_id: string; completed_at: string }[]) {
     const i = bucket(row.completed_at);
@@ -388,10 +428,10 @@ export async function getWeeks(count = 12): Promise<Week[]> {
     const k = `${i}/${row.user_id}`;
     if (seen.has(k)) continue;
     seen.add(k);
-    weeks[i].active += 1;
+    months[i].active += 1;
   }
 
-  return weeks;
+  return months;
 }
 
 /* --------------------------------------------------------------- applications

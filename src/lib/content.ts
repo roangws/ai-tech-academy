@@ -1651,7 +1651,7 @@ export const instructors = {
     each person's own LinkedIn headline, verbatim, per the note above.
   */
   pageIntro:
-    "Working practitioners across developer experience, AI tooling, higher education, and film. One lead instructor writes the curriculum and records every core lesson; four specialists record the deep dives.",
+    "Working practitioners across developer experience, AI tooling, higher education, and film. The lead instructor writes the curriculum and records every core lesson, and the specialists record the deep dives.",
   /*
     "and who records what" was the tail of this line until it was checked
     against the page. Only the lead has a `scope`; the four specialists
@@ -1660,8 +1660,13 @@ export const instructors = {
     withholds is the same fabrication as printing the answer, moved to the one
     place a reader cannot see it and a result page can.
   */
+  /* NO ROSTER COUNT, 9 Aug. Roan's rule: "everything u put has to be dinamic." A
+     numeral typed into a description is a numeral nobody remembers to edit the day a
+     sixth instructor is seated, and this one is a count of a table the page already
+     queries. The description says what the roster IS rather than how long it is,
+     which is also the thing a search result needs. */
   seoDescription:
-    "The practitioners who teach here: developer experience, AI tooling, higher education and film. Five named instructors, each with a public profile.",
+    "The practitioners who teach here: developer experience, AI tooling, higher education and film. Every instructor has a public profile to check them against.",
   /*
     The footnote is gone. It ran three lines explaining that the portraits are
     illustrations and that names arrive when employers clear them, under a grid
@@ -3130,10 +3135,17 @@ export const advisors = {
   label: "Advisory board",
   headline: "The advisory board decides who teaches and who judges",
   /*
-    THE INDEPENDENCE CLAIM IS THE POINT OF THIS PARAGRAPH, so it is stated
-    first and stated plainly. Everything else here is process, and process is
-    only interesting once a reader believes the decision is not being made by
-    the person whose work is being added to.
+    THE INDEPENDENCE CLAIM IS THE POINT OF THIS PARAGRAPH, so it is stated first and
+    stated plainly. Everything else here is process, and process is only interesting
+    once a reader believes the decision belongs to somebody other than the person
+    whose work is being added to.
+
+    STATED FORWARDS, twice rewritten. It read "read by the advisory board, not by the
+    person who wrote the curriculum", and then "Advisors hold no course and no seat
+    here" — three negations carrying the most important sentence on the page, which is
+    the pattern Roan asked to be rid of. "The decision belongs to the board alone" is
+    the same claim and a stronger sentence: "alone" excludes the curriculum's author
+    without naming him, so the clause that did nothing else could go.
   */
   /*
     REWRITTEN 9 Aug. Roan: "so bad this negative text, need to fix 'no' and
@@ -3151,7 +3163,7 @@ export const advisors = {
     course and no seat" said, and says it as a qualification rather than as a gap.
   */
   intro:
-    "Applications to teach and applications to judge are read by the advisory board, not by the person who wrote the curriculum. Every advisor is independent of every course and every seat on this program. They are operators and investors from outside it, and what they read is the evidence rather than the name on it.",
+    "Every application to teach or to judge is read by the advisory board, and the decision belongs to the board alone. Its advisors sit outside this program, holding their own roles elsewhere in the field, and what they read is the evidence rather than the name on it.",
   seoDescription:
     "The advisory board reads every application to teach or to judge on this program, and decides which ones are seated.",
   /*
@@ -3177,7 +3189,7 @@ export const advisors = {
       body: "Your evidence, your links, your portrait and how to reach you, sent from inside your account rather than emailed around.",
     },
     {
-      title: "Read against the bar, not against the field",
+      title: "Measured against what the seat requires",
       body: "Your application is measured against what the seat requires, so a strong intake keeps the bar where it is and a thin one keeps it there too.",
     },
     {
@@ -3293,9 +3305,13 @@ export type ApplyTrack = {
   asked: readonly string[];
   steps: readonly ApplyStep[];
   cta: string;
-  /** For somebody who already started one. Same href; the page knows the state. */
-  resume: string;
+  /** The line of small print under the control. What pressing it costs, in a phrase. */
   note: string;
+  /*
+    `resume` IS GONE, removed 9 Aug. It held "Continue your application" and was
+    rendered as a second link under the CTA, pointing at the same href. Roan: "remove
+    'Continue your application' because its the same." apply-band.tsx has the note.
+  */
 };
 
 /*
@@ -3313,20 +3329,26 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
     label: "Teach on this program",
     headline: "Two instructor seats are open",
     intro:
-      "Every lesson here is recorded by somebody who runs the system they are teaching. That is the whole standard, and it is why the roster above is five people rather than fifty.",
+      "Every lesson here is recorded by somebody who runs the system they are teaching. That is the whole standard, and it is what decides who gets a seat.",
     seats: "Two seats this intake",
     /*
       The sentence that makes the selectivity credible is the last one. Anybody
-      can say a bar is high; saying that an intake closes empty when nobody
-      clears it is a statement that can be checked against what the board does,
-      and it is the one claim here that costs something to make.
+      can say a bar is high; saying that a seat stays open until somebody clears
+      the bar is a statement that can be checked against what the board does, and
+      it is the one claim here that costs something to make.
+
+      Rewritten 9 Aug to say it forwards. It read "an intake that produces nobody
+      at the bar closes with the seats still open rather than filling them", which
+      is three negations describing a hypothetical failure. Roan's rule is that
+      copy states what happens, not what fails to; the claim survives intact,
+      because "a seat waits for somebody who clears it" is the same promise.
     */
     scarcity:
-      "The bar is closer to an academic appointment than to a marketplace listing. The advisory board reads every application against it, and an intake that produces nobody at the bar closes with the seats still open rather than filling them.",
+      "The bar is closer to an academic appointment than to a marketplace listing. The advisory board reads every application against it, and a seat waits until somebody clears that bar.",
     bar: [
-      "A system you built or run in production, and the standing to say how it actually behaves rather than how it is meant to.",
-      "Work a stranger can check without asking you: a repository, a product, a paper, a talk, a public profile with your name on it.",
-      "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people who do not work with you.",
+      "A system you built or run in production, and the standing to say how it actually behaves.",
+      "Work a stranger can check for themselves: a repository, a product, a paper, a talk, a public profile with your name on it.",
+      "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people elsewhere in the field.",
       "The ability to teach one thing well on camera, which is a separate skill from doing it well and is the one the board tests directly.",
       "Time. One course is roughly eight modules of recording, plus reading the work that comes back.",
     ],
@@ -3366,7 +3388,6 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       },
     ],
     cta: "Apply to teach",
-    resume: "Continue your application",
     note: "Have your profile links and a portrait to hand before you start.",
   },
   judge: {
@@ -3375,7 +3396,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
     label: "Judge on this program",
     headline: "The board is taking judges",
     intro:
-      "A judge reads the courses each term and sits on the panel that judges the events where learners present the workflows they deployed. It is the one role here that can tell a learner their work is not finished yet.",
+      "A judge reads the courses each term and sits on the panel that judges the events where learners present the workflows they deployed. It is the one role here that can send a learner back for another pass at the workflow.",
     /*
       NO `seats`. See the note above the type: the judge board publishes no
       vacancy count, so this track states why it is hard and says nothing about
@@ -3385,16 +3406,16 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       that is a truer account of why few people are seated than any number.
     */
     scarcity:
-      "This is not a panel that meets to agree. A seat is held by one person for one discipline, that person's name is on the board in public, and their verdict is on the record under it. The advisory board turns down far more applications than it seats.",
+      "A seat is held by one person for one discipline, that person's name is on the board in public, and their verdict is on the record under it. Every judge reaches their own verdict and signs it. The advisory board seats a small fraction of the people who apply.",
     bar: [
-      "Depth in one discipline, measured in years of doing it rather than years of managing it.",
+      "Depth in one discipline, measured in years of doing the work yourself.",
       "A public record somebody else can check: published work, a product shipped, a panel sat on, a profile that matches what you claim.",
       "Judgement that has been tested in the open. Hiring, reviewing, grading, funding, or shipping to a deadline somebody else set.",
-      "No conflict with the course you would be reading, and the willingness to say so when one appears later.",
+      "Independence from the course you would be reading, and the willingness to say so if that ever changes.",
     ],
     asked: [
       "One curriculum review per term, filed against the sentence that defines your seat.",
-      "Score the outcome sheets learners submit, against the rubric, without being told whose work it is.",
+      "Score the outcome sheets learners submit against the rubric, reading the work rather than the name on it.",
       "Sit on the event panel when there is one.",
     ],
     /* Steps 01 and 03 are word for word the instructor track's. That is
@@ -3419,7 +3440,6 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       },
     ],
     cta: "Apply to judge",
-    resume: "Continue your application",
     note: "Have your profile links and a portrait to hand before you start.",
   },
 };
