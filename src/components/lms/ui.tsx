@@ -127,7 +127,7 @@ export function ModuleState({
  * It is a whole panel rather than a disabled row, because this is the moment the
  * site has been building towards on every other surface and the offer has to be
  * legible at it. The copy is the promise made everywhere else, in the same
- * words: one free account, modules 2 to 8, every course, stays free.
+ * words: one free account, every module after the first, every course, stays free.
  *
  * The lesson list is NOT rendered behind this. The gate runs on the server
  * before the module body is read, so a locked module's contents never reach the
@@ -160,7 +160,7 @@ export function LockedPanel({
       <Heading className="t-h3 mt-2.5 text-white">{moduleName} opens with an account</Heading>
       <p className="t-body mt-3 max-w-[52ch] text-white/75">
         Module 1 of every course runs with no account, and you have it. One free account
-        opens modules 2 to 8 in every course, and the account stays free: no
+        opens every module after the first, in all five courses, and the account stays free: no
         certificate fee, no upgrade, no paid tier.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">

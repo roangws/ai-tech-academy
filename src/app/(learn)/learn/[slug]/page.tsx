@@ -161,7 +161,7 @@ export default async function CourseBoardPage({
             <>
               <p className="t-card-title text-ink">Module 1 is open</p>
               <p className="t-body-sm mt-2 text-ink-secondary">
-                Start now with no account. One free account opens modules 2 to 8 here and
+                Start now with no account. One free account opens every module after the first, here and
                 in every other course.
               </p>
               <Link

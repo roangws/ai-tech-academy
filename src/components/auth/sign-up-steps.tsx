@@ -480,7 +480,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
               </p>
             ) : (
               <p className="t-micro mt-3 text-ink-muted">
-                One free account opens modules 2 to 8 in every course, and the account
+                One free account opens every module after the first, in all five courses, and the account
                 stays free.
               </p>
             )}

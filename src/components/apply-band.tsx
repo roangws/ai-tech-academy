@@ -179,7 +179,7 @@ export function ApplyBand({ track }: { track: ApplyTrack }) {
           Deliberately not one list of ten. They answer two different questions
           that a reader asks in a fixed order — can I get in, and do I want to —
           and running them together lets somebody skim the first four items and
-          never reach the fact that a seat is eight modules of recording.
+          never reach the fact that a seat is a full course of recording.
         */}
         <div className="mt-10 grid gap-8 border-t border-line pt-8 lg:grid-cols-2 lg:gap-12">
           <div>

@@ -28,11 +28,31 @@ import type { NextConfig } from "next";
  * one. A 307 would leave the old URL as the one a crawler keeps re-checking.
  */
 const LEGACY_COURSE_IDS: readonly (readonly [string, string])[] = [
-  ["gtm", "applied-ai-for-gtm-teams"],
-  ["media", "applied-ai-for-video-and-media"],
-  ["literacy", "ai-literacy-ethics-and-data-compliance"],
-  ["infra", "applied-ai-infrastructure"],
+  ["gtm", "applied-ai-for-go-to-market"],
+  ["media", "hybrid-filmmaking"],
+  ["literacy", "ai-education-ethics-and-data-compliance"],
+  ["infra", "applied-ai-infrastructure-fundamentals"],
   ["starter", "ai-starter-for-small-business"],
+];
+
+/**
+ * The four slugs that were real between 8 and 11 Aug 2026.
+ *
+ * The curriculum moved to the blueprint on 11 Aug and four of the five titles
+ * changed with it, which changed four slugs: a course called Hybrid filmmaking
+ * cannot live at /courses/applied-ai-for-video-and-media, and a URL that
+ * describes a different course is worse than an ugly one.
+ *
+ * Same reasoning as the list above, and the same closed set: these addresses
+ * were live, they are in the wild, and they keep resolving. A slug that changes
+ * again adds a row here rather than editing one, because the row that is edited
+ * is the one that stops working.
+ */
+const RENAMED_COURSE_SLUGS: readonly (readonly [string, string])[] = [
+  ["applied-ai-for-gtm-teams", "applied-ai-for-go-to-market"],
+  ["applied-ai-for-video-and-media", "hybrid-filmmaking"],
+  ["ai-literacy-ethics-and-data-compliance", "ai-education-ethics-and-data-compliance"],
+  ["applied-ai-infrastructure", "applied-ai-infrastructure-fundamentals"],
 ];
 
 const nextConfig: NextConfig = {
@@ -43,6 +63,22 @@ const nextConfig: NextConfig = {
         destination: `/courses/${slug}`,
         permanent: true,
       })),
+      /*
+        The renamed slugs carry their sub-paths with them, which the id list
+        above does not need to: `/courses/<slug>/start` is a real route, and an
+        exact-path rule would 404 the one link that begins an enrolment.
+      */
+      ...RENAMED_COURSE_SLUGS.flatMap(([from, to]) => [
+        { source: `/courses/${from}`, destination: `/courses/${to}`, permanent: true },
+        { source: `/courses/${from}/:path*`, destination: `/courses/${to}/:path*`, permanent: true },
+        /*
+          The reader lands on the course rather than on the old lesson. Every
+          lesson slug changed with the curriculum, so carrying `:path*` through
+          would trade a redirect for a 404 one hop later.
+        */
+        { source: `/learn/${from}/:path*`, destination: `/learn/${to}`, permanent: true },
+        { source: `/learn/${from}`, destination: `/learn/${to}`, permanent: true },
+      ]),
       /*
         /admin/seats became /admin/judging on 9 Aug.
 

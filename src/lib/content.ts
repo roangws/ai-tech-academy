@@ -539,7 +539,17 @@ export const hero = {
   */
   stats: [
     { id: "cost", value: "Free", label: "Every course, every module" },
-    { id: "modules", value: "8 modules", label: "Build, launch, then measure it" },
+    /*
+      "8 modules" until 11 Aug, when the curriculum moved to the blueprint's
+      counts and the five courses stopped agreeing on one number: 12, 12, 10, 8
+      and 10. A per-course figure in a site-wide stat had become a claim that is
+      true of one course.
+
+      52 is the sum, and it is the honest version of the same fact: the label
+      carries what the number is a count of, and each catalog card states its
+      own module count a screen below.
+    */
+    { id: "modules", value: "52 modules", label: "Across five role-based courses" },
     /*
       "Of lessons and guided labs" became "Of instruction, plus your
       implementation work" on 6 Aug.
@@ -1161,8 +1171,10 @@ export const moduleFormat = {
   },
   /*
     The access model, stated once as an unlock rather than as four gates, and
-    now the line that reconciles the two numbers on the page: eight modules on
-    every catalog card, five steps in the card above this note.
+    now the line that reconciles the two numbers on the page: a module count on
+    every catalog card, five steps in the card above this note. The count moved
+    from eight everywhere to 12, 12, 10, 8 and 10 on 11 Aug, which is why this
+    line names no number of its own.
 
     The five rows it used to sit under lived here as `outline`, headed "The five
     steps" and numbered 01 to 05. They were never modules — they were the method
@@ -1172,7 +1184,7 @@ export const moduleFormat = {
     explaining each step already was, and the access state went with them.
   */
   accessNote:
-    "Eight modules run across these five steps. One free account unlocks modules 2 to 8 in every course, and the account stays free.",
+    "Every module runs across these five steps. One free account opens every module after the first, in all five courses, and the account stays free.",
   includesLabel: "Every module includes",
   includes: [
     "Recorded lessons from people who run these systems",
@@ -1190,7 +1202,7 @@ export const moduleFormat = {
     It is its own line in the enrol rail now, under the list, which is also where
     a reader deciding whether to start is asking what they end up holding.
   */
-  completion: "Finish all eight and the certificate is issued the same day, free",
+  completion: "Finish the course and the certificate is issued the same day, free",
 } as const;
 
 /*
@@ -2324,7 +2336,7 @@ export const faqs = [
        catalog cards; on a course page — where this FAQ also renders — there is
        no lettered row in sight, so the answer referred a reader to two courses
        by a name the page they are on never prints. */
-    a: "One workflow you own, permission to change it, and the tools your team already uses. Applied AI infrastructure also assumes access to a GPU cloud account, and AI starter for small business runs on everyday business tools.",
+    a: "One workflow you own, permission to change it, and the tools your team already uses. Applied AI infrastructure fundamentals also assumes a computer you can install software on, hybrid filmmaking assumes a phone or camera, and AI starter for small business runs on everyday business tools. Every course supplies sample data for the labs where your own material is restricted.",
   },
   {
     q: "What is the outcome sheet?",
@@ -2332,7 +2344,7 @@ export const faqs = [
   },
   {
     q: "Which course should I start with?",
-    a: "Pick by the work you are responsible for. GTM teams for marketing ops, RevOps and growth. Video and media for production workflows. AI literacy, ethics and data compliance for whoever owns how a team uses AI. Infrastructure for developers who own serving. The small business starter is a short first win before a longer course.",
+    a: "Pick by the work you are responsible for. Go-to-market for marketing, sales and RevOps. Hybrid filmmaking for anyone making films or video. AI education, ethics and data compliance for educators and whoever owns how a team uses AI. Infrastructure fundamentals for the first deployment. The small business starter is a short first win before a longer course.",
   },
   {
     q: "Who records the lessons?",
@@ -2900,7 +2912,7 @@ export const auth = {
   signUp: {
     title: "Create your free account",
     intro:
-      "One account unlocks modules 2 to 8 in every course, and the account stays free.",
+      "One account opens every module after the first, in all five courses, and the account stays free.",
     submit: "Create account",
     altPrompt: "Already have an account?",
     altLabel: "Sign in",
@@ -2974,7 +2986,7 @@ export const auth = {
       id: "account",
       label: "Your account",
       title: "Create your free account",
-      intro: "One account unlocks modules 2 to 8 in every course, and it stays free.",
+      intro: "One account opens every module after the first, in all five courses, and it stays free.",
       optional: false,
       next: "Continue",
     },
@@ -3069,7 +3081,7 @@ export const auth = {
     title: "Module 1 is open to everyone",
     points: [
       "Module 1 of every course runs with no account at all.",
-      "One free account unlocks modules 2 to 8 in every course.",
+      "One free account opens every module after the first, in all five courses.",
       "You finish by deploying one workflow and measuring what changed.",
     ],
   },
@@ -3384,7 +3396,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       "Work a stranger can check for themselves: a repository, a product, a paper, a talk, a public profile with your name on it.",
       "Recognition from outside your own company. Judging, advising, speaking, teaching, reviewing, or being cited by people elsewhere in the field.",
       "The ability to teach one thing well on camera, which is a separate skill from doing it well and is the one the board tests directly.",
-      "Time. One course is roughly eight modules of recording, plus the board's review each term.",
+      "Time. One course is eight to twelve modules of recording, plus the board's review each term.",
     ],
     asked: [
       "Record the deep dives on one course, in your own voice, against a curriculum somebody else wrote.",

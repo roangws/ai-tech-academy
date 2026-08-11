@@ -669,7 +669,7 @@ export async function getSubmittedWork(courseIds: string[]): Promise<SubmittedWo
     Bounded, and ordered deterministically.
 
     It was unbounded, `select("*")`, sorted on `submitted_at` alone. At 10,000
-    learners × 8 modules that is 80,000 rows and every submission's full body
+    learners × 10 modules that is 100,000 rows and every submission's full body
     pulled into one render. The id tiebreaker matters as soon as there is a
     second page: two rows sharing a timestamp would otherwise swap between
     pages, showing one twice and the other never.

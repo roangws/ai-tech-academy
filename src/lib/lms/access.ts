@@ -6,7 +6,7 @@ import type { ModuleAccess } from "@/lib/supabase/types";
  * The whole rule, in one place, because it is the one commitment the site
  * repeats on every surface it has:
  *
- *   homepage      "One free account unlocks modules 2 to 8 in every course"
+ *   homepage      "One free account opens every module after the first"
  *   catalog       "What free covers"
  *   enrol rail    "Module 1 opens with no account"
  *   auth panel    the reason to make an account at all
