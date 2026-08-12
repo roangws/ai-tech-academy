@@ -8,6 +8,7 @@ import {
   WhatYouLearn,
 } from "@/components/course/blocks";
 import { Curriculum } from "@/components/course/curriculum";
+import { CourseInstructors } from "@/components/course/instructors";
 import { CoursePreview } from "@/components/course/preview";
 import { EnrollRail } from "@/components/course/enroll-rail";
 import { CourseHero, StatBar } from "@/components/course/hero";
@@ -16,7 +17,7 @@ import { CourseTabs } from "@/components/course/tabs";
 import { Container } from "@/components/ui";
 import { brand } from "@/lib/content";
 import { getCatalog, getCourseBySlug, totalLessons } from "@/lib/catalog";
-import { getInstructors } from "@/lib/roster";
+import { getCourseInstructors, getInstructors } from "@/lib/roster";
 import { courseJsonLd } from "@/lib/seo";
 
 /**
@@ -183,6 +184,12 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
      roster page names them from, or the two can disagree. */
   const [lead] = await getInstructors();
 
+  /* The people credited on THIS course, which is a different list from the
+     roster and is why `course_instructors` exists: the lead teaches all five
+     today, Patrick teaches the film course, and three specialists teach the
+     literacy course. Assigned in the console, ordered there too. */
+  const teaching = await getCourseInstructors(course.id);
+
   return (
     <>
       {/*
@@ -294,7 +301,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
             <aside
               aria-label="Enrol in this course"
-              className="lg:col-start-2 lg:row-start-1 lg:row-span-4 lg:-mt-[208px]"
+              className="lg:col-start-2 lg:row-start-1 lg:row-span-5 lg:-mt-[208px]"
             >
               <EnrollRail course={course} />
             </aside>
@@ -317,7 +324,25 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               apart. The reference has a list in each of these places too, but they
               carry different facts; ours did not, so this one is gone.
             */}
-            <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
+            {/*
+              The teaching roster, directly above "Course content" and inside the
+              left column rather than as a band of its own.
+
+              It answers the question a reader has at exactly this point — they
+              have just read what they will learn and are about to read how it is
+              taught — and it has to be answered before the curriculum rather than
+              after it, which is where a full-width band under the fold would have
+              put it. Roan asked for it here.
+
+              Row 4, so the curriculum is row 5 and the aside spans five. Those two
+              numbers move together: the rail sticks inside the aside's grid area,
+              and an area that stops short of the last row stops the stick early.
+            */}
+            <div id="instructors" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
+              <CourseInstructors people={teaching} />
+            </div>
+
+            <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-5">
               {/* The preview goes INSIDE module 01's panel rather than under the
                   whole accordion — curriculum.tsx has the note on why, and on
                   why it has to arrive as a rendered element rather than as an

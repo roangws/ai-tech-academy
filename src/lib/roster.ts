@@ -287,6 +287,71 @@ export async function getJudges(): Promise<Seat[]> {
     .map(toSeat);
 }
 
+/**
+ * Who teaches which course.
+ *
+ * `course_instructors` is a pair of ids and a position, and this is the only
+ * place that reads it. Cached per request like the roster itself, because a
+ * course page asks for its instructors once and the console asks for every
+ * course's at once.
+ *
+ * An empty list on failure, for the same reason `allRows` returns one: the
+ * instructor band on a course page is a band, not the page, and a failed query
+ * must not take the course down with it.
+ */
+const allLinks = cache(async (): Promise<{ course_id: string; roster_id: string; position: number }[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("course_instructors")
+    .select("course_id, roster_id, position")
+    .order("position");
+
+  if (error) {
+    console.error("course instructors read failed:", error.message);
+    return [];
+  }
+  return data ?? [];
+});
+
+/**
+ * The instructors credited on one course, in the order the console set.
+ *
+ * Publishable rows only, through the same `publicRows` filter the roster page
+ * uses — a draft card must not appear on a course page any more than it appears
+ * on /instructors, and a link to a roster entry that has since been unpublished
+ * simply drops out of the list rather than rendering a card with no portrait.
+ *
+ * The lead is not special here. He is a row on every course today because
+ * somebody put him there, which is what makes it possible for him to not be on
+ * one tomorrow. See the migration.
+ */
+export async function getCourseInstructors(courseId: string): Promise<Person[]> {
+  const [rows, links] = await Promise.all([allRows(), allLinks()]);
+  const byId = new Map(publicRows(rows, "instructor").map((r) => [r.id, r]));
+
+  return links
+    .filter((l) => l.course_id === courseId)
+    .sort((a, b) => a.position - b.position)
+    .map((l) => byId.get(l.roster_id))
+    .filter((r): r is RosterRow => Boolean(r))
+    .map(toPerson);
+}
+
+/**
+ * The same links as ids, drafts included. For the console's tick list.
+ *
+ * Separate from `getCourseInstructors` because the console is editing the
+ * ASSIGNMENT rather than rendering it: a person whose card is still a draft is
+ * assigned to the course and has to show as ticked, or saving the form would
+ * quietly unassign them.
+ */
+export async function getCourseInstructorIds(courseId: string): Promise<string[]> {
+  return (await allLinks())
+    .filter((l) => l.course_id === courseId)
+    .sort((a, b) => a.position - b.position)
+    .map((l) => l.roster_id);
+}
+
 /** Every row, both kinds, drafts included for an admin. For the console. */
 export async function getRoster(kind?: "instructor" | "judge"): Promise<RosterEntry[]> {
   const rows = await allRows();

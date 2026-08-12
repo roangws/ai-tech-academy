@@ -167,6 +167,8 @@ already renders as its definition of what a learner leaves with.
 ```
 instructor_assignments(id, user_id, course_id, kind, scope)
                        UNIQUE (user_id, course_id)
+course_instructors(course_id → courses, roster_id → roster, position)
+                   PK (course_id, roster_id)
 judge_seats(id text PK, seat, reviews_course_id, checks, user_id, position)
 rubric_criteria(id, course_id, label, description, weight, position)
 judgements(id, sheet_id, judge_id, criterion_id, score, notes)
@@ -187,6 +189,18 @@ already reserves ("All five courses"). This closes the gap `src/lib/seo.ts:67`
 documents explicitly: today `courseJsonLd` hardcodes `instructors.people[0]` as
 the instructor of all five courses because nothing in `content.ts` says which
 specialist teaches which.
+
+`course_instructors` is the credit, and it is a second table rather than a
+column on the first because the two answer different questions.
+`instructor_assignments` keys on `auth.users`: it decides what somebody may
+touch in the console, so it can only name a person who has an account. Four of
+the five instructors have none and do not need one — a roster card is published
+before, and often without, a login. So the list of people credited on a course
+page keys on `roster` instead, carries its own `position` (Patrick is fourth on
+`/instructors` and second on the film course), and is edited by ticking names on
+the course's console screen. `getCourseInstructors` filters it through the same
+published-and-has-a-portrait rule the roster pages use, so an unpublished card
+drops out of a course page rather than rendering half.
 
 `judge_seats.id` carries the six existing seat ids verbatim — `revops`, `post`,
 `governance`, `platform`, `smb`, `learning` — because those ids are already the

@@ -349,6 +349,57 @@ export async function setFeatured(formData: FormData) {
   await revalidateCatalog();
 }
 
+/**
+ * Who teaches this course.
+ *
+ * The whole assignment at once — delete the course's rows, insert the ticked
+ * ones — rather than a row per checkbox. A tick list submits what IS checked and
+ * says nothing about what was unchecked, so any write that only inserts can
+ * never remove anybody; replacing the set is the only version of this that can
+ * express "Patrick no longer teaches the film course".
+ *
+ * `position` is the order the boxes were printed in, which is the roster's own
+ * order with the lead first. There is no separate ordering control here and that
+ * is deliberate: two courses out of five have more than one instructor, and a
+ * pair of arrows per person to reorder a list of two would be more console than
+ * the fact deserves.
+ *
+ * Not transactional, and worth knowing: the delete lands before the insert, so a
+ * failure between them leaves the course with nobody credited rather than with
+ * the old set. The band renders as absent in that window, which is a recoverable
+ * state that re-saving fixes, and it is the same trade `setFeatured` makes one
+ * function up.
+ */
+export async function setCourseInstructors(_prev: FormState, formData: FormData): Promise<FormState> {
+  return answering(async () => {
+  await requireRole("admin");
+
+  const courseId = String(formData.get("courseId") ?? "");
+  const ids = formData.getAll("instructorIds").map((v) => String(v)).filter(Boolean);
+
+  const supabase = await createClient();
+  fail(
+    "clear course instructors",
+    (await supabase.from("course_instructors").delete().eq("course_id", courseId)).error,
+  );
+
+  if (ids.length) {
+    fail(
+      "set course instructors",
+      (
+        await supabase
+          .from("course_instructors")
+          .insert(ids.map((rosterId, i) => ({ course_id: courseId, roster_id: rosterId, position: i })))
+      ).error,
+    );
+  }
+
+  const { data: course } = await supabase.from("courses").select("slug").eq("id", courseId).single();
+  await revalidateCatalog(course?.slug);
+  return { ok: ids.length ? "Saved." : "Nobody is credited on this course now." };
+  });
+}
+
 /** Move a course up or down the catalogue order. */
 export async function moveCourse(formData: FormData) {
   await requireRole("admin");

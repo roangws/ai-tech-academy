@@ -14,6 +14,7 @@ import { StatusChip } from "@/components/ui";
 import { ActionForm, Area, Field, Save, Quiet, Danger, Text, inputClass } from "@/components/lms/admin-form";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminCourseById } from "@/lib/catalog";
+import { getCourseInstructorIds, getRoster } from "@/lib/roster";
 import { setModuleAccess } from "@/app/actions/admin";
 import {
   createLesson,
@@ -26,6 +27,7 @@ import {
   saveCourse,
   saveLesson,
   saveModule,
+  setCourseInstructors,
   setCourseStatus,
 } from "@/app/actions/catalog";
 
@@ -91,6 +93,15 @@ export default async function AdminCourse({ params }: { params: Promise<{ course
 
   const modules = moduleRows ?? [];
   const published = course.status === "published";
+
+  /* The tick list below, and what is ticked. Drafts included on both sides: the
+     console is editing the assignment rather than the public page, and a person
+     whose card is still a draft is assigned to this course. Leaving them out
+     would untick them, and saving would then quietly drop them. */
+  const roster = (await getRoster("instructor")).sort(
+    (a, b) => Number(b.lead) - Number(a.lead) || a.position - b.position,
+  );
+  const credited = await getCourseInstructorIds(course.id);
 
   return (
     <>
@@ -249,6 +260,66 @@ export default async function AdminCourse({ params }: { params: Promise<{ course
 
         <div className="mt-4">
           <Save>Save the course</Save>
+        </div>
+      </ActionForm>
+
+      {/* ----------------------------------------------------- instructors */}
+      {/*
+        Who is credited on the course page, above the curriculum.
+        `components/course/instructors.tsx` renders exactly what is ticked here,
+        in the order the names are printed below, which is the roster's order
+        with the lead first.
+
+        Tick boxes rather than a repeater with add and remove: the roster is five
+        people and the question is which of them teach this course, so the whole
+        answer fits on one screen and cannot be malformed.
+      */}
+      <ActionForm
+        action={setCourseInstructors}
+        className="mt-6 rounded-[var(--radius-feature)] border border-line bg-surface p-5"
+      >
+        <input type="hidden" name="courseId" value={course.id} />
+        <p className="t-card-title text-ink">Who teaches it</p>
+        <p className="t-meta mt-1 text-ink-muted">
+          Their cards appear on the course page above the curriculum. A card is only shown to
+          visitors once that person is published on{" "}
+          <Link href="/admin/roster" className="text-ink-secondary underline">
+            the roster
+          </Link>
+          .
+        </p>
+
+        <ul className="mt-4 flex flex-col gap-2">
+          {roster.map((r) => (
+            <li key={r.id}>
+              <label className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  name="instructorIds"
+                  value={r.id}
+                  defaultChecked={credited.includes(r.id)}
+                  className="mt-0.5 size-4 flex-none accent-[var(--accent)]"
+                />
+                <span className="min-w-0">
+                  <span className="t-body-sm text-ink">{r.name}</span>
+                  {r.role ? <span className="t-meta block text-ink-muted">{r.role}</span> : null}
+                  {r.status === "published" ? null : (
+                    <span className="t-meta block text-ink-muted">Draft, so no card is shown yet</span>
+                  )}
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+
+        {roster.length === 0 ? (
+          <p className="t-body-sm mt-3 text-ink-secondary">
+            There are no instructors on the roster yet.
+          </p>
+        ) : null}
+
+        <div className="mt-4">
+          <Save>Save who teaches it</Save>
         </div>
       </ActionForm>
 
