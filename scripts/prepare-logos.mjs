@@ -36,7 +36,6 @@ const HEIGHT = 36;
 const LOGOS = [
   { src: `${HOME}/Downloads/orange-typemark.svg`, out: "coderabbit.png", density: 600 },
   { src: `${HOME}/Downloads/BAYHAUS-Creative-logo-scaled.png`, out: "bayhaus.png" },
-  { src: `${HOME}/Downloads/berkeley-university-logo-png_seeklogo-322154.png`, out: "berkeley.png" },
   // The app icon is square and its dark ground is part of the mark, so it is
   // resized but never trimmed: trimming would eat the rounded corners.
   { src: `${HOME}/Downloads/n_aaible_logo.jpeg`, out: "n-aible.png", keepBox: true },

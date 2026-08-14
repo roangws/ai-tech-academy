@@ -269,14 +269,14 @@ export function InstructorLeadCard({ person }: { person: Person }) {
 
                       This carried `aria-label={`${person.name} on LinkedIn`}`,
                       which replaces the accessible name outright — so the chip
-                      read "View profile" and answered to "Patrick Kriwanek on
+                      read "View profile" and answered to "Aaron Jimenez on
                       LinkedIn", and nothing a speech-input user could say
                       matched what they could see. WCAG 2.5.3 asks for the
                       visible label to be contained in the accessible name, and
                       an `aria-label` that drops it fails by construction.
 
                       Appending an `sr-only` span keeps both: the name announces
-                      as "View profile, Patrick Kriwanek on LinkedIn", "click
+                      as "View profile, Aaron Jimenez on LinkedIn", "click
                       view profile" still matches, and the disambiguation a
                       screen reader needed from a row of identical chips
                       survives.
@@ -413,9 +413,9 @@ export function InstructorCard({ person }: { person: Person }) {
         Which is exactly why the block reserves its height. The block is anchored
         to the bottom of the card, so a card missing a line does not end up with
         a gap under its type: it ends up with its name 18px lower than the three
-        beside it. Patrick has no second affiliation and his name sat 18px below
-        Aaron's, Hendrik's and Loc's across the same row, which is the same fault
-        the catalog cards fixed with `min-h` and takes the same fix.
+        beside it. A card with no second affiliation sat 18px below the ones that
+        carry one across the same row, which is the same fault the catalog cards
+        fixed with `min-h` and takes the same fix.
 
         149px is the full stack plus its own padding: name 25, role over two
         reserved lines 36, an affiliation line at 18, an 8px gap, a 26px chip, the
@@ -425,9 +425,9 @@ export function InstructorCard({ person }: { person: Person }) {
 
         Every row inside it reserves its own height for the same reason one level
         down. The floor on the block alone got the four names onto one line and left
-        the four chips on three different ones, because Patrick has no second
-        affiliation and the 18px his card does not spend came off the bottom of his
-        stack rather than out of a reserved row.
+        the four chips on three different ones, because a card with no second
+        affiliation spends 18px less and that came off the bottom of its stack
+        rather than out of a reserved row.
       */}
       <div className="absolute inset-x-0 bottom-0 min-h-[149px] p-4">
         <h3 className="t-card-title text-white">{person.name}</h3>

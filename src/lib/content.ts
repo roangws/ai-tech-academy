@@ -1420,11 +1420,11 @@ export type Person = {
   /**
    * Employer mark, drawn on a light chip in the card's top corner.
    *
-   * All four are normalised to a common height by scripts/prepare-logos.mjs,
+   * All of them are normalised to a common height by scripts/prepare-logos.mjs,
    * which trims each file to the box its own ink occupies first. Without that
-   * step the Berkeley wordmark rendered about six pixels tall next to an
-   * eighteen-pixel CodeRabbit typemark, because its source canvas is square and
-   * the mark floats in the middle of it.
+   * step a mark supplied on a square canvas rendered about six pixels tall next
+   * to an eighteen-pixel CodeRabbit typemark, because the ink floats in the
+   * middle of the canvas rather than filling it.
    */
   logo?: Img;
   lead?: boolean;
@@ -1768,36 +1768,6 @@ export const instructors = {
       photo: { src: "/images/people/loc-nguyen.jpg", alt: "Portrait of Loc H. Nguyen" },
       logo: { src: "/images/logos/bayhaus.png", alt: "Bayhaus Creative" },
       linkedin: "https://www.linkedin.com/in/lhnguyen2/",
-    },
-    {
-      id: "patrick",
-      name: "Patrick Kriwanek",
-      role: "Academic Dean, The Berkeley Film School",
-      ground: "var(--path-d)",
-      photo: { src: "/images/people/patrick-kriwanek.jpg", alt: "Portrait of Patrick Kriwanek" },
-      /*
-        NO MARK ON THIS SEAT, and the reason is the flag that used to stand here
-        rather than a design choice.
-
-        The asset supplied was `/images/logos/berkeley.png`, the University of
-        California, Berkeley wordmark, against a title reading "Academic Dean,
-        The Berkeley Film School". The flag asked for that to be confirmed
-        before the card went anywhere public and it shipped unconfirmed; it is
-        on /instructors now, which is exactly the page it was meant to be
-        checked before.
-
-        Two institutions share a city name here and nothing on file says they
-        share anything else, so the card was putting a university's registered
-        mark against a school that may not hold it — a fabricated credential of
-        the same kind as a rating, and the only one on the site that also
-        borrows somebody else's trademark to make it.
-
-        `InstructorCard` renders a seat with no `logo` (Roan's lead card has
-        none), so nothing breaks by leaving it out. If the affiliation is
-        confirmed, or a Berkeley Film School mark is supplied, this is one line
-        to put back.
-      */
-      linkedin: "https://www.linkedin.com/in/patrick-kriwanek-92a3203/",
     },
   ] as readonly Person[],
 } as const;

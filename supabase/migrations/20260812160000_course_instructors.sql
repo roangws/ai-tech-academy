@@ -16,11 +16,11 @@
 --
 -- ------------------------------------------------------------------ the shape
 --
--- Both ids are `text` because both parents are: 'media' references 'patrick'.
+-- Both ids are `text` because both parents are: 'literacy' references 'aaron'.
 -- The primary key is the pair, so a person cannot be added to a course twice,
 -- and `position` orders the cards inside one course rather than across the
--- roster — Patrick is fourth on /instructors and second on the film course, and
--- those two numbers have no reason to agree.
+-- roster — a person's place on /instructors and their place on a course card row
+-- have no reason to agree.
 --
 -- `on delete cascade` on both sides. Deleting a course should not leave rows
 -- pointing at nothing, and deleting a roster entry should take their credits
@@ -81,11 +81,11 @@ create policy course_instructors_write_as_admin on public.course_instructors
 
 -- ----------------------------------------------------------------- who teaches what
 --
--- Roan's assignment, 11 Aug: the lead teaches every course; Patrick teaches the
--- film course; Aaron, Hendrik and Loc teach the literacy course. The other three
--- courses have the lead alone, which is true rather than thin — nobody else has
--- agreed to teach them yet, and a card for a person who does not teach a course
--- is the one thing this table exists to stop.
+-- Roan's assignment, 11 Aug: the lead teaches every course; Aaron, Hendrik and
+-- Loc teach the literacy course. The other four courses have the lead alone,
+-- which is true rather than thin — nobody else has agreed to teach them yet, and
+-- a card for a person who does not teach a course is the one thing this table
+-- exists to stop.
 --
 -- Written as a select against the two parent tables rather than as literal
 -- pairs, so a database where one of these ids has been renamed inserts fewer
@@ -99,8 +99,7 @@ select c.id, r.id, 0
  on conflict do nothing;
 
 insert into public.course_instructors (course_id, roster_id, position)
-values ('media', 'patrick', 1),
-       ('literacy', 'aaron', 1),
+values ('literacy', 'aaron', 1),
        ('literacy', 'hendrik', 2),
        ('literacy', 'loc', 3)
  on conflict do nothing;

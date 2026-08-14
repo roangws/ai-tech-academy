@@ -356,11 +356,11 @@ export async function setFeatured(formData: FormData) {
  * ones — rather than a row per checkbox. A tick list submits what IS checked and
  * says nothing about what was unchecked, so any write that only inserts can
  * never remove anybody; replacing the set is the only version of this that can
- * express "Patrick no longer teaches the film course".
+ * express "this person no longer teaches this course".
  *
  * `position` is the order the boxes were printed in, which is the roster's own
  * order with the lead first. There is no separate ordering control here and that
- * is deliberate: two courses out of five have more than one instructor, and a
+ * is deliberate: one course out of five has more than one instructor, and a
  * pair of arrows per person to reorder a list of two would be more console than
  * the fact deserves.
  *

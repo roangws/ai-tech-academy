@@ -193,12 +193,13 @@ specialist teaches which.
 `course_instructors` is the credit, and it is a second table rather than a
 column on the first because the two answer different questions.
 `instructor_assignments` keys on `auth.users`: it decides what somebody may
-touch in the console, so it can only name a person who has an account. Four of
-the five instructors have none and do not need one — a roster card is published
+touch in the console, so it can only name a person who has an account. Three of
+the four instructors have none and do not need one — a roster card is published
 before, and often without, a login. So the list of people credited on a course
-page keys on `roster` instead, carries its own `position` (Patrick is fourth on
-`/instructors` and second on the film course), and is edited by ticking names on
-the course's console screen. `getCourseInstructors` filters it through the same
+page keys on `roster` instead, carries its own `position` (the order of the cards
+inside one course, which has no reason to match the roster's own order), and is
+edited by ticking names on the course's console screen. `getCourseInstructors`
+filters it through the same
 published-and-has-a-portrait rule the roster pages use, so an unpublished card
 drops out of a course page rather than rendering half.
 

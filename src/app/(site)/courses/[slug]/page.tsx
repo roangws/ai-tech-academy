@@ -186,8 +186,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
   /* The people credited on THIS course, which is a different list from the
      roster and is why `course_instructors` exists: the lead teaches all five
-     today, Patrick teaches the film course, and three specialists teach the
-     literacy course. Assigned in the console, ordered there too. */
+     today and three specialists teach the literacy course alongside him.
+     Assigned in the console, ordered there too. */
   const teaching = await getCourseInstructors(course.id);
 
   return (
