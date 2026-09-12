@@ -1,7 +1,7 @@
 import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
-import { Container, EnrollButton, Photo, StatusChip, TextAction } from "@/components/ui";
+import { ApplyButton, Container, Photo, StatusChip, TextAction } from "@/components/ui";
 import { TrustSeal } from "@/components/trust-seal";
 import { cta, hero } from "@/lib/content";
 import { getInstructors } from "@/lib/roster";
@@ -134,7 +134,7 @@ export async function Hero() {
             for, and the secondary affordance goes after both rather than between them.
           */}
           <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 md:mt-8">
-            <EnrollButton withDate />
+            <ApplyButton withDate />
             <TrustSeal />
             {/* `#method` since the merge: the module band and the method band
                 are one section now, and this link always meant the one that

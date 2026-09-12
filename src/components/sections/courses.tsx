@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
+  ApplyButton,
   ButtonLink,
   CourseCover,
   Section,
@@ -13,6 +14,7 @@ import {
 import { NextMonth } from "@/components/next-month";
 import { cta, nextMonthName, REFERENCE_ZONE } from "@/lib/content";
 import { getCatalog, moduleCount, type Course } from "@/lib/catalog";
+import { courseWaitlistHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * One catalog, one reading order.
@@ -72,7 +74,7 @@ export async function Courses() {
   const catalog = await getCatalog();
   if (!catalog.length) return null;
 
-  const featured = catalog.find((c) => c.featured) ?? catalog[0];
+  const featured = catalog.find((c) => c.slug === OPEN_COURSE_SLUG) ?? catalog[0];
   const rest = catalog.filter((c) => c.id !== featured.id);
 
   return (
@@ -386,27 +388,23 @@ export function CourseCard({ course, eager = false }: { course: Course; eager?: 
   );
 }
 
-const AVAILABLE_COURSE_SLUG = "hybrid-filmmaking";
-
 function CourseCardPrimary({ course }: { course: Course }) {
-  if (course.slug !== AVAILABLE_COURSE_SLUG) {
+  if (course.slug !== OPEN_COURSE_SLUG) {
+    const nextMonth = nextMonthName(new Date(), REFERENCE_ZONE);
+
     return (
-      <p className="t-button py-2.5 text-ink-secondary">
+      <ButtonLink
+        href={courseWaitlistHref(course.slug)}
+        tone="secondary"
+        size="md"
+        className="whitespace-nowrap"
+        aria-label={`Waitlist starts in ${nextMonth}`}
+      >
         Waitlist starts in{" "}
-        <NextMonth initial={nextMonthName(new Date(), REFERENCE_ZONE)} />
-      </p>
+        <NextMonth initial={nextMonth} />
+      </ButtonLink>
     );
   }
 
-  const start = `/courses/${course.slug}/start`;
-
-  return (
-    <ButtonLink
-      href={`/sign-up?next=${encodeURIComponent(start)}`}
-      tone="primary"
-      size="md"
-    >
-      Apply to Join
-    </ButtonLink>
-  );
+  return <ApplyButton withDate size="md" />;
 }

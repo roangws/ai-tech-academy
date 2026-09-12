@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CourseCard } from "@/components/sections/courses";
-import { EnrollButton, Panel, Section, SectionHeader } from "@/components/ui";
+import { ApplyButton, Panel, Section, SectionHeader } from "@/components/ui";
 import { brand, catalog } from "@/lib/content";
 import { getCatalog } from "@/lib/catalog";
 import { catalogJsonLd } from "@/lib/seo";
@@ -223,11 +223,10 @@ export default function CoursesPage() {
         <Panel tone="dark">
           <div className="flex flex-wrap items-center justify-between gap-x-12 gap-y-6">
             <div className="max-w-[560px]">
-              <h2 className="t-h2 text-white">Start with module 1</h2>
+              <h2 className="t-h2 text-white">Apply to Hybrid Filmmaking</h2>
               <p className="t-body mt-2.5 text-[#c3d2dc]">
-                Module 1 of every course is open with no account. Pick a course above,
-                watch the first lesson, and finish it holding a written baseline for one
-                process you own.
+                Applications are open for Hybrid Filmmaking. The other courses open
+                their waitlists next month.
               </p>
             </div>
             <div>
@@ -242,14 +241,13 @@ export default function CoursesPage() {
                 they are already in, or the featured one, enrolling them on the
                 way through.
               */}
-              <EnrollButton withDate tone="onDark" />
+              <ApplyButton withDate tone="onDark" />
               {/* "Pick a course above" was the whole instruction, and it was an
                   instruction because nothing on this page started anything. The
                   button above does now, so this says what pressing it opens and
                   leaves the grid to the reader who wants to choose first. */}
               <p className="t-meta mt-2.5 text-white/60">
-                Opens lesson 1 straight away. Pick a different course above if you would
-                rather choose first.
+                Create your account to join the current intake.
               </p>
             </div>
           </div>

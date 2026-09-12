@@ -14,7 +14,7 @@ import {
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
 import { CoursesMenu } from "@/components/lms/courses-menu";
-import { ButtonLink, Container, EnrollButton } from "@/components/ui";
+import { ApplyButton, ButtonLink, Container, EnrollButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { nav } from "@/lib/content";
 import type { Course } from "@/lib/content";
@@ -646,11 +646,18 @@ export function SiteHeader({
                   `h-10`, because 40px is under the 44px target the rest of the
                   page holds and height was never what overflowed at 320 — the
                   padding was. */}
-              <EnrollButton
-                href={enrollHref}
-                size="md"
-                className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
-              />
+              {onHome ? (
+                <ApplyButton
+                  size="md"
+                  className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
+                />
+              ) : (
+                <EnrollButton
+                  href={enrollHref}
+                  size="md"
+                  className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
+                />
+              )}
             </>
           )}
 
@@ -732,7 +739,11 @@ export function SiteHeader({
                 </>
               ) : (
                 <>
-                  <EnrollButton href={enrollHref} onClick={closeMenu} />
+                  {onHome ? (
+                    <ApplyButton onClick={closeMenu} />
+                  ) : (
+                    <EnrollButton href={enrollHref} onClick={closeMenu} />
+                  )}
                   <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
                     Sign in
                   </ButtonLink>

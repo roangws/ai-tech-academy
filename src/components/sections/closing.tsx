@@ -1,7 +1,7 @@
 import { ArrowRightIcon, PlayCircleIcon, SquaresFourIcon, UsersThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { EnrollButton, Panel, Section } from "@/components/ui";
+import { ApplyButton, Panel, Section } from "@/components/ui";
 import { closing } from "@/lib/content";
 
 /**
@@ -61,7 +61,7 @@ export function Closing() {
                 lines now, and a glyph vertically centred against a two-line
                 block has no line of its own to sit on: it landed in the gutter
                 between "Enroll for free" and the date under it. */}
-            <EnrollButton withDate tone="onDark" className="mt-7" />
+            <ApplyButton withDate tone="onDark" className="mt-7" />
 
             <p className="t-meta mt-3 text-[#9db0bd]">{closing.reassurance}</p>
           </div>

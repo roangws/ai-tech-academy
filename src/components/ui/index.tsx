@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { StartDate } from "@/components/start-date";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { cta, REFERENCE_ZONE, startsOn, type Img } from "@/lib/content";
+import { courseApplicationHref } from "@/lib/intake";
 
 /**
  * Shared primitives, built to references/DESIGN-SPEC.md.
@@ -400,6 +401,54 @@ export function EnrollButton({
           4.5 that AA asks of 12px type. 90% is 4.7:1 and still a visible step down
           from the label above it.
         */}
+        <span
+          className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
+        >
+          Starts <StartDate initial={startsOn(new Date(), REFERENCE_ZONE)} />
+        </span>
+      </span>
+    </ButtonLink>
+  );
+}
+
+/**
+ * The application control for the one course whose intake is open.
+ *
+ * It deliberately shares the enrol control's two-line anatomy. The first line
+ * names the action and the second gives the start date at the point of choice.
+ * Chrome can omit the date to preserve the header's single-tier height.
+ */
+export function ApplyButton({
+  href = courseApplicationHref(),
+  withDate = false,
+  tone = "primary",
+  size = "lg",
+  className = "",
+  ...props
+}: Omit<ComponentProps<typeof Link>, "href" | "children"> & {
+  href?: ComponentProps<typeof Link>["href"];
+  withDate?: boolean;
+  tone?: "primary" | "secondary" | "onDark";
+  size?: "md" | "lg";
+}) {
+  if (!withDate) {
+    return (
+      <ButtonLink href={href} tone={tone} size={size} className={className} {...props}>
+        Apply to join
+      </ButtonLink>
+    );
+  }
+
+  return (
+    <ButtonLink
+      href={href}
+      tone={tone}
+      size={size}
+      className={`h-auto py-2.5 ${className}`}
+      {...props}
+    >
+      <span className="flex flex-col items-center leading-tight">
+        <span>Apply to join</span>
         <span
           className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
         >

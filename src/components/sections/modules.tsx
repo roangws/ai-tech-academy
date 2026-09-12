@@ -7,7 +7,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
-import { CheckList, EnrollButton, Section, SectionHeader, StatusChip } from "@/components/ui";
+import { ApplyButton, CheckList, Section, SectionHeader, StatusChip } from "@/components/ui";
 import { method, moduleFormat } from "@/lib/content";
 
 /**
@@ -292,7 +292,7 @@ export function HowModulesWork() {
           </ol>
           <p className="t-body-sm mt-3 text-ink-secondary">{moduleFormat.accessNote}</p>
 
-          <EnrollButton withDate className="mt-4" />
+          <ApplyButton withDate className="mt-4" />
         </div>
 
         {/*
