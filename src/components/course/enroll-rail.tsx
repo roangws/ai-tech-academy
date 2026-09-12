@@ -54,7 +54,7 @@ import { moduleFormat, type Course } from "@/lib/content";
  */
 export function EnrollRail({ course }: { course: Course }) {
   return (
-    <div className="lg:sticky lg:top-[88px]">
+    <div className="lg:sticky lg:top-[80px]">
       {/* `border border-line shadow-e1`, per DESIGN-SPEC.md §2, which is what this
           has always been. It spent an hour on `shadow-e3` and a ring to match the
           stat bar; both went back when the token turned out to be one the spec

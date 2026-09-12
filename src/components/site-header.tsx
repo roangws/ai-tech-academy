@@ -12,10 +12,11 @@ import {
   useVelocity,
 } from "motion/react";
 import { ListIcon, XIcon } from "@phosphor-icons/react";
-import { Logo } from "@/components/logo";
+import { HeaderIdentity } from "@/components/header-identity";
 import { CoursesMenu } from "@/components/lms/courses-menu";
 import { ButtonLink, Container, CourseIntakeButton } from "@/components/ui";
-import { Avatar } from "@/components/lms/avatar";
+import { AccountMenu } from "@/components/lms/account-menu";
+import { signOut } from "@/app/actions/auth";
 import { nav } from "@/lib/content";
 import type { Course } from "@/lib/content";
 import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
@@ -115,7 +116,7 @@ export function SiteHeader({
   courses?: readonly Pick<Course, "id" | "slug" | "title" | "badge" | "level" | "duration">[];
 }) {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+
   const [active, setActive] = useState<string>("");
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -350,7 +351,7 @@ export function SiteHeader({
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 8);
+
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -452,27 +453,20 @@ export function SiteHeader({
   }, [onHome]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/80">
+    <header className="relative top-0 z-40 border-b border-line bg-surface lg:sticky">
       {/*
         The frosted layer. Sibling to the content, never an ancestor of it: see
         the backdrop-root note at the head of this file. `-z-10` resolves inside
         the header because a sticky element with a z-index forms a stacking
         context.
       */}
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 -z-10 transition-colors duration-200 supports-[backdrop-filter]:[-webkit-backdrop-filter:blur(16px)_saturate(180%)] supports-[backdrop-filter]:[backdrop-filter:blur(16px)_saturate(180%)] ${
-          open || scrolled
-            ? "bg-surface supports-[backdrop-filter]:bg-surface/78"
-            : "bg-surface supports-[backdrop-filter]:bg-surface/62"
-        }`}
-      />
+
 
       {/* `lg:gap-3` rather than `lg:gap-6`. Twelve of the ninety-five pixels the
           sixth nav item needs at 1024; content.ts has the rest of the accounting.
           `ml-auto` on the controls means only the first of these gaps is ever
           spent, so this is a straight 12px. */}
-      <Container className="flex h-[72px] items-center gap-3 sm:gap-4 lg:gap-3 xl:gap-6">
+      <Container className="flex h-14 lg:h-16 items-center gap-3 sm:gap-4 lg:gap-3 xl:gap-6">
         {/*
           The lockup carries its descriptor line here. It fits because the
           search field released roughly 300px of the row, and the two stacked
@@ -480,7 +474,7 @@ export function SiteHeader({
           the short brand; logo.tsx has the note on why it is no longer dropped
           altogether.
         */}
-        <Logo size={36} descriptor compact />
+        <HeaderIdentity area="website" />
 
         {/*
           All six links, at every width from lg up.
@@ -500,7 +494,7 @@ export function SiteHeader({
         <nav
           ref={navRef}
           aria-label="Primary"
-          className="relative hidden items-center gap-0 lg:flex xl:gap-0.5"
+          className="relative hidden h-16 items-center gap-0 lg:flex xl:gap-0.5"
           onMouseLeave={() => setHovered(null)}
         >
           {/* The travelling pill. `aria-hidden` because the item it is under
@@ -509,7 +503,7 @@ export function SiteHeader({
           <motion.span
             aria-hidden="true"
             style={{ x, width, scaleX, scaleY, opacity }}
-            className="pointer-events-none absolute left-0 top-0 -z-10 h-full rounded-full bg-accent-tint ring-1 ring-inset ring-accent/10"
+            className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-ink"
           />
 
           {nav.map((item) => {
@@ -561,8 +555,8 @@ export function SiteHeader({
                    item: it is a 56px one in a 72px bar, and it reads as a broken
                    header rather than as a full one. A nav item should overflow
                    visibly and be fixed, never wrap quietly. */
-                className={`t-nav relative whitespace-nowrap rounded-full px-2 py-2 no-underline transition-colors duration-200 xl:px-3.5 ${
-                  isLit ? "text-accent" : "text-ink-secondary"
+                className={`relative whitespace-nowrap px-2 py-2 text-[13px] no-underline transition-colors duration-200 xl:px-3.5 ${
+                  isLit ? "text-ink" : "text-ink-muted"
                 }`}
               >
                 {item.label}
@@ -607,35 +601,12 @@ export function SiteHeader({
           */}
           {viewer ? (
             <>
-              <div className="hidden lg:block">
-                <ButtonLink href="/dashboard" tone="secondary" size="md" className="max-xl:px-4">
-                  My courses
-                </ButtonLink>
-              </div>
-              <Link
-                href="/account"
-                aria-label="Your account"
-                title={viewer.email ?? "Your account"}
-                /* Same halo as the product chrome, and the same reasoning:
-                   account-menu.tsx has the note. The offset colour was missing
-                   here too, so the 2px gap fell back to Tailwind's white and
-                   punched a light hole in the bar on the dark theme. */
-                className="rounded-full outline-none ring-offset-2 ring-offset-[color:var(--surface)] transition-shadow hover:ring-2 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-[color:var(--focus)]"
-              >
-                <Avatar
-                  name={viewer.name}
-                  email={viewer.email}
-                  url={viewer.avatarUrl}
-                  size={36}
-                />
-              </Link>
+              <AccountMenu name={viewer.name} email={viewer.email} avatarUrl={viewer.avatarUrl} signOut={signOut} />
             </>
           ) : (
             <>
-              <div className="hidden lg:block">
-                <ButtonLink href="/sign-in" tone="secondary" size="md" className="max-xl:px-4">
-                  Sign in
-                </ButtonLink>
+              <div className="block">
+                <Link href="/sign-in" className="inline-flex min-h-11 items-center px-1 text-[13px] font-medium text-ink no-underline">Sign in</Link>
               </div>
 
               {/* The primary CTA stays visible at every width, and carries the
@@ -648,12 +619,9 @@ export function SiteHeader({
                   `h-10`, because 40px is under the 44px target the rest of the
                   page holds and height was never what overflowed at 320 — the
                   padding was. */}
-              <CourseIntakeButton
-                slug={intakeSlug}
-                href={intakeHref}
-                size="md"
-                className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
-              />
+              <div className="hidden sm:block">
+              <CourseIntakeButton slug={intakeSlug} href={intakeHref} size="md" className="max-xl:px-4" />
+              </div>
             </>
           )}
 
@@ -727,7 +695,7 @@ export function SiteHeader({
               {viewer ? (
                 <>
                   <ButtonLink href="/dashboard" onClick={closeMenu}>
-                    My courses
+                    My learning
                   </ButtonLink>
                   <ButtonLink href="/account" tone="secondary" onClick={closeMenu}>
                     Your account

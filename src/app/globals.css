@@ -508,7 +508,7 @@
     /* 72px of chrome plus 12 of air. It was 92, which landed every in-page
        anchor 20px below the heading it was aiming at. `scrollIntoView` honours
        this, so it is still what keeps a heading clear of the sticky header. */
-    scroll-padding-top: 84px;
+    scroll-padding-top: 80px;
   }
 
   html:has(.portal-shell) {
