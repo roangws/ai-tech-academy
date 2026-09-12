@@ -7,8 +7,9 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
-import { ApplyButton, CheckList, Section, SectionHeader, StatusChip } from "@/components/ui";
+import { CheckList, CourseIntakeButton, Section, SectionHeader, StatusChip } from "@/components/ui";
 import { method, moduleFormat } from "@/lib/content";
+import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * The method and the module format, in one band. Merged 7 Aug at Roan's
@@ -292,7 +293,12 @@ export function HowModulesWork() {
           </ol>
           <p className="t-body-sm mt-3 text-ink-secondary">{moduleFormat.accessNote}</p>
 
-          <ApplyButton withDate className="mt-4" />
+          <CourseIntakeButton
+            slug={OPEN_COURSE_SLUG}
+            href={courseDetailHref(OPEN_COURSE_SLUG)}
+            withDate
+            className="mt-4"
+          />
         </div>
 
         {/*
