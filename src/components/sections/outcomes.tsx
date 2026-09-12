@@ -14,7 +14,7 @@ export function Outcomes() {
         <p className="t-label text-ink-muted">U.S. provisional patent application</p>
         <p className="t-h2 mt-3 text-ink">63/967,917</p>
         <p className="t-body-sm mt-4 text-ink-secondary">Filed January 26, 2026 by Roan Weigert, for research into personalized educational content and learner comprehension.</p>
-        <p className="t-meta mt-5 border-t border-line pt-4 text-ink-muted">Provisional application, not a granted patent. Adaptive content generation is not currently offered in this academy.</p>
+        <p className="t-meta mt-5 border-t border-line pt-4 text-ink-muted">Provisional application, not a granted patent.</p>
       </aside>
     </div>
   </Section>;

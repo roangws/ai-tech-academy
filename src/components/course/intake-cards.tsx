@@ -3,6 +3,7 @@ import { LockKeyIcon } from "@phosphor-icons/react/dist/ssr";
 import { getCatalog } from "@/lib/catalog";
 import { getIntakeSnapshot } from "@/lib/course-intake";
 import { CoursePhoto } from "@/components/lms/course-photo";
+import { OPEN_COURSE_SLUG } from "@/lib/intake";
 import {
   IntakeButton,
   IntakeDescription,
@@ -14,7 +15,7 @@ export async function IntakeCards({ exclude = [] }: { exclude?: string[] }) {
   const approved = new Set(snapshot.courses.filter((course) => course.status === "approved").map((course) => course.slug));
   const groups = [
     { id: "accessible-courses", title: "My courses", description: "Your courses are unlocked. Open a course to go straight to your lessons.", courses: courses.filter((course) => approved.has(course.slug)) },
-    { id: "intake-courses", title: "Other courses", description: "Apply to unlock filmmaking, or join the waitlist for an October course.", courses: courses.filter((course) => !approved.has(course.slug)) },
+    { id: "intake-courses", title: "Other courses", description: approved.has(OPEN_COURSE_SLUG) ? "Join a waitlist for an October course." : "Apply to unlock filmmaking, or join the waitlist for an October course.", courses: courses.filter((course) => !approved.has(course.slug)) },
   ];
   return <>{groups.filter((group) => group.courses.length).map((group) => (
     <section key={group.id} aria-labelledby={`${group.id}-title`} className="mt-10">
