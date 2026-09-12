@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -25,6 +26,7 @@ import {
   courseIntakeHref,
   courseStartHref,
   OPEN_COURSE_SLUG,
+  OPEN_COURSE_START,
   WAITLIST_START,
   type IntakeCourse,
   type IntakeSnapshot,
@@ -34,10 +36,6 @@ const Context = createContext<{
   snapshot: IntakeSnapshot | null;
   open: (slug: string) => void;
 }>({ snapshot: null, open: () => {} });
-const control =
-  "t-button inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-wait";
-const primary = `${control} bg-accent text-on-accent hover:bg-accent-hover`;
-const secondary = `${control} border border-line-control bg-surface text-ink hover:bg-surface-subtle`;
 const input =
   "mt-2 block w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 py-3 text-base text-ink placeholder:text-ink-muted";
 
@@ -183,14 +181,14 @@ export function IntakeProvider({
                 >
                   Check your connection and try again.
                 </p>
-                <button
-                  className={`${primary} mt-5`}
+                <LiquidButton variant="accent"
+                  className="t-button mt-5"
                   onClick={() => {
                     load().catch(() => setLoadError(true));
                   }}
                 >
                   Try again
-                </button>
+                </LiquidButton>
               </>
             ) : !snapshot ? (
               <>
@@ -230,20 +228,22 @@ export function IntakeProvider({
                     : `The course starts in ${WAITLIST_START}. Sign in or create an account, then confirm your place on the waitlist.`}
                 </p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <LiquidButton asChild variant="accent" className="t-button">
                   <Link
                     onClick={close}
-                    className={primary}
                     href={`/sign-in?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
                   >
                     Sign in
                   </Link>
+                  </LiquidButton>
+                  <LiquidButton asChild className="t-button">
                   <Link
                     onClick={close}
-                    className={secondary}
                     href={`/sign-up?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
                   >
                     Create account
                   </Link>
+                  </LiquidButton>
                 </div>
               </>
             ) : (
@@ -417,41 +417,44 @@ export function IntakeDialog({
       {success || course.status === "approved" ? (
         <div className="mt-6 flex flex-wrap gap-3">
           {success === "applied" && (
-            <button
-              className={primary}
+            <LiquidButton variant="accent"
+              className="t-button"
               onClick={() => {
                 setSuccess(null);
                 setEditing(true);
               }}
             >
               Add a referral code
-            </button>
+            </LiquidButton>
           )}
           {success === "approved" || course.status === "approved" ? (
+            <LiquidButton asChild variant="accent" className="t-button">
             <Link
               href={courseStartHref(course.slug)}
-              className={primary}
               onClick={close}
             >
               Start the course
             </Link>
+            </LiquidButton>
           ) : (
-            <button
-              className={success === "applied" ? secondary : primary}
+            <LiquidButton
+              variant={success === "applied" ? "default" : "accent"} className="t-button"
               onClick={close}
             >
               Done
-            </button>
+            </LiquidButton>
           )}
-          <Link href="/dashboard" className={secondary} onClick={close}>
-            Your courses
+          <LiquidButton asChild className="t-button">
+          <Link href="/dashboard" onClick={close}>
+            My learning
           </Link>
+          </LiquidButton>
         </div>
       ) : !filmmaking ? (
         <div className="mt-6 flex flex-wrap gap-3">
-          <button
+          <LiquidButton variant="accent"
             disabled={busy}
-            className={primary}
+            className="t-button"
             onClick={() =>
               course.status === "waitlisted" ? close() : submit("join")
             }
@@ -461,21 +464,21 @@ export function IntakeDialog({
               : course.status === "waitlisted"
                 ? "Keep my place"
                 : "Join the waitlist"}
-          </button>
+          </LiquidButton>
           {course.status === "waitlisted" && (
-            <button
+            <LiquidButton
               disabled={busy}
-              className={secondary}
+              className="t-button"
               onClick={() => submit("leave")}
             >
               {busy ? "Saving…" : "Leave waitlist"}
-            </button>
+            </LiquidButton>
           )}
         </div>
       ) : course.status === "applied" && !editing ? (
-        <button className={`${primary} mt-6`} onClick={() => setEditing(true)}>
+        <LiquidButton variant="accent" className="t-button mt-6" onClick={() => setEditing(true)}>
           Add a referral code
-        </button>
+        </LiquidButton>
       ) : (
         <form
           className="mt-6 space-y-5"
@@ -569,9 +572,9 @@ export function IntakeDialog({
               placeholder="Enter your code"
             />
           </div>
-          <button type="submit" disabled={busy} className={`${primary} w-full`}>
+          <LiquidButton variant="accent" type="submit" disabled={busy} className="t-button w-full">
             {busy ? "Submitting…" : "Submit application"}
-          </button>
+          </LiquidButton>
         </form>
       )}
     </>
@@ -582,14 +585,14 @@ export function IntakeButton({
   slug,
   className = "",
   size = "lg",
-  tone = "primary",
-  withDate = true,
+  tone = slug === OPEN_COURSE_SLUG ? "primary" : "secondary",
+  withDate = false,
   onClick,
 }: {
   slug: string;
   className?: string;
   size?: "sm" | "md" | "lg";
-  tone?: string;
+  tone?: "primary" | "secondary" | "onDark";
   withDate?: boolean;
   href?: unknown;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
@@ -600,14 +603,17 @@ export function IntakeButton({
     status === "waitlisted"
       ? "You're on the waitlist"
       : status === "approved"
-        ? "Start the course"
+        ? "Open course"
         : status === "applied"
           ? "Application submitted"
           : slug === OPEN_COURSE_SLUG
             ? "Apply to join"
             : "Join the waitlist";
   const blue = status === "waitlisted" || status === "applied";
+  const variant = blue || tone === "primary" ? "accent" : tone === "onDark" ? "onDark" : "default";
+  const showDate = withDate && status !== "approved" && status !== "applied";
   return (
+    <LiquidButton asChild variant={variant} size={size} className={`t-button ${showDate ? "h-auto py-2.5" : ""} ${className}`}>
     <Link
       href={
         status === "approved" ? courseStartHref(slug) : courseIntakeHref(slug)
@@ -626,18 +632,18 @@ export function IntakeButton({
         event.preventDefault();
         open(slug);
       }}
-      className={`${control} ${blue ? "border border-accent bg-accent-tint text-accent hover:bg-surface-subtle" : tone === "secondary" ? "border border-line-control bg-surface text-ink" : "bg-accent text-on-accent hover:bg-accent-hover"} ${size === "sm" ? "px-3" : "px-5"} ${className}`}
     >
-      <span className="flex flex-col items-center gap-0.5 leading-tight">
+      <span className="flex flex-col items-center leading-tight">
         <span className="inline-flex items-center gap-1.5">
           {blue && <CheckCircleIcon size={17} aria-hidden="true" />}
           {label}
         </span>
-        {withDate && slug !== OPEN_COURSE_SLUG && (
-          <span className="text-xs font-medium">Starts {WAITLIST_START}</span>
+        {showDate && (
+          <span className={`t-micro font-semibold ${variant === "default" ? "text-ink-muted" : "opacity-90"}`}>Starts {slug === OPEN_COURSE_SLUG ? OPEN_COURSE_START : WAITLIST_START}</span>
         )}
       </span>
     </Link>
+    </LiquidButton>
   );
 }
 

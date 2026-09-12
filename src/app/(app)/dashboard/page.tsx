@@ -123,7 +123,7 @@ export default async function DashboardPage() {
 
   const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
   const started = enrolled.filter((e) => e.done > 0);
-  const current = started[0] ?? null;
+  const current = started[0] ?? enrolled[0] ?? null;
   const actions = nextActions(enrolled);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
@@ -164,8 +164,8 @@ export default async function DashboardPage() {
       {/* ------------------------------------------------------------ continue */}
       {current ? (
         <section aria-labelledby="continue-heading" className="mt-6">
-          <h2 id="continue-heading" className="sr-only">
-            Continue where you left off
+          <h2 id="continue-heading" className="t-h3 mb-4 text-ink">
+            My courses
           </h2>
           {/*
             The course they are actually doing, at the size of a decision.
@@ -240,7 +240,7 @@ export default async function DashboardPage() {
                   href={`/courses/${current.course.slug}/start`}
                   className="t-button inline-flex min-h-[48px] items-center gap-2 rounded-[var(--radius-control)] bg-accent px-6 text-on-accent no-underline transition-colors hover:bg-accent-hover"
                 >
-                  {current.done > 0 ? "Continue" : "Start the course"}
+                  {current.done > 0 ? "Continue learning" : "Start the course"}
                   <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
                 </Link>
                 <Link
@@ -384,7 +384,7 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      <IntakeCards exclude={started.map((e) => e.course.slug)} />
+      <IntakeCards exclude={Array.from(new Set([...started.map((e) => e.course.slug), ...(current ? [current.course.slug] : [])]))} />
     </Container>
   );
 }

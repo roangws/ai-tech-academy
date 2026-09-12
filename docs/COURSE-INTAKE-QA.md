@@ -13,6 +13,14 @@ Implemented authenticated course waitlists, filmmaking applications, referral-co
 
 ## Operations
 
+### CTA restoration
+
+Roan requested restoration of the original CTA design. Course intake controls now use the unchanged LiquidButton component, with the original tone defaults, sizes, glass layers, and two-line date typography. Dialog controls use the same component. Joined waitlists keep the blue state and the existing join/leave behavior. AGENTS.md records that functional changes never authorize a CTA redesign.
+
+The signed-in website header now has a direct My learning button. Unlocked courses are separate from applications and waitlists on the account page. The dashboard's existing featured course card now also appears for an unlocked course with no completed lessons.
+
+## Backend operations
+
 - Migration: `supabase/migrations/20260912200000_course_intakes.sql`.
 - Reusable SQL tests: `supabase/tests/course_intakes.sql`. Run as the database owner against a seeded academy schema with an admin. The script rolls back its changes.
 - Pending filmmaking applications appear at `/admin/applications`. Approval grants course access and creates an enrollment in one transaction.

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Container } from "@/components/ui";
+import { ButtonLink, Container } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { AccountForm } from "@/components/lms/account-form";
 import { IntakeCards } from "@/components/course/intake-cards";
@@ -32,6 +32,10 @@ export default async function AccountPage() {
         Your name is what the site greets you with, and your photo is what an instructor sees
         beside work you submit.
       </p>
+      <div className="mt-5">
+        <ButtonLink href="/dashboard">My learning</ButtonLink>
+        <p className="t-body-sm mt-3 text-ink-secondary">Open your courses and continue your lessons in My learning.</p>
+      </div>
 
       <IntakeCards />
       <h2 className="t-h3 mt-12 text-ink">Your profile</h2>

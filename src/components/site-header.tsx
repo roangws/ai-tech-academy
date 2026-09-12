@@ -601,6 +601,9 @@ export function SiteHeader({
           */}
           {viewer ? (
             <>
+              <div className="hidden sm:block">
+                <ButtonLink href="/dashboard" size="md" className="max-xl:px-4">My learning</ButtonLink>
+              </div>
               <AccountMenu name={viewer.name} email={viewer.email} avatarUrl={viewer.avatarUrl} signOut={signOut} />
             </>
           ) : (
