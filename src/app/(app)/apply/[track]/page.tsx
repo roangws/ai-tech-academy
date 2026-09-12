@@ -64,7 +64,7 @@ export default async function ApplyPage({
 
   const copy = apply[track];
   const viewer = await requireUser(copy.href);
-  const application = await getMyApplication(track);
+  const application = await getMyApplication(track, viewer.id);
   /* Published only. An applicant picks the course they want to teach, and a
      draft is a course that does not exist yet as far as the site is concerned. */
   const catalog = await getCatalog();

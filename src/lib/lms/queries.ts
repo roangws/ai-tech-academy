@@ -870,15 +870,23 @@ export async function getCurriculumReviews(seatId: string): Promise<CurriculumRe
    person per track, so this is `maybeSingle` and a null means they have not
    started one -- not that something failed.
 
-   No filter on `user_id`. `applications_own` is the policy, and the note at the
-   head of this file applies here more than anywhere: a WHERE clause duplicating
-   a policy is a WHERE clause that can disagree with it. An admin reading this
-   function reads their OWN application, which is correct -- the queue lives in
-   lms/admin.ts, where every function is scoped across accounts by design. */
-export async function getMyApplication(track: ApplicationTrack): Promise<Application | null> {
+   The user filter is required even though `applications_own` already scopes an
+   ordinary applicant. Administrators also have a permissive policy that reads
+   the whole queue, so relying on RLS alone lets an administrator's personal
+   application page select somebody else's row. The queue belongs in
+   lms/admin.ts; this query is always one person's own record. */
+export async function getMyApplication(
+  track: ApplicationTrack,
+  userId: string,
+): Promise<Application | null> {
   const supabase = await createClient();
   return one<Application>(
     "application",
-    supabase.from("applications").select("*").eq("track", track).maybeSingle(),
+    supabase
+      .from("applications")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("track", track)
+      .maybeSingle(),
   );
 }
