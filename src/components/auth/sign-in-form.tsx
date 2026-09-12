@@ -174,7 +174,7 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
           </p>
         ) : (
           <p className="t-micro mt-3 text-ink-muted">
-            Module 1 of every course is open with no account, so{" "}
+            Explore the curriculum before you apply. You can{" "}
             <Link href="/courses" className="text-accent no-underline hover:underline">
               pick a course
             </Link>

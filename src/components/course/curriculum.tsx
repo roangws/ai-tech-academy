@@ -147,7 +147,7 @@ export function Curriculum({
                     {lessonCount(m)}
                   </span>
 
-                  {m.access === "open" ? <StatusChip open>Open</StatusChip> : null}
+                  {m.access === "open" ? <StatusChip>Preview</StatusChip> : null}
 
                   {/* The caret rotates, and the transition is zeroed under the
                       global reduced-motion rule in globals.css because it is a

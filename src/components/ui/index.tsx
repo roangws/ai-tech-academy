@@ -5,11 +5,10 @@ import type { ComponentProps, ReactNode } from "react";
 import { StartDate } from "@/components/start-date";
 import { NextMonth } from "@/components/next-month";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
+import { IntakeButton } from "@/components/course/intake-provider";
 import { cta, nextMonthName, REFERENCE_ZONE, startsOn, type Img } from "@/lib/content";
 import {
   courseApplicationHref,
-  courseWaitlistHref,
-  OPEN_COURSE_SLUG,
   OPEN_COURSE_START,
 } from "@/lib/intake";
 
@@ -518,11 +517,7 @@ export function CourseIntakeButton({
   slug: string;
   href?: ComponentProps<typeof Link>["href"];
 }) {
-  if (slug === OPEN_COURSE_SLUG) {
-    return <ApplyButton href={href ?? courseApplicationHref(slug)} {...props} />;
-  }
-
-  return <WaitlistButton href={href ?? courseWaitlistHref(slug)} {...props} />;
+  return <IntakeButton slug={slug} href={href} {...props} />;
 }
 
 /**

@@ -5,6 +5,7 @@ import { Avatar } from "@/components/lms/avatar";
 import { listApplications, type AdminApplication } from "@/lib/lms/admin";
 import { decideApplication } from "@/app/actions/admin";
 import { getAdminCatalog } from "@/lib/catalog";
+import { IntakeReview } from "@/components/course/intake-review";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Applications", robots: { index: false, follow: false } };
@@ -63,6 +64,8 @@ export default async function AdminApplications() {
   return (
     <>
       <h1 className="t-h2 text-ink">Applications</h1>
+      <IntakeReview />
+      <h2 className="t-h3 mt-10 text-ink">Instructor and judge applications</h2>
       <p className="t-body-sm mt-1.5 max-w-[62ch] text-ink-secondary">
         Everyone who has applied to teach or to judge. Deciding here records the decision
         and shows it to the applicant on their own page. It does not grant a role: an

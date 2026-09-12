@@ -7,7 +7,9 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Container, StatusChip } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
-import { Meter, Empty } from "@/components/lms/ui";
+import { Meter } from "@/components/lms/ui";
+import { IntakeCards } from "@/components/course/intake-cards";
+import { getIntakeSnapshot } from "@/lib/course-intake";
 import { requireUser } from "@/lib/auth";
 import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
 import { getCatalog, totalLessons } from "@/lib/catalog";
@@ -115,7 +117,9 @@ function nextActions(rows: DashboardCourse[]): Action[] {
 
 export default async function DashboardPage() {
   const viewer = await requireUser("/dashboard");
-  const enrolled = await getDashboard(viewer.id);
+  const intake = await getIntakeSnapshot();
+  const approved = new Set(intake.courses.filter((c) => c.status === "approved").map((c) => c.slug));
+  const enrolled = (await getDashboard(viewer.id)).filter((e) => approved.has(e.course.slug));
 
   const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
   const started = enrolled.filter((e) => e.done > 0);
@@ -144,7 +148,6 @@ export default async function DashboardPage() {
   */
   const rest = (await getCatalog()).filter((c) => c.id !== current?.course.id);
   const restStarted = rest.filter((c) => (byCourseId.get(c.id)?.done ?? 0) > 0);
-  const restFresh = rest.filter((c) => (byCourseId.get(c.id)?.done ?? 0) === 0);
 
   return (
     <Container className="py-6 md:py-8">
@@ -252,7 +255,7 @@ export default async function DashboardPage() {
         </section>
       ) : (
         <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
-          Every course is open. Start with the one closest to the work you already do.
+          Your course applications and waitlists are saved here. Choose a course below to get started.
         </p>
       )}
 
@@ -381,57 +384,7 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      <section aria-labelledby="courses-heading" className="mt-10">
-        <h2 id="courses-heading" className="t-h3 text-ink">
-          {current || restStarted.length ? "Start one of these next" : "Your privileged access"}
-        </h2>
-        <p className="t-body-sm mt-1.5 text-ink-secondary">
-          Not started yet. Module 1 of each is open, and none of them expire.
-        </p>
-
-        {/*
-            A shelf, not five more cards. Photographs at card size here competed
-            with the course above them for the same attention, which is the thing
-            this layout exists to stop.
-
-            No progress bar on these rows, deliberately: a track at 0% on five courses
-            is five reminders of nothing, and it is exactly what made the old single
-            grid unreadable. These carry the two facts a reader chooses on instead,
-            which are the level and the length.
-        */}
-        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {restFresh.map((course) => (
-            <li key={course.id}>
-              <Link
-                href={`/courses/${course.slug}/start`}
-                className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3 no-underline transition-colors hover:border-line-strong"
-              >
-                <span className="relative size-14 flex-none overflow-hidden rounded-[var(--radius-control)]">
-                  <CoursePhoto course={course} sizes="56px" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="t-body-sm block clamp-1 text-ink">{course.title}</span>
-                  <span className="t-meta block text-ink-muted">
-                    {[course.level, course.duration].filter(Boolean).join(" · ")}
-                  </span>
-                </span>
-                <ArrowRightIcon
-                  size={14}
-                  weight="bold"
-                  aria-hidden="true"
-                  className="flex-none text-ink-muted"
-                />
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        {restFresh.length === 0 ? (
-          <Empty title="You have started every course.">
-            Every course is open and none of them expire. Finish one, then pick the next.
-          </Empty>
-        ) : null}
-      </section>
+      <IntakeCards exclude={started.map((e) => e.course.slug)} />
     </Container>
   );
 }

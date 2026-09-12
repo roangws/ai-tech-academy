@@ -3062,9 +3062,9 @@ export const auth = {
   */
   panel: {
     label: "Privileged access",
-    title: "Module 1 is open to everyone",
+    title: "Your next course starts here",
     points: [
-      "Module 1 of every course runs with no account at all.",
+      "Apply for filmmaking or join a waitlist for an October course.",
       "One account holds your application, waitlists, course work, and progress.",
       "You finish by deploying one workflow and measuring what changed.",
     ],

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { bySlug } from "@/lib/lms/queries";
 import type { Enrollment, LessonRow, ModuleRow } from "@/lib/supabase/types";
+import { courseIntakeHref } from "@/lib/intake";
 
 /**
  * Where "start this course" actually goes.
@@ -65,6 +66,9 @@ export async function resolveStart(
   if (!course) return null;
 
   const supabase = await createClient();
+  const { data: allowed, error: accessError } = await supabase.rpc("course_has_access", { cid: course.id });
+  if (accessError) throw new Error("Could not check course access.");
+  if (!allowed) return { href: courseIntakeHref(slug), resuming: false };
 
   /*
     Modules and their lessons in one query, ordered by the same `position` the

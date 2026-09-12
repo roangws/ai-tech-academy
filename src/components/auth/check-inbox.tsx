@@ -59,11 +59,11 @@ export function CheckInbox({ email, next = "" }: { email: string; next?: string 
           reader is stuck waiting on something. It is also true: module 1 of
           every course runs with no account at all. */}
       <p className="t-body-sm mt-7 rounded-[var(--radius-card)] border border-line bg-surface-subtle p-4 text-ink-secondary">
-        You can start while you wait. Module 1 of every course is open with no account, so{" "}
+        While you wait for your email, you can{" "}
         <Link href="/courses" className="text-accent no-underline hover:underline">
           pick a course
         </Link>{" "}
-        and begin now.
+        and explore its curriculum.
       </p>
     </div>
   );

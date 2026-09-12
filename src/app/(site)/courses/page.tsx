@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CourseCard } from "@/components/sections/courses";
-import { ApplyButton, Panel, Section, SectionHeader } from "@/components/ui";
+import { CourseIntakeButton, Panel, Section, SectionHeader } from "@/components/ui";
 import { brand, catalog } from "@/lib/content";
 import { getCatalog } from "@/lib/catalog";
 import { catalogJsonLd } from "@/lib/seo";
@@ -241,8 +241,8 @@ export default function CoursesPage() {
                 they are already in, or the featured one, enrolling them on the
                 way through.
               */}
-              <ApplyButton
-                href="/courses/hybrid-filmmaking"
+              <CourseIntakeButton
+                slug="hybrid-filmmaking"
                 withDate
                 tone="onDark"
               />

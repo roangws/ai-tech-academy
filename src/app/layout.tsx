@@ -5,6 +5,7 @@ import { ThirdPartyScripts } from "@/components/third-party-scripts";
 import { brand, site } from "@/lib/content";
 import { organizationJsonLd } from "@/lib/seo";
 import "./globals.css";
+import { IntakeProvider } from "@/components/course/intake-provider";
 
 /*
   One family across the whole page. Inter is the typeface the project's own
@@ -122,7 +123,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: organizationJsonLd().replace(/</g, "\\u003c"),
           }}
         />
-        {children}
+        <IntakeProvider>{children}</IntakeProvider>
         {/* The refraction filter every glass control references, mounted once
             per document. It renders nothing; ui.tsx has the note. */}
         <GlassFilter />

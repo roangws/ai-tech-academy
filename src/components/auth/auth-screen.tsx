@@ -124,6 +124,9 @@ export function AuthScreen({
           forms render into the HTML like everything else on the site.
         */}
         <div className="min-w-0">
+          {next?.includes("?intake=1") && <p className="t-body-sm mb-6 rounded-xl bg-accent-tint p-4 text-accent">
+            {next.includes("/hybrid-filmmaking") ? "After signing in, you'll return to your filmmaking application. Have your referral code ready if you have one." : "After signing in, you'll return to the course to confirm your place on the waitlist."}
+          </p>}
           {variant === "signUp" ? (
             <SignUpSteps next={next} />
           ) : (

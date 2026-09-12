@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { AccountForm } from "@/components/lms/account-form";
+import { IntakeCards } from "@/components/course/intake-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export default async function AccountPage() {
         beside work you submit.
       </p>
 
+      <IntakeCards />
+      <h2 className="t-h3 mt-12 text-ink">Your profile</h2>
       <AccountForm
         firstName={viewer.profile?.first_name ?? ""}
         lastName={viewer.profile?.last_name ?? ""}

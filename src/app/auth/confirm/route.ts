@@ -73,5 +73,5 @@ export async function GET(request: NextRequest) {
     confirmation link is not an error the reader made and the useful next step
     is the form they can retry from.
   */
-  return NextResponse.redirect(new URL("/sign-in?confirm=failed", url.origin));
+  return NextResponse.redirect(new URL(`/sign-in?confirm=failed&next=${encodeURIComponent(next)}`, url.origin));
 }
