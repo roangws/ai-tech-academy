@@ -6,6 +6,7 @@ import { brand, site } from "@/lib/content";
 import { organizationJsonLd } from "@/lib/seo";
 import "./globals.css";
 import { IntakeProvider } from "@/components/course/intake-provider";
+import { getIntakeSnapshot } from "@/lib/course-intake";
 
 /*
   One family across the whole page. Inter is the typeface the project's own
@@ -96,7 +97,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const intake = await getIntakeSnapshot().catch(() => null);
   return (
     <html
       lang="en"
@@ -123,7 +125,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: organizationJsonLd().replace(/</g, "\\u003c"),
           }}
         />
-        <IntakeProvider>{children}</IntakeProvider>
+        <IntakeProvider key={intake?.userId ?? "anonymous"} initialSnapshot={intake}>{children}</IntakeProvider>
         {/* The refraction filter every glass control references, mounted once
             per document. It renders nothing; ui.tsx has the note. */}
         <GlassFilter />

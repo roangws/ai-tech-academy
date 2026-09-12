@@ -41,10 +41,18 @@ const secondary = `${control} border border-line-control bg-surface text-ink hov
 const input =
   "mt-2 block w-full rounded-[var(--radius-control)] border border-line-control bg-surface px-3 py-3 text-base text-ink placeholder:text-ink-muted";
 
-export function IntakeProvider({ children }: { children: ReactNode }) {
+export function IntakeProvider({
+  children,
+  initialSnapshot = null,
+}: {
+  children: ReactNode;
+  initialSnapshot?: IntakeSnapshot | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  const [snapshot, setSnapshot] = useState<IntakeSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<IntakeSnapshot | null>(
+    initialSnapshot,
+  );
   const [selected, setSelected] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [theme, setTheme] = useState("light");
