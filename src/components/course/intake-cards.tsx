@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LockKeyIcon } from "@phosphor-icons/react/dist/ssr";
 import { getCatalog } from "@/lib/catalog";
 import { getIntakeSnapshot } from "@/lib/course-intake";
 import { CoursePhoto } from "@/components/lms/course-photo";
@@ -13,7 +14,7 @@ export async function IntakeCards({ exclude = [] }: { exclude?: string[] }) {
   const approved = new Set(snapshot.courses.filter((course) => course.status === "approved").map((course) => course.slug));
   const groups = [
     { id: "accessible-courses", title: "My courses", description: "Your courses are unlocked. Open a course to go straight to your lessons.", courses: courses.filter((course) => approved.has(course.slug)) },
-    { id: "intake-courses", title: "Applications and upcoming courses", description: "Apply for filmmaking or save your place on an upcoming course.", courses: courses.filter((course) => !approved.has(course.slug)) },
+    { id: "intake-courses", title: "Other courses", description: "Apply to unlock filmmaking, or join the waitlist for an October course.", courses: courses.filter((course) => !approved.has(course.slug)) },
   ];
   return <>{groups.filter((group) => group.courses.length).map((group) => (
     <section key={group.id} aria-labelledby={`${group.id}-title`} className="mt-10">
@@ -37,6 +38,7 @@ export async function IntakeCards({ exclude = [] }: { exclude?: string[] }) {
                 aria-hidden="true"
               >
                 <CoursePhoto course={course} sizes="64px" />
+                {!approved.has(course.slug) && <span className="absolute inset-0 flex items-center justify-center bg-ink/50"><LockKeyIcon size={25} weight="duotone" className="text-white" /></span>}
               </Link>
               <div>
                 <Link

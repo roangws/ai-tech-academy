@@ -77,7 +77,7 @@ export function CourseInstructors({ people }: { people: Person[] }) {
               card renders 276 and the head 257 rather than 272, which is the
               small end of a range the card already spans on a phone.
             */
-            className="flex w-[70vw] max-w-[292px] shrink-0 snap-start sm:w-[calc(50%-8px)]"
+            className="flex w-[70vw] max-w-[292px] shrink-0 snap-start sm:w-full"
           >
             <InstructorCard person={person} />
           </li>

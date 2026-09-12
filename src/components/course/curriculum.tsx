@@ -108,7 +108,7 @@ export function Curriculum({
               they run three to six items in a mix that moves with the subject.
               "guided labs throughout" is the claim the data supports. */}
           <p className="t-meta mt-1.5 text-ink-muted">
-            {modules.length} modules · {total} lessons · guided labs throughout
+            {modules.length} modules · {total} lessons
           </p>
         </div>
 

@@ -800,7 +800,7 @@ export function CourseCover({
   return (
     <div
       className={`group/cover relative isolate overflow-hidden ${
-        fill ? "h-full min-h-[260px]" : "aspect-[16/6] sm:aspect-video"
+        fill ? "h-full min-h-[260px]" : "aspect-video"
       }`}
       style={{ background: ground }}
     >
@@ -809,8 +809,7 @@ export function CourseCover({
       {href ? (
         <Link
           href={href}
-          aria-hidden="true"
-          tabIndex={-1}
+          aria-label={title}
           title={title}
           className="absolute inset-0 z-20"
         />
@@ -850,6 +849,10 @@ export function CourseCover({
           />
         </>
       ) : null}
+      {title && <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end bg-linear-to-t from-black/90 via-black/20 to-transparent p-5">
+        <span aria-hidden="true" className="mb-3 flex size-9 items-center justify-center rounded-lg border border-white/40 bg-white/15 text-xl font-medium text-white">{title[0]}</span>
+        <h3 className="t-card-title text-white">{title}</h3>
+      </div>}
     </div>
   );
 }

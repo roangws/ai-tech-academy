@@ -33,7 +33,7 @@ export function PortalHeader({ viewer, theme, judgeCount = 0 }: {
 }) {
   const links: { href: string; label: string; count?: number }[] = viewer
     ? [
-        { href: "/dashboard", label: "My learning" },
+        { href: "/dashboard", label: "My courses" },
         { href: "/dashboard/certifications", label: "Certifications" },
         ...(viewer.is("instructor") || viewer.is("admin")
           ? [{ href: "/instructor", label: "Instructor" }] : []),

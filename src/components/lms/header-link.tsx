@@ -19,7 +19,7 @@ export function HeaderLink({
 }) {
   const pathname = usePathname() ?? "";
 
-  // Learning pages belong to My learning, or Courses for public previews.
+  // Learning pages belong to My courses, or Courses for public previews.
   const owns = (candidate: string) =>
     candidate === "/courses" || candidate === "/dashboard"
       ? pathname === candidate ||

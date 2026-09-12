@@ -281,7 +281,7 @@ export function CourseHero({ course, lead }: { course: Course; lead?: Person }) 
                 </span>
               ) : null}
 
-              <FactsLine tone="dark" items={["Updated August 2026", "English", "Self-paced"]} />
+              <FactsLine tone="dark" items={[`Updated ${new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "America/Los_Angeles" }).format(new Date())}`, "English", "Self-paced"]} />
             </div>
           </div>
         </div>

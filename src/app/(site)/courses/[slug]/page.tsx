@@ -301,7 +301,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
             <aside
               aria-label="Enrol in this course"
-              className="lg:col-start-2 lg:row-start-1 lg:row-span-5 lg:-mt-[208px]"
+              className="lg:col-start-2 lg:row-start-1 lg:row-span-4 lg:-mt-[208px]"
             >
               <EnrollRail course={course} />
             </aside>
@@ -313,8 +313,9 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <CourseTabs />
             </div>
 
-            <div className="lg:col-start-1 lg:row-start-3">
+            <div className={`grid items-start gap-6 lg:col-start-1 lg:row-start-3 ${teaching.length ? "md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]" : ""}`}>
               <WhatYouLearn course={course} />
+              <div id="instructors" className="min-w-0 scroll-mt-[84px]"><CourseInstructors people={teaching} /></div>
             </div>
 
             {/*
@@ -338,11 +339,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               numbers move together: the rail sticks inside the aside's grid area,
               and an area that stops short of the last row stops the stick early.
             */}
-            <div id="instructors" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
-              <CourseInstructors people={teaching} />
-            </div>
-
-            <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-5">
+            <div id="curriculum" className="scroll-mt-[84px] lg:col-start-1 lg:row-start-4">
               {/* The preview goes INSIDE module 01's panel rather than under the
                   whole accordion — curriculum.tsx has the note on why, and on
                   why it has to arrive as a rendered element rather than as an

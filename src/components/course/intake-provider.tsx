@@ -217,7 +217,7 @@ export function IntakeProvider({
                   className="mt-3 text-2xl font-medium tracking-tight"
                 >
                   {course.slug === OPEN_COURSE_SLUG
-                    ? "Sign in to apply"
+                    ? "Your filmmaking course starts here"
                     : "Sign in to join the waitlist"}
                 </h2>
                 <p
@@ -225,24 +225,24 @@ export function IntakeProvider({
                   className="t-body mt-3 text-ink-secondary"
                 >
                   {course.slug === OPEN_COURSE_SLUG
-                    ? "After signing in, answer a few questions and add your referral code if you have one."
+                    ? "Create your free account to apply and keep all your lessons in one place. Have a referral code? Use it in the next step to unlock the course."
                     : `The course starts in ${WAITLIST_START}. Sign in or create an account, then confirm your place on the waitlist.`}
                 </p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <LiquidButton asChild variant="accent" className="t-button">
                   <Link
                     onClick={close}
-                    href={`/sign-in?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
+                    href={`/sign-up?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
                   >
-                    Sign in
+                    Create account
                   </Link>
                   </LiquidButton>
                   <LiquidButton asChild className="t-button">
                   <Link
                     onClick={close}
-                    href={`/sign-up?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
+                    href={`/sign-in?next=${encodeURIComponent(courseIntakeHref(course.slug))}`}
                   >
-                    Create account
+                    Sign in
                   </Link>
                   </LiquidButton>
                 </div>
@@ -414,9 +414,9 @@ export function IntakeDialog({
         {success === "left"
           ? "Your place has been removed. You can join again at any time."
           : success === "approved" || course.status === "approved"
-            ? "Your course is unlocked. Open it now or find it in My learning."
+            ? "Your course is unlocked. Open it now or find it in My courses."
             : success === "applied" || (course.status === "applied" && !editing)
-              ? "Your application is saved in My learning. Have a referral code? Add it below to start now."
+              ? "Your application is saved in My courses. Have a referral code? Add it below to start now."
               : filmmaking
                 ? "Answer all four questions. Have a referral code? Enter it below and click Validate to start the course without waiting for review."
                 : course.status === "waitlisted" || success === "joined"
@@ -480,7 +480,7 @@ export function IntakeDialog({
           )}
           <LiquidButton asChild className="t-button">
           <Link href="/dashboard" onClick={close}>
-            My learning
+            My courses
           </Link>
           </LiquidButton>
         </div>
@@ -657,7 +657,9 @@ export function IntakeButton({
   onClick?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { snapshot, open } = useContext(Context);
+  const pathname = usePathname();
   const status = snapshot?.courses.find((c) => c.slug === slug)?.status;
+  const homeApplication = pathname === "/" && slug === OPEN_COURSE_SLUG && !status;
   const label =
     status === "waitlisted"
       ? "You're on the waitlist"
@@ -675,13 +677,14 @@ export function IntakeButton({
     <LiquidButton asChild variant={variant} size={size} className={`t-button ${showDate ? "h-auto py-2.5" : ""} ${className}`}>
     <Link
       href={
-        status === "approved" ? courseStartHref(slug) : courseIntakeHref(slug)
+        status === "approved" ? courseStartHref(slug) : homeApplication ? `/courses/${slug}` : courseIntakeHref(slug)
       }
       onClick={(event) => {
         onClick?.(event);
         if (
           event.defaultPrevented ||
           status === "approved" ||
+          homeApplication ||
           event.metaKey ||
           event.ctrlKey ||
           event.shiftKey ||

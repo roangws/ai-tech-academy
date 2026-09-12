@@ -30,11 +30,11 @@ export function HeaderIdentity({ area, signedIn = false }: { area: "website" | "
         menu.current.querySelector("summary")?.focus();
       }
     }}>
-      <summary aria-label={`Current area: ${area === "website" ? "Website" : "My learning"}. Switch area`} className="flex min-h-11 w-[94px] cursor-pointer list-none items-center justify-between gap-1.5 text-[13px] text-ink-secondary [&::-webkit-details-marker]:hidden">
-        {area === "website" ? "Website" : "My learning"}<CaretDownIcon size={12} aria-hidden="true" />
+      <summary aria-label={`Current area: ${area === "website" ? "Website" : "My courses"}. Switch area`} className="flex min-h-11 w-[94px] cursor-pointer list-none items-center justify-between gap-1.5 text-[13px] text-ink-secondary [&::-webkit-details-marker]:hidden">
+        {area === "website" ? "Website" : "My courses"}<CaretDownIcon size={12} aria-hidden="true" />
       </summary>
       <nav aria-label="Switch area" className="absolute left-0 top-full z-50 mt-1 w-44 rounded-[var(--radius-control)] border border-line bg-surface p-1 shadow-e2">
-        {([{ key: "website", href: "/", label: "Website" }, { key: "learning", href: "/dashboard", label: "My learning" }] as const).map((item) =>
+        {([{ key: "website", href: "/", label: "Website" }, { key: "learning", href: "/dashboard", label: "My courses" }] as const).map((item) =>
           <Link key={item.key} href={item.href} aria-current={area === item.key ? "true" : undefined} onClick={() => { if (menu.current) menu.current.open = false; }} className="flex min-h-11 items-center justify-between rounded-[var(--radius-control)] px-3 text-[13px] text-ink no-underline hover:bg-surface-subtle">
             {item.label}{area === item.key ? <CheckIcon size={14} aria-hidden="true" /> : null}
           </Link>)}

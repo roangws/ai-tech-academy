@@ -405,7 +405,7 @@ export const nav: readonly NavItem[] = [
   */
   { label: "Courses", href: "/courses" },
   { label: "Method", href: "/#method" },
-  { label: "Outcomes", href: "/#outcomes" },
+  { label: "World Models", href: "/#outcomes" },
   /*
     A ROUTE FROM 8 AUG, when the roster got its own page, and it moves for the
     same reason the board item did: the homepage band is one screen of five
@@ -1263,7 +1263,7 @@ export const outcomes = {
       { measure: "Manual steps", before: "23", after: "4", n: { before: 23, after: 4 } },
       { measure: "People involved", before: "3", after: "1", n: { before: 3, after: 1 } },
     ],
-    status: "Deployment verified",
+    status: "Certification",
     footnote: "One completed Course A implementation, measured by the learner.",
   },
   /*
@@ -1623,7 +1623,7 @@ export const personCopy: readonly ({ linkedin: string } & PersonCopy)[] = [
   job title, so they run as given until somebody confirms them.
 */
 export const instructors = {
-  headline: "Learn from people who run these systems in production",
+  headline: "Meet your instructors",
   /*
     One line, and it is a summary of the roster rather than an explanation of
     how the roster is organised.
@@ -1650,7 +1650,7 @@ export const instructors = {
     about specific people that none of them would recognise.
   */
   intro:
-    "Working practitioners across developer experience, AI tooling, higher education, and film.",
+    "Learn with specialists in AI, education, and film.",
   /*
     THE ROSTER PAGE, added 8 Aug when /instructors got its own route.
 
@@ -1991,7 +1991,7 @@ export type Seat = {
 export const board = {
   headline: "Practitioners judge the curriculum and the events",
   intro:
-    "Every judge on this board runs these systems in production. They read the courses each term, the lessons, the labs and the outcome sheet a learner leaves with, and they sit on the panel that judges the events where learners present the workflows they deployed.",
+    "Our judges review the curriculum and assess the projects learners present.",
   /*
     A second, shorter version, for the three metadata slots only.
 
@@ -2540,7 +2540,7 @@ export const footer = {
            the two sections that merged, and a sitemap listing one destination
            twice under two names is the same misdirection as a nav doing it. */
         { label: "The method", href: "/#method" },
-        { label: "Outcomes and evidence", href: "/#outcomes" },
+        { label: "World Models framework", href: "/#outcomes" },
         { label: "Common questions", href: "/#faq" },
       ],
     },
@@ -2792,7 +2792,7 @@ export const legal = {
   privacy: {
     title: "Privacy Policy",
     intro:
-      "This policy says what we collect, why, and what we do with it. The short version: almost nothing, because there is almost nothing here that collects.",
+      "This policy explains the information collected through accounts, course applications, learning activity, and training requests.",
     sections: [
       {
         heading: "The short version",
@@ -2816,7 +2816,8 @@ export const legal = {
       {
         heading: "What we collect",
         body: [
-          "If you create an account we collect the name and email address you give us, and the work you save while going through a course: your baseline, your notes, and the artifacts each module asks you to produce. If you tell us your company, your role, or how you heard about us, we collect that too. Those three are optional, and the form says so.",
+          "Account information includes your name, email, profile details, and saved course work and progress. Course applications also collect your company, job title, current projects, and learning goals. Required and optional fields are identified on each form.",
+          "Team-training requests collect your name, work email, company, team size, selected courses, and any goals or dates you provide. Academy administrators can read these requests to arrange training. You do not need an account to submit one.",
           "Our hosting provider keeps ordinary server logs, which include IP addresses, for a short period and for the purpose of running and securing the service. We do not use them to build a picture of individual visitors.",
         ],
       },

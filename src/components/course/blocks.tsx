@@ -44,7 +44,7 @@ export function WhatYouLearn({ course }: { course: Course }) {
         <h2 id="learn-heading" className="t-h3 text-ink">
           What you will learn
         </h2>
-        <CheckList items={course.whatLearn} columns={2} className="mt-4" />
+        <CheckList items={course.whatLearn} columns={1} className="mt-4" />
       </div>
 
       <ul className="mt-4 flex flex-wrap gap-1.5">

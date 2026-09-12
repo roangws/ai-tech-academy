@@ -602,7 +602,7 @@ export function SiteHeader({
           {viewer ? (
             <>
               <div className="hidden sm:block">
-                <ButtonLink href="/dashboard" size="md" className="max-xl:px-4">My learning</ButtonLink>
+                <ButtonLink href="/dashboard" size="md" className="max-xl:px-4">My courses</ButtonLink>
               </div>
               <AccountMenu name={viewer.name} email={viewer.email} avatarUrl={viewer.avatarUrl} signOut={signOut} />
             </>
@@ -698,7 +698,7 @@ export function SiteHeader({
               {viewer ? (
                 <>
                   <ButtonLink href="/dashboard" onClick={closeMenu}>
-                    My learning
+                    My courses
                   </ButtonLink>
                   <ButtonLink href="/account" tone="secondary" onClick={closeMenu}>
                     Your account
