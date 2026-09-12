@@ -24,10 +24,11 @@ export function CourseCard({ course, eager = false, featured = false }: { course
     <div className="flex min-w-0 flex-1 flex-col p-5">
       <p className="t-body-sm text-ink-secondary">{course.summary}</p>
       <div className="mt-4"><FactsLine items={[moduleCount(course), course.duration]} /></div>
+      {featured && <p className="t-meta mt-3 text-ink-secondary"><span className="font-medium text-ink">For </span>{course.audience}</p>}
       <div className="my-4 border-t border-line pt-4">
         <p className="t-field text-ink-muted">{featured ? "Inside the course" : "What you’ll learn"}</p>
         <ul className="mt-2 space-y-2">
-          {(featured ? course.curriculum.slice(0, 3).map((m) => m.name) : course.whatLearn.slice(0, 2)).map((item) => <li key={item} className="t-body-sm flex items-start gap-2 text-ink-secondary"><CheckIcon aria-hidden="true" size={15} className="mt-1 shrink-0 text-accent" /><span>{item}</span></li>)}
+          {(featured ? course.curriculum.slice(0, 5).map((m) => m.name) : course.whatLearn.slice(0, 2)).map((item) => <li key={item} className="t-body-sm flex items-start gap-2 text-ink-secondary"><CheckIcon aria-hidden="true" size={15} className="mt-1 shrink-0 text-accent" /><span>{item}</span></li>)}
         </ul>
         {featured && <p className="t-meta mt-2 text-ink-muted">Explore all {course.curriculum.length} modules on the course page.</p>}
       </div>
