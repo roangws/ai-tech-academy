@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { HeaderLink } from "@/components/lms/header-link";
 import {
   CalendarCheckIcon,
   ChartLineUpIcon,
@@ -69,18 +69,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <Container className="py-8 md:py-10">
       <div className="grid items-start gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">
-        <nav aria-label="Admin sections" className="lg:sticky lg:top-[88px]">
+        <nav aria-label="Admin sections" className="lg:sticky lg:top-[156px] lg:max-h-[calc(100dvh-180px)] lg:overflow-y-auto">
           <p className="t-label px-2.5 text-ink-muted">Administration</p>
           <ul className="mt-2 flex flex-wrap gap-1 lg:flex-col">
             {SECTIONS.map(({ href, label, Icon }) => (
               <li key={href}>
-                <Link
+                <HeaderLink
                   href={href}
-                  className="t-body-sm flex min-h-[44px] items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 text-ink-secondary no-underline transition-colors hover:bg-surface-subtle hover:text-ink"
+                  siblings={SECTIONS.map((section) => section.href)}
+                  className="w-full gap-2.5"
                 >
                   <Icon size={16} aria-hidden="true" />
                   {label}
-                </Link>
+                </HeaderLink>
               </li>
             ))}
           </ul>

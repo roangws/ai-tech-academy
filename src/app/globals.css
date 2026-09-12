@@ -511,6 +511,16 @@
     scroll-padding-top: 84px;
   }
 
+  html:has(.portal-shell) {
+    scroll-padding-top: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    html:has(.portal-shell) {
+      scroll-padding-top: 156px;
+    }
+  }
+
   body {
     background: var(--surface);
     color: var(--ink);

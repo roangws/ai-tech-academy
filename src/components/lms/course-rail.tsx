@@ -121,9 +121,9 @@ export function CourseRail({
   );
 
   return (
-    <nav aria-label="Lessons in this module" className="lg:sticky lg:top-[88px]">
+    <nav aria-label="Lessons in this module" className="lg:sticky lg:top-[156px]">
       {/* Desktop: always open, its own scroll region. */}
-      <div className="hidden rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-4 lg:block lg:max-h-[calc(100dvh-120px)] lg:overflow-y-auto">
+      <div className="hidden rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-4 lg:block lg:max-h-[calc(100dvh-180px)] lg:overflow-y-auto">
         <Link
           href={`/learn/${courseSlug}`}
           className="t-meta inline-flex items-center gap-1.5 text-ink-muted no-underline hover:text-ink"
