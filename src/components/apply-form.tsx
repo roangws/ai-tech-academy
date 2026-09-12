@@ -332,6 +332,10 @@ export function ApplyForm({
           disabled={pending}
           className="t-button disabled:opacity-60"
           onClick={(e) => {
+            /* Required answers belong to Submit, not Save draft. Do not show
+               the irreversible-action prompt when native validation is about
+               to keep the form on this page. */
+            if (e.currentTarget.form && !e.currentTarget.form.checkValidity()) return;
             if (!confirm("Send this to the advisory board? You cannot edit it afterwards.")) {
               e.preventDefault();
             }
@@ -344,6 +348,7 @@ export function ApplyForm({
           type="submit"
           name="intent"
           value="save"
+          formNoValidate
           disabled={pending}
           className="t-button h-11 rounded-[var(--radius-control)] border border-line-control px-5 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink disabled:opacity-60"
         >

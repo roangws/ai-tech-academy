@@ -76,7 +76,7 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
   /* An account that exists but has never had its confirmation link clicked
      fails here, not at sign-up. Same screen either way. */
   if (state?.checkInbox) {
-    return <CheckInbox email={state.checkInbox} />;
+    return <CheckInbox email={state.checkInbox} next={next} />;
   }
 
   return (
@@ -131,10 +131,12 @@ export function SignInForm({ next = "", confirmFailed = false }: { next?: string
         </div>
 
         {/*
-          Still a sentence rather than a link. Accounts are live now, but
-          password recovery is not: it needs an email that actually sends, and
-          Supabase's built-in sender is rate-limited to a handful of messages an
-          hour. [FILL: email delivery.]
+          Still a sentence rather than a link, and now only because the screens
+          are missing rather than the mail. SMTP went in on 10 Aug and a
+          recovery mail sends: `POST /recover` was run against this project and
+          GoTrue logged it completed, no error. What recovery still wants is a
+          form to ask from, a template, and somewhere for /auth/confirm to land
+          a `type=recovery` reader so they can set a new password.
 
           A self-link is worse than no link — it reads as a working escape hatch
           until a locked-out reader uses it — which is why the original

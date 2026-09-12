@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
 
@@ -50,8 +51,13 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, url.origin));
   } else if (tokenHash && type) {
+    /* `EmailOtpType` rather than a union written out here, which was missing
+       `magiclink` and would have widened again with every template added. The
+       cast is still a cast: `type` came off a query string and is whatever the
+       sender put there. verifyOtp rejects a value that does not match the
+       token, so a wrong one fails below rather than confirming anything. */
     const { error } = await supabase.auth.verifyOtp({
-      type: type as "signup" | "recovery" | "email_change" | "invite",
+      type: type as EmailOtpType,
       token_hash: tokenHash,
     });
     if (!error) return NextResponse.redirect(new URL(next, url.origin));

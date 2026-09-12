@@ -101,6 +101,12 @@ const nextConfig: NextConfig = {
   // The dev overlay badge sits on top of the closing CTA in review captures.
   devIndicators: false,
   experimental: {
+    serverActions: {
+      /* Portraits are capped at 2 MB in the application action. Multipart form
+         headers add a little overhead, so the transport must allow more than
+         the file limit or Next rejects valid applications before validation. */
+      bodySizeLimit: "3mb",
+    },
     /*
       The client components import icons from the `@phosphor-icons/react`
       barrel, which re-exports roughly 1,200 components. Server components use

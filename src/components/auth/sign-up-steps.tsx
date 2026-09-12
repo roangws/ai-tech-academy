@@ -209,7 +209,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
     second submission that can only fail with "already registered".
   */
   if (state?.checkInbox) {
-    return <CheckInbox email={state.checkInbox} />;
+    return <CheckInbox email={state.checkInbox} next={next} />;
   }
 
   return (

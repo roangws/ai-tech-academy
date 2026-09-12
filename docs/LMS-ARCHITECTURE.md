@@ -351,10 +351,19 @@ different jobs and are deliberately not merged.
 
 Real gaps, carried as placeholders rather than invented:
 
-- **[FILL: email delivery]** — Supabase's default SMTP is rate-limited to a
-  handful of messages an hour and is not for production. Confirmation email is
-  therefore **disabled** in this build (sign-up returns a live session
-  immediately). Turning it on needs a real SMTP provider.
+- ~~[FILL: email delivery]~~ **Answered 10 Aug. Custom SMTP, sending as
+  `academy@roanweigert.com`.** The hourly send limit went from 2 to 30 when the
+  credentials were saved, which is the change the GoTrue reloader logs and the
+  only externally visible proof the relay is real. Confirmation email is **on**
+  as of the same day, and the path was walked end to end: sign-up returned
+  `session: null`, the mail arrived in the inbox rather than spam, its link was
+  `academy.roanweigert.com/auth/confirm?next=%2Fdashboard&token_hash=…`, and
+  following it set the session cookie and rendered a signed-in /dashboard. The
+  message is `supabase/templates/confirm-signup.html`, which is the
+  welcome email and the confirmation in one, and its link stays on this domain
+  rather than bouncing through `gusexlvelgmgnecvytxf.supabase.co`. The template
+  lives in the dashboard for the deployed project and in `config.toml` for the
+  local stack, so the two have to be kept in step by hand.
 - **[FILL: legal entity]** — `content.ts:3109` still carries literal
   `[placeholder]` for entity name, address, jurisdiction and contact. The
   privacy policy already promises account deletion; that promise is unenforceable
@@ -374,7 +383,9 @@ Real gaps, carried as placeholders rather than invented:
 - **[FILL: event notification channel]** — events are modelled and issued now
   (`judge_events`), but the notification is in-app only: a badge on the Judge
   nav item and the card on `/judge`. A judge who does not open the console is
-  never told. Email needs the SMTP provider the first gap above is waiting on.
+  never told. SMTP exists now, so the blocker is a template and a send path
+  rather than a provider: GoTrue only sends its own auth mails, so anything the
+  judge console wants to send needs a route of its own.
 - ~~[FILL: completion record]~~ **Answered 12 Aug. A page, a print and a
   verifiable URL.** `components/lms/certificate.tsx` is the document, sized in
   millimetres at A4 landscape so what is on screen is what prints; the browser's

@@ -265,9 +265,9 @@ async function CourseGrid() {
 
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-      {published.map((course) => (
+      {published.map((course, index) => (
         <li key={course.id} className="flex">
-          <CourseCard course={course} />
+          <CourseCard course={course} eager={index === 0} />
         </li>
       ))}
     </ul>

@@ -270,6 +270,22 @@ export function startsOn(date: Date, timeZone?: string): string {
   });
 }
 
+/** The full name of the calendar month after the one containing `date`. */
+export function nextMonthName(date: Date, timeZone?: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    month: "numeric",
+    year: "numeric",
+    ...(timeZone ? { timeZone } : {}),
+  }).formatToParts(date);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month, 1)));
+}
+
 /*
   In document order, which is the only order this list can be in. The header
   underlines whichever section is on screen, so a nav whose items run in a
@@ -804,7 +820,7 @@ export type Course = {
   slug: string;
   badge: string;
   title: string;
-  /** The artifact, printed as the largest line on the cover. */
+  /** Legacy short artifact label retained with the catalogue record. */
   coverBuild: string;
   /** Ground token from globals.css, one hue per path. */
   ground: string;
@@ -820,9 +836,7 @@ export type Course = {
    * illustration and these get photography.
    *
    * `alt` documents what the frame shows and is deliberately not rendered. The
-   * cover states its badge, its audience and its artifact as real text on top
-   * of the image, so the photograph underneath is decorative and a screen
-   * reader announcing it would only repeat the three lines it already read.
+   * course title directly below the decorative image names its destination.
    */
   cover?: Img;
   level: string;
@@ -3395,7 +3409,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       {
         n: "02",
         title: "Fill in the form",
-        body: "Your portrait, your profile links, the course you would record, and the evidence behind it. Every field saves as you go, so you can stop halfway and finish it another day.",
+        body: "Your portrait, your profile links, the course you would record, and the evidence behind it. Save a private draft at any point, then finish it another day.",
       },
       {
         n: "03",
@@ -3447,7 +3461,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
       {
         n: "02",
         title: "Fill in the form",
-        body: "Your portrait, your profile links, the discipline you would read, and the evidence behind it. Every field saves as you go, so you can stop halfway and finish it another day.",
+        body: "Your portrait, your profile links, the discipline you would read, and the evidence behind it. Save a private draft at any point, then finish it another day.",
       },
       {
         n: "03",

@@ -166,7 +166,7 @@ export default async function ReviewJudgeBoardPage() {
           it is invisible in code review because a wrong `sizes` never errors.
         */}
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {members.map((m) => (
+          {members.map((m, index) => (
             <li key={m.id} className="aspect-[3/4]">
               {/* `id` is passed here and nowhere else: this page is the one the
                   homepage teaser deep-links into, so this is the only render
@@ -175,6 +175,7 @@ export default async function ReviewJudgeBoardPage() {
               <BoardCard
                 member={m}
                 id={m.id}
+                priority={index === 0}
                 sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 400px"
               />
             </li>

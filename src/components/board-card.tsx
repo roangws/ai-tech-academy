@@ -71,6 +71,7 @@ export function BoardCard({
   href,
   id,
   linkTabIndex,
+  priority = false,
   className = "",
 }: {
   member: Seat;
@@ -107,6 +108,8 @@ export function BoardCard({
    * is the half of `inert` that is still wanted.
    */
   linkTabIndex?: number;
+  /** Preload only when this card is the page's likely largest visible image. */
+  priority?: boolean;
   className?: string;
 }) {
   return (
@@ -119,6 +122,7 @@ export function BoardCard({
         width={966}
         height={1200}
         sizes={sizes}
+        priority={priority}
         className="transition-transform duration-500 group-hover/card:scale-[1.04]"
       />
 

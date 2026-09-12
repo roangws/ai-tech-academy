@@ -25,7 +25,7 @@ import { EnvelopeSimpleIcon } from "@phosphor-icons/react/dist/ssr";
  * most common reason a confirmation never arrives, and it is invisible unless
  * the screen that is waiting for it says which address it is waiting on.
  */
-export function CheckInbox({ email }: { email: string }) {
+export function CheckInbox({ email, next = "" }: { email: string; next?: string }) {
   return (
     <div className="max-w-[440px]">
       <span className="grid size-11 place-items-center rounded-full bg-accent-tint text-accent">
@@ -45,7 +45,10 @@ export function CheckInbox({ email }: { email: string }) {
         </li>
         <li className="t-body-sm text-ink-secondary">
           Wrong address?{" "}
-          <Link href="/sign-up" className="text-accent no-underline hover:underline">
+          <Link
+            href={next ? `/sign-up?next=${encodeURIComponent(next)}` : "/sign-up"}
+            className="text-accent no-underline hover:underline"
+          >
             Start again
           </Link>{" "}
           with the right one.

@@ -15,9 +15,11 @@ export const metadata: Metadata = {
  *
  * Deliberately small. This is not a settings hub: an account on this site holds
  * a name, an optional employer, and a picture, and inventing preferences nobody
- * asked for would be inventing features. Email is shown and not editable —
- * changing it means re-verifying an address, which needs the mail path that is
- * still [FILL: email delivery].
+ * asked for would be inventing features. Email is shown and not editable.
+ * Changing it means confirming on both the old address and the new one, and
+ * while the mail path exists now, the second confirmation template and the
+ * screen that explains a half-finished change do not. Editable is a feature,
+ * not a field.
  */
 export default async function AccountPage() {
   const viewer = await requireUser("/account");

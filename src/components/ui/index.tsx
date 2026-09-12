@@ -638,59 +638,16 @@ export function PosterTitleCard({ title }: { title: string }) {
   );
 }
 
-/**
- * Course cover, drawn in the DOM.
- *
- * Every course used to share one flat placeholder tile, so roughly 40% of the
- * catalog carried zero information and five cards looked interchangeable. The
- * cover now states the deliverable over the course's own photograph, tinted with
- * one hue per course. The oversized letter is a watermark cut from that ground
- * rather than an added colour.
- */
-/**
- * ------------------------------------------- WHAT THE COVER NO LONGER CARRIES
- *
- * The `[COURSE B]` chip and the audience line under it ("Editors, producers,
- * post supervisors") were removed on 8 Aug, on Roan's note to make the cover
- * cleaner. Three things followed from it and all three are improvements the
- * cover could not have had while they were there:
- *
- *   - The top gradient plate went with them. It was 112px of ink from 0.78,
- *     and it existed for one reason: to hold 13px white type up to AA over an
- *     unpredictable frame. The note it replaced records that the whole brief
- *     for this set of photographs was that the people in them read as human and
- *     warm, and that the plate was as much treatment as the frames could take
- *     and still be photographs. With no type in the top half there is nothing to
- *     make legible, so the plate is pure loss, and every one of these faces is
- *     now uncovered.
- *
- *   - The two-line reservations went too. `min-h-[36px]` on the audience line
- *     existed so four covers in a row finished level when four of five wrapped
- *     to two lines and one did not. One block of type cannot disagree with
- *     itself, so the problem is gone rather than solved.
- *
- *   - Every cover is now bounded by its ratio at every width. The type layer
- *     resolves to about 99px against 108 at 16:6 on the narrowest card and 125
- *     at 16:9 four-across, so the spacer always wins. That is the case the grid
- *     arrangement below was built to survive; it stays as the safety net, but
- *     nothing currently relies on it.
- *
- * `letter` stays and is still derived from the badge. It is a watermark at 13%
- * over a photograph — texture, not a label — and it is the only thing left that
- * distinguishes two covers whose photographs are similar.
- */
+/** A text-free course photograph with the course colour used as a light wash. */
 export function CourseCover({
   ground,
-  letter,
-  build,
   image,
   fill = false,
+  eager = false,
   href,
   title,
 }: {
   ground: string;
-  letter: string;
-  build: string;
   /**
    * Where the picture goes when it is pressed.
    *
@@ -727,73 +684,18 @@ export function CourseCover({
    * decided by an ordinary card next to it.
    */
   fill?: boolean;
+  /** Load immediately when this is the first catalog image above the fold. */
+  eager?: boolean;
 }) {
   return (
-    /*
-      Bounded by a ratio unless something else is doing the bounding, and that
-      is the point: letting a cover flex inside a card that was itself
-      stretching pooled every spare pixel into one field of flat colour, which
-      is how this section once produced a 421px cover. `fill` is not that. It is
-      only used where the height is already set by a sibling in the same grid
-      row, so the cover matches a number rather than inventing one.
-
-      16:6 below sm, 16:9 above it. Five covers at 16:9 on a 390px screen is
-      1,005px of photograph in one section, and the cover only needs the height
-      its one type block occupies: "You build" and a two-line artifact is 67px
-      inside 32px of padding, so 134 has room to spare and 201 was spending 67px
-      per card on empty ground.
-
-      ---------------------------- THE RATIO IS A FLOOR NOW, CHANGED 7 AUG
-
-      It was `aspect-video` straight on this element, which is a height, not a
-      minimum: when the type inside needed more than the ratio granted, the
-      overflow was silently clipped by the `overflow-hidden` two lines down. The
-      breakpoint that broke was lg on the course page, where the cross-sell runs
-      four cards across at 222px. 16:9 gives that 125px; the block then was a
-      chip, a two-line audience line, "You build" and a two-line artifact, which
-      need 150. The bottom 25 were cut, which put the shear straight through the
-      artifact line and is the clipped card in Roan's capture. `aspect-ratio`
-      does not participate in automatic minimum sizing, so nothing anywhere
-      reported it.
-
-      A grid with one cell and two things in it fixes that with no measuring. The
-      spacer carries the ratio and the content sits on top of it in the same cell,
-      so the row resolves to whichever is taller: the ratio when the type fits,
-      the type when it does not.
-
-      NOTHING CURRENTLY MAKES THE TYPE WIN, and that changed on 8 Aug when the
-      chip and the audience line came off the cover. The block is about 99px now
-      against 108 at the narrowest 16:6 and 125 at four-across 16:9, so the
-      spacer sets the height at every width. This arrangement stays as the safety
-      net rather than as live machinery: it is what makes the failure a taller
-      cover instead of a silent crop, and the artifact line keeps its two-line
-      reservation so a row stays level if the type ever does win again.
-
-      Not `min-h-[125px]` and friends. The ratio has to follow the card's width
-      and the card's width follows five breakpoints and three different grids.
-
-      `grid-cols-1` is belt and braces, and the note here used to claim it was
-      load-bearing on the grounds that an `auto` track's max-content maximum is not
-      clamped by the container. Tested rather than asserted: forcing
-      `grid-template-columns: auto` on every cover at 1024, 1152 and 1280 returns
-      byte-identical geometry on both pages. An auto track in a definite-width
-      container does not grow past the free space. The explicit `minmax(0, 1fr)`
-      stays because it states the intent, not because anything depends on it.
-
-      `fill` keeps its old behaviour and needs no spacer: there the height is
-      already set by a sibling card in the same grid row.
-    */
     <div
-      className={`group/cover relative isolate grid grid-cols-1 overflow-hidden ${
-        fill ? "h-full min-h-[260px]" : ""
+      className={`group/cover relative isolate overflow-hidden ${
+        fill ? "h-full min-h-[260px]" : "aspect-[16/6] sm:aspect-video"
       }`}
       style={{ background: ground }}
     >
-      {/* Last in paint order would be tidier and is wrong: the treatment layers
-          below are `absolute` siblings, so a link declared after them would sit
-          on top of the type as well as the photograph. It is declared here with
-          an explicit `z-20` instead, which is inside this element's own
-          `isolate` and so cannot reach anything outside the cover. */}
+      {/* The link sits above the photograph and its colour wash, within this
+          element's isolated stacking context. */}
       {href ? (
         <Link
           href={href}
@@ -803,27 +705,6 @@ export function CourseCover({
           className="absolute inset-0 z-20"
         />
       ) : null}
-      {/*
-        The photograph, and three layers of treatment over it.
-
-        The covers were flat hue with a watermark letter. The path's own hue
-        stays as a wash across the whole frame, which is what keeps five covers
-        telling themselves apart at a glance, and ink comes up from the bottom
-        because the "You build" block sits there and a photograph cannot be
-        trusted to be dark where type needs it.
-
-        There were three layers and there are two. The third was a plate across
-        the top, for the chip and the audience line, and it went when they did:
-        with no type up there it was ink over a face for nothing.
-
-        The numbers matter more than the structure here. The first pass ran the
-        wash at 52% with the bottom gradient reaching 45% up the frame, and it
-        put every one of these people behind a grey-teal fog: on Course E the shop
-        owner was barely findable, and the brief for this whole set of images was
-        that they be human and warm. The wash is down to 26%, enough to tint and
-        not enough to bury, and the ink now falls away by 38% so it does its work
-        on the "You build" block and leaves the face above it alone.
-      */}
       {image ? (
         <>
           {/*
@@ -847,77 +728,18 @@ export function CourseCover({
             src={image.src}
             alt=""
             fill
+            loading={eager ? "eager" : "lazy"}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 420px"
             style={{ objectPosition: image.focus ?? "50% 50%" }}
-            className="absolute inset-0 -z-10 h-full w-full object-cover"
+            className="absolute inset-0 z-0 h-full w-full object-cover"
           />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10"
-            style={{ background: ground, opacity: 0.26 }}
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-[rgb(13_26_34/0.92)] via-[rgb(13_26_34/0.22)] via-38% to-transparent"
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{ background: ground, opacity: 0.16 }}
           />
         </>
       ) : null}
-
-      {/* Watermark cut from the ground itself, so the cover has texture without
-          adding a second colour. Over a photograph it drops to a trace: at the
-          flat-ground opacity it read as a compression artifact rather than as a
-          letter. */}
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute right-2 select-none font-semibold leading-none tracking-[-0.06em] ${
-          image ? "text-white/[0.13]" : fill ? "text-white/[0.07]" : "text-white/[0.10]"
-        } ${fill ? "-bottom-20 text-[280px]" : "-bottom-14 text-[190px]"}`}
-      >
-        {letter}
-      </span>
-
-      {/* The ratio, as a cell-mate rather than as this element's height. It draws
-          nothing and holds no content; the grid row takes the larger of it and the
-          type layer beside it. Omitted under `fill`, where the row height comes
-          from a sibling card. */}
-      {fill ? null : (
-        <span
-          aria-hidden="true"
-          className="col-start-1 row-start-1 aspect-[16/6] w-full sm:aspect-video"
-        />
-      )}
-
-      {/*
-        The type, in the same grid cell as the spacer and stretched to it.
-
-        `min-w-0` because a grid item's automatic minimum size is its content, and
-        without it a long unbroken word in a title would push the cover wider than
-        its card at the narrow end of the catalog.
-      */}
-      <div className="col-start-1 row-start-1 flex min-w-0 flex-col justify-end p-4">
-      {/* `pt-3` is what is left of a gap that used to separate this block from
-          the chip and audience line above it. It is harmless under `justify-end`
-          and kept because the block is not guaranteed to be the only child
-          forever. */}
-      <span className="relative pt-3">
-        <span className="t-field block text-white/75">You build</span>
-        {/* Two lines reserved: "Model serving on GPU cloud" fits one line in a
-            four-across card where the other four take two, so without it that
-            cover finished 25px short of the row. It costs nothing while the
-            covers are ratio-bound and is the one thing keeping a row level if
-            they stop being. `fill` needs no floor, since there the height is set
-            by a sibling card. */}
-        <span
-          className={`mt-1 block font-semibold tracking-[-0.3px] text-white ${
-            fill
-              ? "text-[22px] leading-[28px]"
-              : "min-h-[46px] text-[17px] leading-[23px] sm:min-h-[50px] sm:text-[19px] sm:leading-[25px]"
-          }`}
-        >
-          {build}
-        </span>
-      </span>
-      </div>
     </div>
   );
 }

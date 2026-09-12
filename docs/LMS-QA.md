@@ -19,11 +19,30 @@ else needs a human with a browser.
       present.
 - [ ] `npx tsc --noEmit` — **[verified]** clean.
 - [ ] `npm run lint` — **[verified]** clean.
-- [x] **Email confirmation is OFF** (`mailer_autoconfirm: true`, set 8 Aug 2026).
-      Sign-up returns a live session and lands on `/dashboard`; no mail is sent,
-      so the built-in SMTP rate limit no longer applies. The trade-off accepted:
-      nobody proves they own the address they type. Turning it back on needs real
-      SMTP first — the code handles both paths and `/auth/confirm` is built.
+- [x] **Email confirmation is ON** (`mailer_autoconfirm: false`, set 10 Aug
+      2026). Custom SMTP sends the confirmation from
+      `academy@roanweigert.com`; `/auth/confirm` verifies its token and preserves
+      the gated destination in `next`.
+
+## 0d. Onboarding and application-form audit, 12 Sep 2026
+
+The public-to-account-to-application path was checked across both application
+tracks, which share one form, plus account editing and course enrollment. The
+production build, typecheck and lint are the release gates for this pass.
+
+Four blockers found in the path were fixed:
+
+1. Signing in to an unconfirmed account promised a fresh confirmation email but
+   never requested one. The sign-in action now resends it and preserves `next`.
+2. A successful-looking duplicate signup response could claim an email had been
+   sent when GoTrue had deliberately returned a fake user with no identities.
+   That response now returns the existing-account instruction.
+3. Correcting a mistyped address from the inbox screen dropped the original
+   application destination. The sign-up link now carries `next` through.
+4. The application form's required fields also blocked **Save draft**, making a
+   half-finished application impossible to save. The draft submitter now skips
+   native required-field validation; final submission still enforces it in the
+   browser, the action and Postgres.
 
 ---
 
@@ -387,7 +406,11 @@ This is the site's central promise and it is stated on six surfaces.
 
 ## 8. Known gaps — not defects, decisions outstanding
 
-- **[FILL: email delivery]** — see the blocker above.
+- ~~[FILL: email delivery]~~ **Answered 10 Aug.** Custom SMTP sends as
+  `academy@roanweigert.com`. What this unblocks and nobody has built yet is
+  password recovery: the mail sends, the sign-in form still says "Password
+  recovery opens shortly" because there is no form to ask from and no screen to
+  set a new password on.
 - **[FILL: instructor→course mapping]** — nobody is assigned to anything.
   `content.ts` gives four of five instructors no course, by policy, so nothing is
   derivable. Until rows exist, `/instructor` is empty for everyone and

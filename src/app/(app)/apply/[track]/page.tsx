@@ -109,7 +109,7 @@ export default async function ApplyPage({
           <p className="t-body mt-6 max-w-[62ch] text-ink-secondary">
             {status === "draft"
               ? "Your draft is below, exactly as you left it. Nothing has been sent."
-              : "You are signed in, so this is step two. It saves as a draft every time, and nothing reaches the board until you submit it."}
+              : "You are signed in, so this is step two. Use Save draft at any point; nothing reaches the board until you submit it."}
           </p>
           <ApplyForm
             track={track}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
-  EnrollButton,
+  ButtonLink,
   CourseCover,
   Section,
   SectionHeader,
@@ -10,7 +10,8 @@ import {
   StatusChip,
   TextAction,
 } from "@/components/ui";
-import { cta } from "@/lib/content";
+import { NextMonth } from "@/components/next-month";
+import { cta, nextMonthName, REFERENCE_ZONE } from "@/lib/content";
 import { getCatalog, moduleCount, type Course } from "@/lib/catalog";
 
 /**
@@ -96,24 +97,6 @@ export async function Courses() {
   );
 }
 
-/**
- * The single character the cover watermarks itself with.
- *
- * It was `badge.replace("Path ", "")` at all three call sites, written when the
- * badges read "Path A" through "Path E". They were renamed to "Course A" in this
- * pass and the replace stopped matching, so it returned the string untouched and
- * every cover watermarked the words "Course B" at 190px instead of the letter B:
- * a 700px-wide grey slab lying across the photograph and clipped by both card
- * edges. It is the largest thing on those covers and nothing caught it, because
- * `replace` on a string that does not contain the needle is not an error.
- *
- * The last token rather than a second literal prefix, so the next rename is not a
- * third instance of this.
- */
-function coverLetter(badge: string) {
-  return badge.trim().split(/\s+/).pop() ?? badge;
-}
-
 function FeaturedCard({ course }: { course: Course }) {
   return (
     <article className="flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 md:flex-row">
@@ -128,8 +111,6 @@ function FeaturedCard({ course }: { course: Course }) {
         <span className="block md:hidden">
           <CourseCover
             ground={course.ground}
-            letter={coverLetter(course.badge)}
-            build={course.coverBuild}
             image={course.cover}
             href={`/courses/${course.slug}`}
             title={course.title}
@@ -138,8 +119,6 @@ function FeaturedCard({ course }: { course: Course }) {
         <span className="hidden h-full md:block">
           <CourseCover
             ground={course.ground}
-            letter={coverLetter(course.badge)}
-            build={course.coverBuild}
             image={course.cover}
             href={`/courses/${course.slug}`}
             title={course.title}
@@ -272,21 +251,8 @@ function FeaturedCard({ course }: { course: Course }) {
           remains here, where a gap above a button row is a margin rather than a
           hole.
         */}
-        {/*
-          The one filled control in this section, and it is here rather than
-          nowhere.
-
-          All five cards close with the same pair now, and five saturated blue
-          buttons in one band would break the accent lock in globals.css: one
-          filled primary per section, or the colour stops meaning "this is the
-          thing to press". Five glass ones keep the lock and give the section no
-          entry point at all, which is the failure the lead card exists to
-          prevent. So the lead card's is filled and the four beside it are glass,
-          which is the same hierarchy the cards already have in every other
-          respect.
-        */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
-          <EnrollButton withDate size="md" />
+          <CourseCardPrimary course={course} />
           <TextAction href={`/courses/${course.slug}`}>
             {cta.view}
             <ArrowRightIcon size={14} weight="bold" />
@@ -312,37 +278,16 @@ function FeaturedCard({ course }: { course: Course }) {
  * Module 01 stays, on its own, because it is the free one and that "Open" chip
  * is the offer.
  *
- * ---------------------------------- TWO REAL CONTROLS, at Roan's instruction
- *
- * All five paths are available, so all five cards now close with the same pair
- * the lead card closes with: enrol, and view the path. These four used to close
- * with one word of blue text reading "View path" that was `aria-hidden` and did
- * nothing, because the whole card was a link: the title carried
- * `before:absolute before:inset-0` and the arrow was a picture of an affordance
- * rather than one.
- *
- * That pattern and two real buttons cannot coexist. A stretched pseudo-element
- * covers its own card, so any control placed under it is unreachable, and
- * raising the controls back out with `relative z-10` leaves a card where two
- * thirds of the surface goes one place and two islands go two others. So the
- * stretched link is gone and the title is an ordinary link. The card loses its
- * click-anywhere, and gains the enrol control the section is for.
- *
- * `path.modules` moved with it. It was the left half of the old footer row, and
- * with the footer now holding a button and a link there is nowhere in it for a
- * bare "5 modules" to sit that does not read as a third action. It labels the
- * module preview instead, which is what the lead card does with the same fact
- * and reads better than it did: "5 modules", then the first one, then its Open
- * chip.
+ * The title and image remain links to the course. The footer carries its current
+ * intake state beside the separate "View course" action.
  */
-export function CourseCard({ course }: { course: Course }) {
+export function CourseCard({ course, eager = false }: { course: Course; eager?: boolean }) {
   return (
     <article className="group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-e2">
       <CourseCover
         ground={course.ground}
-        letter={coverLetter(course.badge)}
-        build={course.coverBuild}
         image={course.cover}
+        eager={eager}
         href={`/courses/${course.slug}`}
         title={course.title}
       />
@@ -376,9 +321,9 @@ export function CourseCard({ course }: { course: Course }) {
           as a specification sheet, and two of those blocks were saying things the
           card had already said:
 
-            - `Artifact` is printed on the cover, 200px above, as the largest line
-              on it: "You build / An ingest and rough-cut pipeline". The `dl` then
-              repeated it as "Artifact / Rough cut".
+            - `Artifact` repeated the short outcome already carried by the course
+              summary and title, so the extra specification row did not help a
+              reader compare courses.
             - `Runs on` and `Level` are the two facts a reader compares across
               cards, and at 74px per cell they truncated to "Your foot..." and
               "Intermedi...", which is worse than absent.
@@ -425,11 +370,8 @@ export function CourseCard({ course }: { course: Course }) {
           <FactsLine items={[moduleCount(course), course.duration]} />
         </div>
 
-        {/* The same two controls the lead card closes with, in the same order.
-            `gap-y-2.5` rather than the lead's `gap-y-3`, because at 292px these
-            two can wrap onto separate lines and the lead's never do. */}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2.5 border-t border-line pt-3.5">
-          <EnrollButton withDate tone="secondary" size="md" />
+          <CourseCardPrimary course={course} />
           <TextAction href={`/courses/${course.slug}`}>
             {cta.view}
             <ArrowRightIcon
@@ -441,5 +383,30 @@ export function CourseCard({ course }: { course: Course }) {
         </div>
       </div>
     </article>
+  );
+}
+
+const AVAILABLE_COURSE_SLUG = "hybrid-filmmaking";
+
+function CourseCardPrimary({ course }: { course: Course }) {
+  if (course.slug !== AVAILABLE_COURSE_SLUG) {
+    return (
+      <p className="t-button py-2.5 text-ink-secondary">
+        Waitlist starts in{" "}
+        <NextMonth initial={nextMonthName(new Date(), REFERENCE_ZONE)} />
+      </p>
+    );
+  }
+
+  const start = `/courses/${course.slug}/start`;
+
+  return (
+    <ButtonLink
+      href={`/sign-up?next=${encodeURIComponent(start)}`}
+      tone="primary"
+      size="md"
+    >
+      Apply to Join
+    </ButtonLink>
   );
 }

@@ -113,9 +113,11 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
     /*
       NOT a field error, and attaching it to `email` was actively misleading.
 
-      Supabase's built-in SMTP is rate-limited to a handful of messages an hour,
-      and once it is exhausted `signUp` fails with the raw string "email rate
-      limit exceeded". Observed in a real browser run against this project.
+      GoTrue fails `signUp` with the raw string "email rate limit exceeded" once
+      the hourly send limit is gone. Observed in a real browser run against this
+      project, back when the built-in sender capped it at 2 an hour. Custom SMTP
+      is configured now and the limit is 30, so this is far less likely and is
+      still reachable, which is why the branch stays.
 
       The first version returned that string against `field: "email"`, so the
       wizard's error latch sent the reader back to step 1 and highlighted an
@@ -123,7 +125,7 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
       it. Nothing they could type would fix it.
 
       No `field`, so it renders as a form-level notice on the last step and the
-      wizard stays put. [FILL: email delivery] — the actual fix is real SMTP.
+      wizard stays put.
     */
     if (/rate limit|too many requests/i.test(error.message)) {
       return {
@@ -137,15 +139,22 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
     return { error: error.message };
   }
 
+  /* With some confirmation settings GoTrue hides an existing confirmed
+     account behind a successful-looking response. A user with no identities is
+     the documented marker for that response. Without this branch the screen
+     claimed a confirmation mail had been sent when no mail existed. */
+  if (data.user && data.user.identities?.length === 0) {
+    return { error: "There is already an account on that address. Try signing in.", field: "email" };
+  }
+
   /*
     THE CASE THIS ORIGINALLY GOT WRONG.
 
-    `signUp` returns a live session only when email confirmation is off. This
-    project has it ON — `mailer_autoconfirm` is false — so it returns a user and
-    `session: null`, and the original code redirected anyway. The reader landed
-    on /dashboard, the proxy saw no session and bounced them to /sign-in, and
-    nothing anywhere said why. Signing in then failed with GoTrue's raw "Email
-    not confirmed". Every account created on this site was in that state.
+    `signUp` returns a live session only when email confirmation is off, and the
+    original code redirected as though it always got one. Whenever confirmation
+    was on the reader landed on /dashboard, the proxy saw no session and bounced
+    them to /sign-in, and nothing anywhere said why. Signing in then failed with
+    GoTrue's raw "Email not confirmed".
 
     So the branch is explicit and works either way: a live session redirects, no
     session renders the inbox screen. The link it sends lands on
@@ -153,10 +162,19 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
     the PKCE flow, so the `?code=` GoTrue sends back has to be exchanged by a
     route handler, and there was not one.
 
-    [FILL: email delivery] — Supabase's built-in sender is rate-limited to a
-    handful of messages an hour and is not for production. Real SMTP is needed
-    before launch, or confirmations turned off deliberately rather than by
-    accident.
+    WHICH BRANCH RUNS: the inbox screen. Confirmation was switched on in the
+    dashboard on 10 Aug and the whole path was walked end to end that day. A
+    sign-up against the deployed project returned `session: null` with
+    `confirmation_sent_at` set; the mail arrived from academy@roanweigert.com
+    carrying supabase/templates/confirm-signup.html; its link was
+    academy.roanweigert.com/auth/confirm with `next=%2Fdashboard` and a
+    `token_hash`; following it set the session cookie and landed on /dashboard,
+    which rendered signed in.
+
+    That `next` is the one set here, and it survived the round trip through the
+    inbox because the template appends to `{{ .RedirectTo }}` rather than
+    rebuilding the URL. Both branches stay live even so: which one runs is a
+    dashboard toggle, and a toggle is not a fact about this file.
   */
   if (!data.session) {
     return { checkInbox: email };
@@ -183,6 +201,7 @@ async function originOf(): Promise<string> {
 export async function signIn(_prev: AuthState, form: FormData): Promise<AuthState> {
   const email = str(form, "email");
   const password = (form.get("password") as string | null) ?? "";
+  const next = safeNext(form.get("next"));
 
   if (!email) return { error: "An email address, so you can sign back in.", field: "email" };
   if (!password) return { error: "A password.", field: "password" };
@@ -208,13 +227,28 @@ export async function signIn(_prev: AuthState, form: FormData): Promise<AuthStat
        telling somebody "wrong password" when it was correct sends them to a
        recovery flow that will not help. */
     if (/email not confirmed/i.test(error.message)) {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: {
+          emailRedirectTo: `${await originOf()}/auth/confirm?next=${encodeURIComponent(next)}`,
+        },
+      });
+      if (resendError) {
+        if (/rate limit|too many requests/i.test(resendError.message)) {
+          return {
+            error: "We could not send another confirmation email yet. Wait a minute, then sign in again.",
+          };
+        }
+        return { error: `We could not resend the confirmation email: ${resendError.message}` };
+      }
       return { checkInbox: email };
     }
     return { error: error.message, field: "password" };
   }
 
   revalidatePath("/dashboard");
-  redirect(safeNext(form.get("next")));
+  redirect(next);
 }
 
 export async function signOut(): Promise<void> {

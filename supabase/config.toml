@@ -223,7 +223,12 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+#
+# True, matching the deployed project, which was switched on 10 Aug. Left at the
+# stock false the local stack would hand out a live session at sign-up while the
+# deployed one does not, and the check-your-inbox branch in signUp would go
+# unexercised until production.
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -243,10 +248,40 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# All six auth emails, built by scripts/build-email-templates.mjs. Edit that
+# script rather than the HTML, run it, and the files below are rewritten.
+#
+# These blocks configure the LOCAL stack only. The deployed project reads its
+# templates from the dashboard, so each one also has to be pasted into
+# Authentication > Emails there. Two copies of one file is not good, and it is
+# what the dashboard gives us until templates are managed through the
+# Management API.
+
+# The welcome email, which is also the confirmation. See the script for why they
+# are one message and why no link goes through supabase.co.
+[auth.email.template.confirmation]
+subject = "Confirm your email and open your account"
+content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.invite]
+subject = "You have been invited to AI Tech Education Academy"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.magic_link]
+subject = "Your sign-in link"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email address"
+content_path = "./supabase/templates/change-email.html"
+
+[auth.email.template.recovery]
+subject = "Set a new password"
+content_path = "./supabase/templates/reset-password.html"
+
+[auth.email.template.reauthentication]
+subject = "Your confirmation code"
+content_path = "./supabase/templates/reauthentication.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
