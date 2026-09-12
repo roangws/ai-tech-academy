@@ -25,9 +25,13 @@ export const getIntakeSnapshot = cache(async (): Promise<IntakeSnapshot> => {
     : { data: [], error: null };
   if (result.error) throw new Error("Could not load your course status.");
   const rows = new Map((result.data ?? []).map((r) => [r.course_id, r]));
+  const profile = userId
+    ? await db.from("profiles").select("company,role_title").eq("id", userId).maybeSingle()
+    : null;
   return {
     signedIn: Boolean(userId),
     userId,
+    profile: { company: profile?.data?.company ?? "", jobTitle: profile?.data?.role_title ?? "" },
     courses: (courses ?? []).map((c) => {
       const row = rows.get(c.id);
       return {

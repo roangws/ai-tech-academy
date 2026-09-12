@@ -20,6 +20,7 @@ import {
 } from "@phosphor-icons/react";
 import {
   updateCourseIntake,
+  validateCourseReferral,
   type IntakeResult,
 } from "@/app/actions/course-intake";
 import {
@@ -251,6 +252,7 @@ export function IntakeProvider({
                 key={`${snapshot.userId}-${selected}`}
                 userId={snapshot.userId!}
                 course={course}
+                profile={snapshot.profile}
                 close={close}
                 onSaved={(status) => {
                   setSnapshot(
@@ -276,13 +278,17 @@ export function IntakeProvider({
 export function IntakeDialog({
   course,
   userId,
+  profile,
   close,
   onSaved,
+  validateReferral = validateCourseReferral,
 }: {
   course: IntakeCourse;
   userId: string;
+  profile?: IntakeSnapshot["profile"];
   close: () => void;
   onSaved: (status: IntakeCourse["status"]) => void;
+  validateReferral?: typeof validateCourseReferral;
 }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<IntakeResult | null>(null);
@@ -307,6 +313,31 @@ export function IntakeDialog({
       return {};
     }
   });
+  const [referralCode, setReferralCode] = useState(draft.referral_code ?? "");
+  const [validatedCode, setValidatedCode] = useState<string | null>(null);
+  const [codeError, setCodeError] = useState("");
+  const [validating, setValidating] = useState(false);
+  const [celebrate, setCelebrate] = useState(0);
+  const codeRequest = useRef(0);
+  const codeInput = useRef<HTMLInputElement>(null);
+  const normalizedCode = referralCode.trim().toUpperCase();
+  const codeValid = Boolean(normalizedCode && validatedCode === normalizedCode);
+  async function validateCode() {
+    const request = ++codeRequest.current;
+    setValidating(true);
+    setCodeError("");
+    try {
+      const response = await validateReferral(referralCode);
+      if (request !== codeRequest.current) return;
+      setValidatedCode(response.valid ? normalizedCode : null);
+      setCodeError(response.error ?? "");
+      if (response.valid) setCelebrate((count) => count + 1);
+    } catch {
+      if (request === codeRequest.current) setCodeError("We could not check your code. Try again.");
+    } finally {
+      if (request === codeRequest.current) setValidating(false);
+    }
+  }
   async function submit(intent: "join" | "leave" | "apply", form?: FormData) {
     if (busyRef.current) return;
     busyRef.current = true;
@@ -338,6 +369,9 @@ export function IntakeDialog({
                 ? "approved"
                 : "applied",
         );
+        if (intent === "apply" && saved.status === "approved") {
+          window.location.assign(courseStartHref(course.slug));
+        }
       }
     } catch {
       setResult({
@@ -363,7 +397,7 @@ export function IntakeDialog({
                 ? "Your course is unlocked"
                 : course.status === "applied" && !editing
                   ? "Your application is in review"
-                  : "Apply to join the workshop"
+                  : "Apply to join the course"
               : course.status === "waitlisted"
                 ? "You're on the waitlist"
                 : "Join the waitlist";
@@ -380,11 +414,11 @@ export function IntakeDialog({
         {success === "left"
           ? "Your place has been removed. You can join again at any time."
           : success === "approved" || course.status === "approved"
-            ? "You have access to Hybrid AI Filmmaking. Your course is also saved in Your courses."
+            ? "Your course is unlocked. Open it now or find it in My learning."
             : success === "applied" || (course.status === "applied" && !editing)
-              ? "Your answers are saved. Check Your courses for your application status. Have a referral code? You can add it below."
+              ? "Your application is saved in My learning. Have a referral code? Add it below to start now."
               : filmmaking
-                ? "Tell us about your work. All four questions are required. If you have a referral code, add it below before submitting."
+                ? "Answer all four questions. Have a referral code? Enter it below and click Validate to start the course without waiting for review."
                 : course.status === "waitlisted" || success === "joined"
                   ? `Coming soon. Starts ${WAITLIST_START}. Your place is saved in your account.`
                   : `Coming soon. Starts ${WAITLIST_START}. Confirm below to save this course to your account.`}
@@ -495,6 +529,11 @@ export function IntakeDialog({
           }}
           onSubmit={(event) => {
             event.preventDefault();
+            if (normalizedCode && !codeValid) {
+              setCodeError("Click Validate to check your code before starting, or clear it to submit for review.");
+              codeInput.current?.focus();
+              return;
+            }
             submit("apply", new FormData(event.currentTarget));
           }}
         >
@@ -503,7 +542,7 @@ export function IntakeDialog({
               What company do you work for?
               <input
                 name="company"
-                defaultValue={draft.company ?? course.application?.company}
+                defaultValue={draft.company ?? course.application?.company ?? profile?.company}
                 autoComplete="organization"
                 required
                 maxLength={160}
@@ -515,7 +554,7 @@ export function IntakeDialog({
               What is your job title?
               <input
                 name="job_title"
-                defaultValue={draft.job_title ?? course.application?.job_title}
+                defaultValue={draft.job_title ?? course.application?.job_title ?? profile?.jobTitle}
                 autoComplete="organization-title"
                 required
                 maxLength={160}
@@ -536,7 +575,7 @@ export function IntakeDialog({
             />
           </label>
           <label className="block text-sm font-medium">
-            What do you hope to create with AI filmmaking after this workshop?
+            What do you hope to create with AI filmmaking after this course?
             <textarea
               name="goals"
               defaultValue={draft.goals ?? course.application?.goals}
@@ -546,24 +585,38 @@ export function IntakeDialog({
               className={`${input} resize-y`}
             />
           </label>
-          <div className="rounded-xl border border-line bg-surface-subtle p-4 sm:p-5">
+          <div className="relative rounded-xl border border-line bg-surface-subtle p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3">
             <label
               htmlFor="referral-code"
-              className="block text-lg font-medium"
+              className="block min-w-0 text-base font-medium sm:text-lg"
             >
               Have a referral code?{" "}
-              <span className="t-meta font-normal text-ink-muted">
+              <span className="t-meta block font-normal text-ink-muted">
                 Optional
               </span>
             </label>
+            <LiquidButton type="button" size="sm" variant={codeValid ? "accent" : "default"} className="t-button min-h-11" disabled={busy || validating || !normalizedCode || codeValid} onClick={validateCode}>
+              {validating ? "Checking…" : codeValid ? "Validated" : "Validate"}
+            </LiquidButton>
+            </div>
             <p id="referral-help" className="t-body-sm mt-1 text-ink-secondary">
-              An invitation code can unlock your course as soon as you apply.
+              Enter your code and click Validate. Then complete the required answers and click Start now.
             </p>
             <input
               id="referral-code"
               name="referral_code"
-              defaultValue={draft.referral_code}
-              aria-describedby="referral-help"
+              ref={codeInput}
+              value={referralCode}
+              onChange={(event) => {
+                ++codeRequest.current;
+                setReferralCode(event.target.value);
+                setValidatedCode(null);
+                setValidating(false);
+                setCodeError("");
+              }}
+              aria-invalid={Boolean(codeError)}
+              aria-describedby="referral-help referral-status"
               maxLength={80}
               autoComplete="off"
               autoCapitalize="characters"
@@ -571,9 +624,15 @@ export function IntakeDialog({
               className={`${input} min-h-14 text-lg uppercase tracking-wider`}
               placeholder="Enter your code"
             />
+            <p id="referral-status" role={codeError ? "alert" : "status"} className={`t-body-sm mt-3 ${codeError ? "text-danger" : "text-accent"}`}>
+              {codeError || (codeValid ? "Code accepted! Complete your answers, then click Start now. No review needed." : "No code? Leave this blank to submit your application for review.")}
+            </p>
+            {codeValid && celebrate > 0 && <span key={celebrate} aria-hidden="true" className="intake-confetti pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
+              {Array.from({ length: 24 }, (_, i) => <i key={i} style={{ left: `${(i * 43) % 100}%`, background: ["var(--accent)", "#02B1E0", "#e8bd54"][i % 3], animationDelay: `${(i % 6) * 55}ms`, "--drift": `${(i % 2 ? 1 : -1) * (20 + i * 2)}px` } as import("react").CSSProperties} />)}
+            </span>}
           </div>
-          <LiquidButton variant="accent" type="submit" disabled={busy} className="t-button w-full">
-            {busy ? "Submitting…" : "Submit application"}
+          <LiquidButton variant="accent" type="submit" disabled={busy || validating} className="t-button w-full">
+            {busy ? codeValid ? "Opening your course…" : "Submitting…" : codeValid ? "Start now" : "Submit application"}
           </LiquidButton>
         </form>
       )}

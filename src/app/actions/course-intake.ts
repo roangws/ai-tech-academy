@@ -3,6 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { OPEN_COURSE_SLUG, type IntakeStatus } from "@/lib/intake";
+import { isValidCourseReferral } from "@/lib/referral-validation";
+
+/** Checking a code does not submit an application or create an enrollment. */
+export async function validateCourseReferral(code: string): Promise<{ valid: boolean; error?: string }> {
+  const db = await createClient();
+  const { data } = await db.auth.getClaims();
+  if (!data?.claims?.sub) return { valid: false, error: "Please sign in again to validate your code. Your answers are saved." };
+  if (!isValidCourseReferral(code)) return { valid: false, error: "That code is not valid. Check it and try again, or clear it to apply without a code." };
+  return { valid: true };
+}
 
 export type IntakeResult = {
   status?: IntakeStatus | null;

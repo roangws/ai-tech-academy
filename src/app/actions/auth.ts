@@ -1,4 +1,5 @@
 "use server";
+import { passwordConfirmationError } from "@/lib/password-confirmation";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -70,6 +71,8 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
   if (!email) return { error: "An email address, so you can sign back in.", field: "email" };
   if (!EMAIL.test(email)) return { error: "That does not look like an email address.", field: "email" };
   if (password.length < 8) return { error: "Eight characters or more.", field: "password" };
+  const confirmationError = passwordConfirmationError(password, form.get("confirm-password"));
+  if (confirmationError) return { error: confirmationError, field: "confirm-password" };
 
   /* Steps 2 and 3 are optional in full and can be skipped, so every one of these
      is allowed to be empty. "Other" resolves to the free-text field beside it,

@@ -7,6 +7,7 @@ import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { CheckInbox } from "@/components/auth/check-inbox";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { auth } from "@/lib/content";
+import { passwordConfirmationError } from "@/lib/password-confirmation";
 
 /**
  * Sign-up, in three steps.
@@ -95,7 +96,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
      but the map is written out rather than assumed, so adding a required field
      to a later step does not silently strand its error. */
   const stepOfField: Record<string, number> = {
-    "first-name": 0, "last-name": 0, email: 0, password: 0,
+    "first-name": 0, "last-name": 0, email: 0, password: 0, "confirm-password": 0,
     company: 1, role: 1,
     source: 2,
   };
@@ -180,6 +181,8 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
     const password = values.password ?? "";
     if (!password) next.password = "A password.";
     else if (password.length < 8) next.password = "Eight characters or more.";
+    const confirmationError = passwordConfirmationError(password, values["confirm-password"]);
+    if (confirmationError) next["confirm-password"] = confirmationError;
     setErrors(next);
     return Object.keys(next).length === 0;
   }

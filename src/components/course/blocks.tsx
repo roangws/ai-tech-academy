@@ -3,7 +3,6 @@ import { CourseCard } from "@/components/sections/courses";
 import {
   CheckList,
   CourseIntakeButton,
-  FactsLine,
   Panel,
   Section,
   SectionHeader,
@@ -11,7 +10,7 @@ import {
   TextAction,
 } from "@/components/ui";
 import { certificate, cta } from "@/lib/content";
-import { getCatalog, totalLessons, type Course } from "@/lib/catalog";
+import { getCatalog, type Course } from "@/lib/catalog";
 
 /**
  * The four bands under the two-column body, plus the "What you'll learn" box that
@@ -147,16 +146,14 @@ export function About({ course }: { course: Course }) {
  * spec bans the second outright; the first is worse.
  */
 export function CourseCertificate({ course }: { course: Course }) {
-  const lessons = totalLessons(course);
 
   return (
     <Section id="certificate" tint ariaLabelledBy="certificate-heading">
       <SectionHeader
         id="certificate-heading"
         label={certificate.label}
-        heading={certificate.headline(course.title)}
+        heading={certificate.headline()}
         intro={certificate.intro}
-        action={<TextAction href={certificate.action.href}>{certificate.action.label}</TextAction>}
       />
 
       {/*
@@ -176,7 +173,6 @@ export function CourseCertificate({ course }: { course: Course }) {
           />
           {certificate.fields.label}
         </h3>
-        <FactsLine items={[...certificate.facts]} />
       </div>
 
       {/*
@@ -202,7 +198,7 @@ export function CourseCertificate({ course }: { course: Course }) {
                 document and showing what yours would say.
               */}
               {f.id === "course"
-                ? `${course.title}, and confirmation that all ${lessons} lessons in it are complete.`
+                ? course.title
                 : f.text}
             </dd>
           </div>

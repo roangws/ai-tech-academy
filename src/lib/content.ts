@@ -495,9 +495,9 @@ export const hero = {
     The deploy-and-measure mechanic is not lost: it is the method section's whole
     headline, the last two of the five module rows, and the outcomes band.
   */
-  headline: "Practical AI training that ends with a deployed workflow",
+  headline: "Learn AI skills you can put to work",
   subtext:
-    "Five role-based courses for operators and technical teams. You build on your own data, then launch it where the work happens.",
+    "Hands-on courses in filmmaking, marketing, business, and technology. Learn through guided projects and earn a certificate when you finish.",
   /*
     TWO PARAGRAPHS CAME OUT of this fold on 7 Aug, at Roan's instruction, and
     since both were argued for in comments that are now gone, here is what they
@@ -603,7 +603,6 @@ export const hero = {
     name: "Roan Weigert",
     role: "Applied AI educator, San Francisco",
     /** The second line under the facepile. The first is generated. */
-    rosterNote: "Practitioners who run these systems in production",
     image: { src: "/images/people/roan-weigert-studio.jpg", alt: "Portrait of Roan Weigert" },
   },
   /*
@@ -739,7 +738,7 @@ export const hero = {
 */
 export const method = {
   eyebrow: "The method",
-  headline: "Build, deploy, and document one workflow in five steps",
+  headline: "Learn by building a real project",
   intro:
     /* "Each module pairs one focused lesson with one guided lab" was a count,
        and the curriculum has never matched it: modules run three to six items,
@@ -750,42 +749,42 @@ export const method = {
 
        The claim worth making is the one that is true of all forty: recorded
        lessons and guided labs, and the labs run on the reader's own work. */
-    "Every course here runs on the same five steps, whatever you build. Every module mixes recorded lessons with guided labs you run on your own workflow.",
-  produces: "You produce",
+    "Watch the lessons, follow the guided exercises, and apply what you learn to your own work.",
+  produces: "You make",
   steps: [
     {
       n: 1,
-      name: "Profile",
-      output: "Baseline and brief",
-      text: "Choose one workflow you own and record its baseline on time, cost or quality.",
+      name: "Choose",
+      output: "Project brief",
+      text: "Choose a task you want to improve.",
       access: "Open",
     },
     {
       n: 2,
       name: "Build",
-      output: "Working workflow",
-      text: "Guided labs assemble the workflow on your own inputs with current models.",
+      output: "Working project",
+      text: "Build your project with step-by-step exercises.",
       access: "Privileged access",
     },
     {
       n: 3,
-      name: "Deploy",
-      output: "Live system",
-      text: "The workflow goes live in the tools your team uses every day. Launching it completes the course.",
+      name: "Use",
+      output: "Real-world project",
+      text: "Put your project to work.",
       access: "Privileged access",
     },
     {
       n: 4,
       name: "Measure",
-      output: "Outcome sheet",
-      text: "Measure the same workflow after launch. Both numbers land on one page.",
+      output: "Before and after",
+      text: "Compare the results with how you worked before.",
       access: "Privileged access",
     },
     {
       n: 5,
-      name: "Document",
-      output: "Completion record",
-      text: "Brief, build, launch and measurement become one completion record you can share.",
+      name: "Share",
+      output: "Project summary",
+      text: "Save your process and share what you built.",
       access: "Privileged access",
     },
   ],
@@ -1198,7 +1197,7 @@ export const moduleFormat = {
     explaining each step already was, and the access state went with them.
   */
   accessNote:
-    "Every module runs across these five steps. Your privileged access account keeps your work, course materials, and progress together.",
+    "Your account saves your progress and course materials.",
   includesLabel: "Every module includes",
   includes: [
     "Recorded lessons from people who run these systems",
@@ -1229,7 +1228,7 @@ export const moduleFormat = {
   saying so costs less than a reader working it out.
 */
 export const outcomes = {
-  headline: "Leave with evidence of what changed",
+  headline: "Build something useful. Show the results.",
   stat: {
     /*
       Added 6 Aug. The page's single largest element was an unattributed pair of
@@ -1242,14 +1241,14 @@ export const outcomes = {
       Labelling it above the numbers changes what the figure is before anyone
       reads it. "Example" is the load-bearing word and it is first.
     */
-    label: "Example Course A outcome",
+    label: "Example: faster weekly reporting",
     before: "6 h 00",
     after: "40 min",
     caption:
-      "Time to produce weekly pipeline reporting, before and after one learner deployed their workflow.",
+      "One learner cut weekly reporting from six hours to forty minutes.",
   },
   sheet: {
-    label: "Outcome sheet",
+    label: "Before and after",
     title: "Weekly pipeline reporting",
     meta: ["Course A", "Module 7", "Measured 14 days after launch"],
     columns: { measure: "Measure", before: "Before", after: "After" },
@@ -1288,16 +1287,16 @@ export const outcomes = {
     label: "You leave with",
     items: [
       {
-        title: "A live workflow",
-        text: "Running in the tools your team already uses, and owned by you after the course.",
+        title: "A working project",
+        text: "Something you can use in your work.",
       },
       {
-        title: "An outcome sheet",
-        text: "The same measure taken before you launched and after, on one page.",
+        title: "Measurable results",
+        text: "See the time saved or quality improved.",
       },
       {
         title: "A certificate",
-        text: "Your name, the course and a reference anyone can check, issued the day you finish.",
+        text: "Share proof that you completed the course.",
       },
     ],
   },
@@ -1346,17 +1345,17 @@ export const outcomes = {
   the one item that has to name the course while sharing the other three.
 */
 export const certificate = {
-  label: "Completion record",
-  headline: (title: string) => `Finish ${title} and your record is issued the same moment`,
+  label: "Certification",
+  headline: () => "Complete the course. Earn your certificate.",
   intro:
-    "Ticking the last lesson issues it. It arrives with your name on it, downloads as a PDF or an image, and carries a reference that anyone you send it to can check on this site.",
+    "Complete every lesson to earn a shareable certificate of completion.",
   fields: {
-    label: "What is printed on it",
+    label: "Your course certificate",
     items: [
       {
         id: "name",
         title: "Your name",
-        text: "As it is on your account, with your photograph if you added one.",
+        text: "Your full name.",
       },
       {
         id: "course",
@@ -1367,13 +1366,12 @@ export const certificate = {
       },
       {
         id: "reference",
-        title: "A reference",
-        text: "Unique, permanent, and readable aloud over a phone.",
+        title: "Verification",
+        text: "Verifiable online.",
       },
-      { id: "date", title: "The date", text: "The day you finished, recorded when it happened." },
+      { id: "date", title: "Completion date", text: "When you finished." },
     ],
   },
-  facts: ["Issued automatically", "PDF or image", "Included with privileged access"],
   /* Points at the questions block that states the price, because the question a
      completion record raises on a free program is what it costs. A same-page
      fragment now rather than `/#faq`: this section renders on the course pages,
@@ -2908,6 +2906,7 @@ export const auth = {
       { name: "last-name", label: "Last name", type: "text", autoComplete: "family-name", half: true },
       { name: "email", label: "Email", type: "email", autoComplete: "email", half: false },
       { name: "password", label: "Password", type: "password", autoComplete: "new-password", half: false },
+      { name: "confirm-password", label: "Confirm password", type: "password", autoComplete: "new-password", half: false },
     ],
   },
   /*

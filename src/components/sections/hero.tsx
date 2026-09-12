@@ -196,7 +196,6 @@ export async function Hero() {
                   Taught by {hero.instructor.name} and {Math.max(people.length - 1, 0)} guest
                   instructors
                 </span>
-                {hero.instructor.rosterNote}
               </p>
 
               {/* A sibling of the paragraph rather than a child of it. `TextAction`

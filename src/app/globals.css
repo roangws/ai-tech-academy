@@ -897,3 +897,19 @@ html:has([data-theme="dark"]) {
     break-inside: avoid;
   }
 }
+/* One brief celebration after referral validation; never blocks form input. */
+@media (prefers-reduced-motion: no-preference) {
+  .intake-confetti i {
+    position: absolute;
+    top: -12px;
+    width: 6px;
+    height: 10px;
+    opacity: 0;
+    animation: intake-confetti-fall 1.5s ease-out both;
+  }
+  @keyframes intake-confetti-fall {
+    0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--drift), 320px) rotate(540deg); }
+  }
+}

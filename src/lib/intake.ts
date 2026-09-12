@@ -17,6 +17,7 @@ export type IntakeCourse = {
 export type IntakeSnapshot = {
   signedIn: boolean;
   userId?: string;
+  profile?: { company: string; jobTitle: string };
   courses: IntakeCourse[];
 };
 

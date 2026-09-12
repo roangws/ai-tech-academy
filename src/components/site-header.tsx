@@ -474,7 +474,7 @@ export function SiteHeader({
           the short brand; logo.tsx has the note on why it is no longer dropped
           altogether.
         */}
-        <HeaderIdentity area="website" />
+        <HeaderIdentity area="website" signedIn={Boolean(viewer)} />
 
         {/*
           All six links, at every width from lg up.
@@ -609,7 +609,7 @@ export function SiteHeader({
           ) : (
             <>
               <div className="block">
-                <Link href="/sign-in" className="inline-flex min-h-11 items-center px-1 text-[13px] font-medium text-ink no-underline">Sign in</Link>
+                <Link href="/sign-in" className="inline-flex min-h-11 items-center whitespace-nowrap px-1 text-[13px] font-medium text-ink no-underline">Sign in</Link>
               </div>
 
               {/* The primary CTA stays visible at every width, and carries the

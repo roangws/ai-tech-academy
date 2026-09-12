@@ -21,6 +21,17 @@ The signed-in website header now has a direct My learning button. Unlocked cours
 
 ## Backend operations
 
+### Brand, copy, and application clarity follow-up
+
+- Public headers use the full Logo component with the author credit. The compact identity and area switcher require a signed-in viewer.
+- Course certification copy is shortened, with no format or automatic-issue metadata. Homepage hero, method, and outcomes retain their layout and use shorter copy.
+- Password confirmation is checked on the client and server. Browser checks verified mismatches block Continue and matching values reach step two without creating an account.
+- Application company and job title default to the user's saved profile unless an application or draft already has an answer.
+- Referral preflight requires authentication and does not grant access. Final submission still validates required answers and the code in Postgres before creating an enrollment. Accepted codes change the CTA to Start now; editing a code resets validation. The final successful submission opens the course directly.
+- `node --experimental-strip-types scripts/test-course-flow.mjs` covers code normalization, invalid input, password matching, database-code parity, and required-field/CTA regressions.
+- A temporary local form fixture checked saved-profile defaults, invalid and valid code UI, required answers, edited-code invalidation, unvalidated-code blocking, draft recovery, session-expiry errors, mobile layout, and confetti. Its validation callback was mocked for visual checks; actual grant enforcement remains covered by the SQL suite. The fixture was removed before deployment.
+- Mobile checks at 320px and 390px and a 1024px header check found no page overflow. Confetti is brief, ignores pointer events, and does not animate with reduced motion.
+
 - Migration: `supabase/migrations/20260912200000_course_intakes.sql`.
 - Reusable SQL tests: `supabase/tests/course_intakes.sql`. Run as the database owner against a seeded academy schema with an admin. The script rolls back its changes.
 - Pending filmmaking applications appear at `/admin/applications`. Approval grants course access and creates an enrollment in one transaction.

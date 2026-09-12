@@ -45,7 +45,7 @@ export function PortalHeader({ viewer, theme, judgeCount = 0 }: {
   return (
     <header className="portal-header relative top-0 z-40 border-b border-line bg-surface lg:sticky">
       <Container className="grid grid-cols-[auto_1fr] items-center gap-x-3 lg:grid-cols-[auto_1fr_auto] lg:gap-x-6">
-        <div className="flex h-14 items-center lg:h-16"><HeaderIdentity area="learning" /></div>
+        <div className="flex h-14 items-center lg:h-16"><HeaderIdentity area="learning" signedIn={Boolean(viewer)} /></div>
         <div className="contents"><PortalNavigation links={links} /></div>
         <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 lg:col-start-3">
           <details className="relative">
