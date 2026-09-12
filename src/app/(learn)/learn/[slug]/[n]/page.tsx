@@ -385,7 +385,7 @@ export default async function ModulePage({
         </div>
 
         {/* ------------------------------------------------------------- aside */}
-        <aside className="lg:sticky lg:top-[156px] lg:self-start">
+        <aside className="lg:sticky lg:top-[80px] lg:self-start">
           <div className="rounded-[var(--radius-feature)] border border-line bg-surface-subtle p-5">
             <p className="t-label text-ink-muted">This module</p>
             {signedIn ? (

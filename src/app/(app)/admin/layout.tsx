@@ -69,7 +69,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <Container className="py-8 md:py-10">
       <div className="grid items-start gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">
-        <nav aria-label="Admin sections" className="lg:sticky lg:top-[156px] lg:max-h-[calc(100dvh-180px)] lg:overflow-y-auto">
+        <nav aria-label="Admin sections" className="lg:sticky lg:top-[80px] lg:max-h-[calc(100dvh-104px)] lg:overflow-y-auto">
           <p className="t-label px-2.5 text-ink-muted">Administration</p>
           <ul className="mt-2 flex flex-wrap gap-1 lg:flex-col">
             {SECTIONS.map(({ href, label, Icon }) => (

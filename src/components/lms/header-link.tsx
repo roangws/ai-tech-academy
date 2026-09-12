@@ -9,11 +9,13 @@ export function HeaderLink({
   siblings = [],
   children,
   className,
+  variant = "item",
 }: {
   href: string;
   siblings?: readonly string[];
   children: React.ReactNode;
   className?: string;
+  variant?: "item" | "tab";
 }) {
   const pathname = usePathname() ?? "";
 
@@ -39,8 +41,10 @@ export function HeaderLink({
       className={cn(
         /* 44px minimum tap target below lg. These were bare 14px/20px links —
            a 20px-tall strip, which WCAG 2.5.8 fails outright at AA. */
-        "t-nav inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-2.5 no-underline transition-colors",
-        active ? "bg-accent-tint font-semibold text-accent underline decoration-2 underline-offset-8" : "text-ink-secondary hover:text-ink",
+        "inline-flex min-h-11 items-center text-[13px] no-underline transition-colors",
+        variant === "tab"
+          ? `h-full border-b-2 pt-0.5 ${active ? "border-ink font-medium text-ink" : "border-transparent text-ink-muted hover:text-ink"}`
+          : `rounded-[var(--radius-control)] px-2.5 ${active ? "bg-surface-subtle font-medium text-ink" : "text-ink-secondary hover:bg-surface-subtle hover:text-ink"}`,
         className,
       )}
     >

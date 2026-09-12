@@ -147,14 +147,14 @@ export default async function DashboardPage() {
   const restFresh = rest.filter((c) => (byCourseId.get(c.id)?.done ?? 0) === 0);
 
   return (
-    <Container className="py-10 md:py-12">
+    <Container className="py-6 md:py-8">
       {/*
         `t-h2`, not `t-display`. The greeting was 44px and consumed a quarter of a
         phone's first screen to say the reader's own name. It also said "Welcome
         back" to accounts that had never been here — the first sentence of the
         relationship, and factually wrong.
       */}
-      <h1 className="t-h2 text-ink">
+      <h1 className="text-[20px] font-medium leading-7 tracking-[-0.025em] text-ink">
         {started.length ? `Welcome back, ${viewer.name}.` : `You're in, ${viewer.name}.`}
       </h1>
 
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
             choice they are making today. So this is the page, and the rest is a
             list under it.
           */}
-          <div className="grid overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface shadow-e2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)]">
             {/*
               The picture is the way in, like every other course picture on the
               site now. It was inert here — a 50%-wide photograph of the one
@@ -192,19 +192,19 @@ export default async function DashboardPage() {
               href={`/courses/${current.course.slug}/start`}
               aria-hidden="true"
               tabIndex={-1}
-              className="relative block aspect-[16/10] lg:aspect-auto lg:min-h-[300px]"
+              className="relative block h-36 sm:h-44 lg:h-auto lg:min-h-[240px]"
             >
-              <CoursePhoto course={current.course} sizes="(min-width: 1024px) 50vw, 100vw" priority />
+              <CoursePhoto course={current.course} sizes="(min-width: 1024px) 40vw, 100vw" priority />
             </Link>
 
-            <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
+            <div className="flex min-w-0 flex-col justify-center p-5 md:px-7 md:py-6">
               <div className="flex flex-wrap items-center gap-3">
                 <p className="t-label text-ink-muted">{current.course.badge}</p>
                 {current.enrollment.status === "completed" ? (
                   <StatusChip>Complete</StatusChip>
                 ) : null}
               </div>
-              <h2 className="t-h2 mt-1 text-ink">{current.course.title}</h2>
+              <h2 className="mt-2 max-w-[32ch] text-[20px] font-medium leading-[1.3] tracking-[-0.025em] text-ink md:text-[24px]">{current.course.title}</h2>
 
               <Meter className="mt-5" done={current.done} total={current.total} />
 

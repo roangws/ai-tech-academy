@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowSquareOutIcon } from "@phosphor-icons/react/dist/ssr";
-import { Logo } from "@/components/logo";
+import { ArrowSquareOutIcon, SunIcon } from "@phosphor-icons/react/dist/ssr";
+import { Crest } from "@/components/logo";
 import { brand } from "@/lib/content";
 import { Container } from "@/components/ui";
 import { AccountMenu } from "@/components/lms/account-menu";
@@ -8,7 +8,7 @@ import { getViewer, type Viewer } from "@/lib/auth";
 import { openInvitationCount } from "@/lib/lms/events";
 import { getTheme, type Theme } from "@/lib/theme";
 import { ThemeToggle } from "@/components/lms/theme-toggle";
-import { HeaderLink } from "@/components/lms/header-link";
+import { PortalNavigation } from "@/components/lms/portal-navigation";
 import { signOut } from "@/app/actions/auth";
 
 /** Shared portal navigation. Route guards and RLS still enforce permissions. */
@@ -43,50 +43,22 @@ export function PortalHeader({ viewer, theme, judgeCount = 0 }: {
         ...(viewer.is("admin") ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [{ href: "/courses", label: "Courses" }];
-  const hrefs = links.map((link) => link.href);
   return (
     <header className="portal-header relative top-0 z-40 border-b border-line bg-surface lg:sticky">
-      <div className="bg-[#082b3a] text-white">
-        <Container className="flex min-h-[80px] items-center justify-between gap-3 py-3">
-          <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-5">
-            <Logo size={32} compact tone="dark" href={viewer ? "/dashboard" : "/"}
-              label={viewer ? `${brand.name}, my learning` : undefined} />
-            <span className="text-[12px] font-medium tracking-wide text-[#c2e6f0] sm:border-l sm:border-white/25 sm:py-2 sm:pl-5 sm:text-sm">
-              Academy portal
-            </span>
-          </div>
-          <Link href="/" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border border-white/40 px-3 text-[13px] font-medium text-white no-underline hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-            <ArrowSquareOutIcon size={16} aria-hidden="true" />Visit website
-          </Link>
-        </Container>
-      </div>
-      <Container className="flex flex-wrap items-center gap-1 py-2">
-        <nav aria-label="Portal" className="contents">
-          {links.map((link) => (
-            <HeaderLink key={link.href} href={link.href} siblings={hrefs}>
-              {link.label}
-              {link.count ? <>
-                <span aria-hidden="true" className="ml-1.5 rounded-full bg-accent px-1.5 text-xs tabular-nums text-on-accent">{link.count > 9 ? "9+" : link.count}</span>
-                <span className="sr-only">, {link.count} waiting on your answer</span>
-              </> : null}
-            </HeaderLink>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-2">
-          <ThemeToggle theme={theme} className="hidden sm:inline-flex" />
-          <details className="relative sm:hidden">
-            <summary className="t-meta flex min-h-11 cursor-pointer items-center rounded-[var(--radius-control)] px-2 text-ink-secondary hover:bg-surface-subtle">Theme</summary>
-            <div className="absolute right-0 top-full z-50 rounded-[var(--radius-control)] border border-line bg-surface p-2 shadow-e2">
-              <ThemeToggle theme={theme} />
-            </div>
+      <Container className="grid grid-cols-[auto_1fr] items-center gap-x-5 lg:grid-cols-[auto_1fr_auto] lg:gap-x-8">
+        <Link href={viewer ? "/dashboard" : "/"} aria-label={`${brand.name}, academy portal`} className="flex h-14 items-center gap-2 no-underline lg:h-16">
+          <Crest size={24} />
+          <span className="text-[14px] font-semibold tracking-[-0.02em] text-ink">Academy<span className="ml-1.5 font-normal text-ink-muted">/ Portal</span></span>
+        </Link>
+        <div className="contents"><PortalNavigation links={links} /></div>
+        <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 lg:col-start-3">
+          <Link href="/" className="hidden min-h-11 items-center gap-1 text-[12px] text-ink-muted no-underline hover:text-ink sm:inline-flex"><span>Website</span><ArrowSquareOutIcon size={13} aria-hidden="true" /></Link>
+          <Link href="/" aria-label="Visit website" className="inline-flex size-9 items-center justify-center text-ink-muted hover:text-ink sm:hidden"><ArrowSquareOutIcon size={17} aria-hidden="true" /></Link>
+          <details className="relative">
+            <summary aria-label="Colour theme" className="flex size-9 cursor-pointer list-none items-center justify-center rounded-[var(--radius-control)] text-ink-muted hover:bg-surface-subtle hover:text-ink [&::-webkit-details-marker]:hidden"><SunIcon size={17} aria-hidden="true" /></summary>
+            <div className="absolute right-0 top-full z-50 mt-1 rounded-[var(--radius-control)] border border-line bg-surface p-2 shadow-e2"><ThemeToggle theme={theme} /></div>
           </details>
-          {viewer ? (
-            <AccountMenu name={viewer.profile?.first_name ?? viewer.name} email={viewer.email}
-              avatarUrl={viewer.profile?.avatar_url ?? null} signOut={signOut} />
-          ) : (
-            <><HeaderLink href="/sign-in">Sign in</HeaderLink>
-              <Link href="/sign-up" className="t-button inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-accent px-3 text-on-accent no-underline hover:bg-accent-hover">Create account</Link></>
-          )}
+          {viewer ? <AccountMenu name={viewer.profile?.first_name ?? viewer.name} email={viewer.email} avatarUrl={viewer.profile?.avatar_url ?? null} signOut={signOut} /> : <Link href="/sign-in" className="inline-flex min-h-11 items-center text-[13px] font-medium text-ink no-underline">Sign in</Link>}
         </div>
       </Container>
     </header>

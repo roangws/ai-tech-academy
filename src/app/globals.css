@@ -517,7 +517,7 @@
 
   @media (min-width: 1024px) {
     html:has(.portal-shell) {
-      scroll-padding-top: 156px;
+      scroll-padding-top: 80px;
     }
   }
 
