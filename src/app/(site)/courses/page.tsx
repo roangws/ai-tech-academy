@@ -241,7 +241,11 @@ export default function CoursesPage() {
                 they are already in, or the featured one, enrolling them on the
                 way through.
               */}
-              <ApplyButton withDate tone="onDark" />
+              <ApplyButton
+                href="/courses/hybrid-filmmaking"
+                withDate
+                tone="onDark"
+              />
               {/* "Pick a course above" was the whole instruction, and it was an
                   instruction because nothing on this page started anything. The
                   button above does now, so this says what pressing it opens and

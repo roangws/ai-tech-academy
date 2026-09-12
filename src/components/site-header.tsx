@@ -14,10 +14,11 @@ import {
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/logo";
 import { CoursesMenu } from "@/components/lms/courses-menu";
-import { ApplyButton, ButtonLink, Container, EnrollButton } from "@/components/ui";
+import { ButtonLink, Container, CourseIntakeButton } from "@/components/ui";
 import { Avatar } from "@/components/lms/avatar";
 import { nav } from "@/lib/content";
 import type { Course } from "@/lib/content";
+import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * Single-tier product header, 72px.
@@ -157,7 +158,8 @@ export function SiteHeader({
     if (section !== "courses" && section !== "learn") return null;
     return slug && /^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$/.test(slug) ? slug : null;
   })();
-  const enrollHref = courseSlug ? `/courses/${courseSlug}/start` : "/start";
+  const intakeSlug = courseSlug ?? OPEN_COURSE_SLUG;
+  const intakeHref = courseSlug ? undefined : courseDetailHref(OPEN_COURSE_SLUG);
 
 
   /**
@@ -646,18 +648,12 @@ export function SiteHeader({
                   `h-10`, because 40px is under the 44px target the rest of the
                   page holds and height was never what overflowed at 320 — the
                   padding was. */}
-              {onHome ? (
-                <ApplyButton
-                  size="md"
-                  className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
-                />
-              ) : (
-                <EnrollButton
-                  href={enrollHref}
-                  size="md"
-                  className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
-                />
-              )}
+              <CourseIntakeButton
+                slug={intakeSlug}
+                href={intakeHref}
+                size="md"
+                className="max-xl:px-4 max-sm:h-11 max-sm:px-3.5 max-sm:text-[13px]"
+              />
             </>
           )}
 
@@ -739,11 +735,11 @@ export function SiteHeader({
                 </>
               ) : (
                 <>
-                  {onHome ? (
-                    <ApplyButton onClick={closeMenu} />
-                  ) : (
-                    <EnrollButton href={enrollHref} onClick={closeMenu} />
-                  )}
+                  <CourseIntakeButton
+                    slug={intakeSlug}
+                    href={intakeHref}
+                    onClick={closeMenu}
+                  />
                   <ButtonLink href="/sign-in" tone="secondary" onClick={closeMenu}>
                     Sign in
                   </ButtonLink>

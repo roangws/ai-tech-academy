@@ -33,7 +33,7 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Free applied AI course: deploy one workflow and measure it",
+    default: "Applied AI courses with privileged access",
     template: `%s | ${brand.name}`,
   },
   /*
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     these are the ones that describe the program rather than any one course.
   */
   keywords: [
-    "free AI course",
+    "privileged access AI course",
     "applied AI course",
     "AI training for teams",
     "project-based AI course",

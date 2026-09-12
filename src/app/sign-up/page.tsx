@@ -3,7 +3,7 @@ import { AuthScreen } from "@/components/auth/auth-screen";
 import { auth } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Create your free account",
+  title: "Create your privileged access account",
   description: auth.signUp.intro,
   alternates: { canonical: "/sign-up" },
   /* An auth screen has nothing a search engine should index or follow. */

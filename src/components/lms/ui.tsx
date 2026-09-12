@@ -155,20 +155,19 @@ export function LockedPanel({
     <Panel tone="dark">
       <span className="t-label inline-flex items-center gap-1.5 text-white/60">
         <LockSimpleIcon size={13} weight="bold" aria-hidden="true" />
-        Free account
+        Privileged access
       </span>
       <Heading className="t-h3 mt-2.5 text-white">{moduleName} opens with an account</Heading>
       <p className="t-body mt-3 max-w-[52ch] text-white/75">
-        Module 1 of every course runs with no account, and you have it. One free account
-        opens every module after the first, in all five courses, and the account stays free: no
-        certificate fee, no upgrade, no paid tier.
+        One account keeps your application, course work, and progress together. There is no
+        certificate fee, no upgrade, and no paid tier.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
         <Link
           href={href}
           className="t-button inline-flex h-12 items-center rounded-[var(--radius-control)] bg-white px-6 text-ink no-underline transition-colors hover:bg-white/90"
         >
-          Create your free account
+          Create your privileged access account
         </Link>
         <Link
           href={href.replace("/sign-up", "/sign-in")}

@@ -480,8 +480,7 @@ export function SignUpSteps({ next = "" }: { next?: string }) {
               </p>
             ) : (
               <p className="t-micro mt-3 text-ink-muted">
-                One free account opens every module after the first, in all five courses, and the account
-                stays free.
+                One account keeps your application, course work, and progress together.
               </p>
             )}
           </>

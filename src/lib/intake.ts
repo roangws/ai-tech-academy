@@ -1,4 +1,9 @@
 export const OPEN_COURSE_SLUG = "hybrid-filmmaking";
+export const OPEN_COURSE_START = "September 12";
+
+export function courseDetailHref(slug: string): string {
+  return `/courses/${slug}`;
+}
 
 export function courseStartHref(slug: string): string {
   return `/courses/${slug}/start`;

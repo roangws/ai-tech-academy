@@ -114,7 +114,7 @@ export function courseJsonLd(course: Course, lead: Person): string {
     */
     offers: {
       "@type": "Offer",
-      category: "Free",
+      category: "Privileged access",
       price: "0",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",

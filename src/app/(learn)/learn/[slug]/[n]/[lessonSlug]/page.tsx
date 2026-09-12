@@ -296,13 +296,13 @@ export default async function LessonPage({
                 ? `Next lesson: ${next.name}`
                 : nextModule
                   ? `Next module: ${nextModule.n} ${nextModule.name}`
-                  : "Keep going with a free account"}
+                  : "Continue with privileged access"}
               <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
             </Link>
             <p className="t-body-sm mt-3 text-ink-secondary">
               Module 1 is open with no account, and saving your progress is not.{" "}
               <Link href={unlockHref(path)} className="text-accent no-underline hover:underline">
-                A free account
+                A privileged access account
               </Link>{" "}
               keeps track of what you have finished.
             </p>

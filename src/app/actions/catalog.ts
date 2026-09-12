@@ -319,7 +319,7 @@ export async function setCourseStatus(_prev: FormState, formData: FormData): Pro
     }
     if (!list.some((m) => m.access === "open")) {
       refuse(
-        "Open one module before publishing. Every course on this site promises a free first module, on six separate surfaces.",
+        "Open one module before publishing. Every course on this site promises an open first module, on six separate surfaces.",
       );
     }
   }
@@ -550,7 +550,7 @@ export async function deleteModule(_prev: FormState, formData: FormData): Promis
 
   if ((open ?? []).length <= 1 && (open ?? []).some((m) => m.id === moduleId)) {
     refuse(
-      "This is the course's only open module. Open another one before deleting it, so the free first module stays true.",
+      "This is the course's only open module. Open another one before deleting it, so the open first-module promise stays true.",
     );
   }
 

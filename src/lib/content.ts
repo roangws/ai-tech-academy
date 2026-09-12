@@ -141,7 +141,7 @@ export type Img = {
 export const brand = {
   name: "AI Tech Education Academy",
   short: "AI Tech",
-  tagline: "free courses by Roan Weigert",
+  tagline: "by Roan Weigert",
   domain: "AITechEducation.academy",
   program: "Applied AI Implementation",
 } as const;
@@ -163,7 +163,7 @@ export const brand = {
 export const site = {
   url: "https://aitecheducation.academy",
   description:
-    "A free, project-based applied AI course. Five role-based courses. Build an AI workflow on your own data, deploy it, and measure the result. Module 1 is open.",
+    "Privileged access to project-based applied AI education. Build a workflow on your own data, deploy it, and measure the result.",
 } as const;
 
 /**
@@ -186,7 +186,7 @@ export const site = {
   the diff readable at the call sites.
 */
 export const cta = {
-  primary: "Enroll for free",
+  primary: "Get privileged access",
   /*
     THE LABEL ON THE COURSE PAGE'S OWN CONTROL, added 9 Aug.
 
@@ -480,7 +480,7 @@ export const hero = {
     words to say what the two elements under it already say. The cost claim is
     the only thing this slot is for.
   */
-  eyebrow: "Free",
+  eyebrow: "Privileged access",
   /*
     Rewritten 7 Aug at Roan's request.
 
@@ -554,7 +554,7 @@ export const hero = {
     `id` selects the glyph in hero.tsx.
   */
   stats: [
-    { id: "cost", value: "Free", label: "Every course, every module" },
+    { id: "cost", value: "Privileged access", label: "Every course, every module" },
     /*
       "8 modules" until 11 Aug, when the curriculum moved to the blueprint's
       counts and the five courses stopped agreeing on one number: 12, 12, 10, 8
@@ -626,13 +626,13 @@ export const hero = {
     edit.
   */
   lesson: {
-    label: "Module 1, lesson 1",
+    label: "Hybrid Filmmaking, class 1",
     status: "Open",
-    title: "Map your customer journey end to end",
-    body: "A working session. Map the revenue process you own from first touch to renewal, mark every handoff, and pick the one part of it you will rebuild.",
-    duration: "14 min",
-    access: "Open to everyone",
-    action: "Watch now",
+    title: "Outcomes: what hybrid filmmaking changes",
+    body: "See the production proof, the economics, and the range of work this course is designed to help you make.",
+    duration: "11 min",
+    access: "Written guide available",
+    action: "View class",
     poster: {
       src: "/images/scenes/lesson-recording.jpg",
       alt: "Roan Weigert recording a lesson at the studio microphone",
@@ -765,28 +765,28 @@ export const method = {
       name: "Build",
       output: "Working workflow",
       text: "Guided labs assemble the workflow on your own inputs with current models.",
-      access: "Free account",
+      access: "Privileged access",
     },
     {
       n: 3,
       name: "Deploy",
       output: "Live system",
       text: "The workflow goes live in the tools your team uses every day. Launching it completes the course.",
-      access: "Free account",
+      access: "Privileged access",
     },
     {
       n: 4,
       name: "Measure",
       output: "Outcome sheet",
       text: "Measure the same workflow after launch. Both numbers land on one page.",
-      access: "Free account",
+      access: "Privileged access",
     },
     {
       n: 5,
       name: "Document",
       output: "Completion record",
       text: "Brief, build, launch and measurement become one completion record you can share.",
-      access: "Free account",
+      access: "Privileged access",
     },
   ],
 } as const;
@@ -1198,7 +1198,7 @@ export const moduleFormat = {
     explaining each step already was, and the access state went with them.
   */
   accessNote:
-    "Every module runs across these five steps. One free account opens every module after the first, in all five courses, and the account stays free.",
+    "Every module runs across these five steps. Your privileged access account keeps your work, course materials, and progress together.",
   includesLabel: "Every module includes",
   includes: [
     "Recorded lessons from people who run these systems",
@@ -1216,7 +1216,7 @@ export const moduleFormat = {
     It is its own line in the enrol rail now, under the list, which is also where
     a reader deciding whether to start is asking what they end up holding.
   */
-  completion: "Finish the course and the certificate is issued the same day, free",
+  completion: "Finish the course and your certificate is issued the same day",
 } as const;
 
 /*
@@ -1373,7 +1373,7 @@ export const certificate = {
       { id: "date", title: "The date", text: "The day you finished, recorded when it happened." },
     ],
   },
-  facts: ["Issued automatically", "PDF or image", "Free, like the courses"],
+  facts: ["Issued automatically", "PDF or image", "Included with privileged access"],
   /* Points at the questions block that states the price, because the question a
      completion record raises on a free program is what it costs. A same-page
      fragment now rather than `/#faq`: this section renders on the course pages,
@@ -2296,11 +2296,11 @@ export const partners = {
 export const faqs = [
   {
     q: "What does the course cost?",
-    a: "It is free. The first module of every course opens instantly, and one free account unlocks the rest of that course. Everything on this site is free to use.",
+    a: "Privileged access has no course fee. Create one account to apply for Hybrid Filmmaking or join the waitlist for another course.",
   },
   {
-    q: "Why is it free?",
-    a: "It is a non-commercial education project that Roan funds and runs. Every course stays free to use, and this site exists to teach rather than to sell.",
+    q: "Why is access offered this way?",
+    a: "This is a non-commercial education project that Roan funds and runs. Privileged access is offered at no charge because the academy exists to teach rather than to sell.",
   },
   {
     q: "What does completion by deployment mean?",
@@ -2308,10 +2308,10 @@ export const faqs = [
   },
   {
     q: "Can I start right away?",
-    a: "Yes. The first module of every course plays for everyone, with a free account needed only from module 2.",
+    a: "Hybrid Filmmaking accepts applications for the current intake. The other courses accept waitlist registrations for next month's intake.",
   },
   {
-    q: "What does the free account ask for?",
+    q: "What does the privileged access account ask for?",
     a: "Name, role, organization, and a few questions about the workflow you want to improve. It takes about a minute, and it is what lets the guided labs use your own workflow as the project.",
   },
   {
@@ -2394,7 +2394,7 @@ export const faqs = [
 export const closing = {
   headline: "Start with your first lesson",
   body: "Pick the course closest to your job, watch the first lesson, and finish with a written baseline for one process you own.",
-  reassurance: "Lesson one plays for everyone. A free account opens the rest.",
+  reassurance: "Create one privileged access account to apply or join a waitlist.",
   routesLabel: "Or start somewhere else",
   routes: [
     {
@@ -2638,12 +2638,12 @@ export const footer = {
  * summarises.
  */
 export const catalog = {
-  seoTitle: "Free applied AI courses, by role",
+  seoTitle: "Applied AI courses with privileged access, by role",
   seoDescription:
-    "Five free, self-paced applied AI courses for GTM, media, compliance, infrastructure and small business. Build one workflow on your own data and measure it.",
+    "Privileged access to five self-paced applied AI courses for GTM, media, compliance, infrastructure and small business.",
   keywords: [
     "applied AI courses",
-    "free AI courses",
+    "privileged access AI courses",
     "AI courses by role",
     "self-paced AI course",
     "project-based AI training",
@@ -2674,8 +2674,8 @@ export const catalog = {
       text: "Every course is project-based against your own work rather than a sample dataset, and every one finishes the same way: a recorded baseline, a thing you built, a deployment, and a measurement against the baseline you started from. Each module pairs a recorded lesson with a lab you run yourself, and each closes with one artifact you keep. Nothing is graded and there is no cohort to wait for.",
     },
     {
-      heading: "What free covers",
-      text: "Module 1 of every course opens with no account at all. A free account keeps your work and opens the rest, and there is nothing to pay at any point: no certificate fee, no upgrade, and no paid tier holding the useful half. If you want to run a course with a team, that is a conversation rather than a price list.",
+      heading: "What privileged access includes",
+      text: "Your account keeps your application, course work, and progress together. There is no course or certificate fee, no upgrade, and no paid tier holding back the useful material. If you want to run a course with a team, that is a conversation rather than a price list.",
     },
   ],
 } as const;
@@ -2737,7 +2737,7 @@ export const legal = {
     fields below are still [placeholder].
   */
   draftNote:
-    "These terms are published in draft while the platform is being built, and the entity details below are still being finalised. Free accounts are open and nothing on this site takes payment. This page will be reviewed and dated again when the details are settled, and anyone who has given us an email address will be told before anything here changes in a way that affects them.",
+    "These terms are published in draft while the platform is being built, and the entity details below are still being finalised. Privileged access accounts are open and nothing on this site takes payment. This page will be reviewed and dated again when the details are settled, and anyone who has given us an email address will be told before anything here changes in a way that affects them.",
   terms: {
     title: "Terms of Use",
     intro:
@@ -2752,7 +2752,7 @@ export const legal = {
       {
         heading: "What you may do with the course material",
         body: [
-          "The lessons, labs, templates and written material on this site are free to use for your own work and for the work of the organisation that employs you. You may run the labs on your own data, adapt the templates, and keep and use whatever you build. You do not owe us anything for it and you do not need to credit us.",
+          "The lessons, labs, templates and written material are included with privileged access and may be used for your own work or for the organisation that employs you. You may run the labs on your own data, adapt the templates, and keep and use whatever you build. You do not owe us anything for it and you do not need to credit us.",
           "What you may not do is republish the material as your own, sell it, or use it as the content of a competing course or training programme. The line is between using what you learn and redistributing what we wrote.",
         ],
       },
@@ -2765,7 +2765,7 @@ export const legal = {
       {
         heading: "Accounts",
         body: [
-          "Module 1 of every course is open with no account. An account exists so that your progress and your written work are still there when you come back, and it is free. You are responsible for keeping your own sign-in details to yourself, and for what happens under your account.",
+          "A privileged access account exists so that your application, progress, and written work are still there when you come back. It is offered at no charge. You are responsible for keeping your own sign-in details to yourself, and for what happens under your account.",
           "You can close your account at any time by writing to {contact}. We will delete it and the work stored against it.",
         ],
       },
@@ -2779,7 +2779,7 @@ export const legal = {
       {
         heading: "The site itself",
         body: [
-          "We may change, add to, or withdraw course material, and we may take the site down for maintenance. We try not to break things people are part-way through, but this is a free service and we cannot guarantee it is always available.",
+          "We may change, add to, or withdraw course material, and we may take the site down for maintenance. We try not to break things people are part-way through, but this service is offered at no charge and we cannot guarantee it is always available.",
           "To the extent the law allows, we are not liable for loss arising from your use of this site or the material on it. Nothing here limits liability that cannot legally be limited.",
         ],
       },
@@ -2894,9 +2894,9 @@ export const legal = {
 
 export const auth = {
   signUp: {
-    title: "Create your free account",
+    title: "Create your privileged access account",
     intro:
-      "One account opens every module after the first, in all five courses, and the account stays free.",
+      "Use one account to apply for Hybrid Filmmaking or join a course waitlist.",
     submit: "Create account",
     altPrompt: "Already have an account?",
     altLabel: "Sign in",
@@ -2969,8 +2969,8 @@ export const auth = {
     {
       id: "account",
       label: "Your account",
-      title: "Create your free account",
-      intro: "One account opens every module after the first, in all five courses, and it stays free.",
+      title: "Create your privileged access account",
+      intro: "Use one account to apply for Hybrid Filmmaking or join a course waitlist.",
       optional: false,
       next: "Continue",
     },
@@ -3046,7 +3046,7 @@ export const auth = {
     intro: "Pick up in the course you were last working through.",
     submit: "Sign in",
     altPrompt: "First time here?",
-    altLabel: "Create a free account",
+    altLabel: "Create a privileged access account",
     altHref: "/sign-up",
     fields: [
       { name: "email", label: "Email", type: "email", autoComplete: "email", half: false },
@@ -3061,11 +3061,11 @@ export const auth = {
     the account buys, and what they walk away with.
   */
   panel: {
-    label: "Free access",
+    label: "Privileged access",
     title: "Module 1 is open to everyone",
     points: [
       "Module 1 of every course runs with no account at all.",
-      "One free account opens every module after the first, in all five courses.",
+      "One account holds your application, waitlists, course work, and progress.",
       "You finish by deploying one workflow and measuring what changed.",
     ],
   },
@@ -3403,7 +3403,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
     steps: [
       {
         n: "01",
-        title: "Create your free account",
+        title: "Create your privileged access account",
         body: "The same account that opens the courses. Your application lives behind your own login because the second half of it asks for your photograph and your phone number, and those belong somewhere only you can post to.",
       },
       {
@@ -3455,7 +3455,7 @@ export const apply: Record<"instructor" | "judge", ApplyTrack> = {
     steps: [
       {
         n: "01",
-        title: "Create your free account",
+        title: "Create your privileged access account",
         body: "The same account that opens the courses. Your application lives behind your own login because the second half of it asks for your photograph and your phone number, and those belong somewhere only you can post to.",
       },
       {

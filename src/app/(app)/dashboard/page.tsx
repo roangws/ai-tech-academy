@@ -383,7 +383,7 @@ export default async function DashboardPage() {
 
       <section aria-labelledby="courses-heading" className="mt-10">
         <h2 id="courses-heading" className="t-h3 text-ink">
-          {current || restStarted.length ? "Start one of these next" : "Every course, free"}
+          {current || restStarted.length ? "Start one of these next" : "Your privileged access"}
         </h2>
         <p className="t-body-sm mt-1.5 text-ink-secondary">
           Not started yet. Module 1 of each is open, and none of them expire.

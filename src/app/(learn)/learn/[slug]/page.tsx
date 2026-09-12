@@ -161,8 +161,7 @@ export default async function CourseBoardPage({
             <>
               <p className="t-card-title text-ink">Module 1 is open</p>
               <p className="t-body-sm mt-2 text-ink-secondary">
-                Start now with no account. One free account opens every module after the first, here and
-                in every other course.
+                Create your privileged access account to keep this course and your progress together.
               </p>
               <Link
                 href={`/learn/${slug}/${modules[0]?.n ?? "01"}`}
@@ -253,7 +252,7 @@ export default async function CourseBoardPage({
                       href={unlockHref(`/learn/${slug}/${m.n}`)}
                       className="text-accent no-underline hover:underline"
                     >
-                      A free account
+                      A privileged access account
                     </Link>{" "}
                     opens this module and every other one.
                   </p>

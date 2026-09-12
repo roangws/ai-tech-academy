@@ -1,11 +1,12 @@
 import { ArrowRightIcon, ClockIcon, ListChecksIcon, TagIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { HeroCollage } from "@/components/hero-collage";
-import { ApplyButton, Container, Photo, StatusChip, TextAction } from "@/components/ui";
+import { Container, CourseIntakeButton, Photo, StatusChip, TextAction } from "@/components/ui";
 import { TrustSeal } from "@/components/trust-seal";
 import { cta, hero } from "@/lib/content";
 import { getInstructors } from "@/lib/roster";
 import { getCatalog } from "@/lib/catalog";
+import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * Two columns, white, with no gradient and no background image.
@@ -134,7 +135,11 @@ export async function Hero() {
             for, and the secondary affordance goes after both rather than between them.
           */}
           <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 md:mt-8">
-            <ApplyButton withDate />
+            <CourseIntakeButton
+              slug={OPEN_COURSE_SLUG}
+              href={courseDetailHref(OPEN_COURSE_SLUG)}
+              withDate
+            />
             <TrustSeal />
             {/* `#method` since the merge: the module band and the method band
                 are one section now, and this link always meant the one that

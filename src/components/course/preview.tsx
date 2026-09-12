@@ -1,5 +1,5 @@
 import { YouTubeBlock } from "@/components/lms/blocks/youtube";
-import { EnrollButton } from "@/components/ui";
+import { CourseIntakeButton } from "@/components/ui";
 import { publicMediaUrl } from "@/lib/lms/media";
 import { createClient } from "@/lib/supabase/server";
 import { type Course } from "@/lib/content";
@@ -76,9 +76,13 @@ export async function CoursePreview({ course }: { course: Course }) {
       />
 
       <div className="rounded-[var(--radius-feature)] border border-line bg-surface p-5">
-        <p className="t-card-title text-ink">Start module 1 now</p>
+        <p className="t-card-title text-ink">
+          {course.slug === "hybrid-filmmaking" ? "Apply for this course" : "Join the waitlist"}
+        </p>
         <p className="t-body-sm mt-2 text-ink-secondary">
-          Open to everyone. No account, no card, nothing to cancel.
+          {course.slug === "hybrid-filmmaking"
+            ? "Create an account to apply for the September intake."
+            : "Create an account now and we will keep your place for the October intake."}
         </p>
         {/*
           `ButtonLink`, not a hand-rolled class string — and that is the whole of
@@ -100,13 +104,13 @@ export async function CoursePreview({ course }: { course: Course }) {
           this said it again, and neither of them said the word a reader arrived
           looking for. The enrol-rail note has the full argument.
         */}
-        <EnrollButton
+        <CourseIntakeButton
+          slug={course.slug}
           withDate
-          href={`/courses/${course.slug}/start`}
           className="mt-5 w-full"
         />
         <p className="t-meta mt-3 text-center text-ink-muted">
-          An account keeps your progress and opens the rest.
+          Your privileged access account keeps the course and your progress together.
         </p>
       </div>
     </div>

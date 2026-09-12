@@ -2,7 +2,7 @@ import { ArrowRightIcon, SealCheckIcon } from "@phosphor-icons/react/dist/ssr";
 import { CourseCard } from "@/components/sections/courses";
 import {
   CheckList,
-  EnrollButton,
+  CourseIntakeButton,
   FactsLine,
   Panel,
   Section,
@@ -346,19 +346,23 @@ export async function MoreCourses({ currentId }: { currentId: string }) {
  */
 export function CourseClosing({ course }: { course: Course }) {
   const first = course.curriculum[0];
+  const isOpen = course.slug === "hybrid-filmmaking";
 
   return (
     <Section compressed>
       <Panel tone="dark">
         <div className="flex flex-wrap items-center justify-between gap-x-12 gap-y-6">
           <div className="max-w-[560px]">
-            <h2 className="t-h2 text-white">Start with module 1</h2>
+            <h2 className="t-h2 text-white">
+              {isOpen ? "Apply to join" : "Join the waitlist"}
+            </h2>
             {first ? (
               <p className="t-card-title mt-3 text-white/90">{first.name}</p>
             ) : null}
             <p className="t-body mt-2 text-[#c3d2dc]">
-              Open to everyone, with no account. You finish it holding{" "}
-              <span className="text-white">{article(first?.artifact)}</span>.
+              {isOpen
+                ? "Hybrid Filmmaking is accepting applications for its September intake."
+                : "Join now and we will hold your place for the October intake."}
             </p>
           </div>
 
@@ -369,26 +373,13 @@ export function CourseClosing({ course }: { course: Course }) {
                 page, so it was the last impression too. Roan's instruction covers
                 the label: every call to action on a course page reads "Enroll for
                 free / Starts <today>". */}
-            <EnrollButton withDate tone="onDark" href={`/courses/${course.slug}/start`} />
+            <CourseIntakeButton slug={course.slug} withDate tone="onDark" />
             <p className="t-meta mt-2.5 text-white/60">
-              Opens lesson 1 with no account. A free account opens the rest.
+              Create your privileged access account to continue.
             </p>
           </div>
         </div>
       </Panel>
     </Section>
   );
-}
-
-/**
- * "a baseline and use-case map", "an ICP and account brief".
- *
- * The artifacts are written in content.ts as bare noun phrases, because every other
- * place they appear is a label ("You finish with Baseline and use-case map") where
- * an article would be wrong. This is the one sentence that needs one.
- */
-function article(artifact?: string) {
-  if (!artifact) return "";
-  const lower = artifact.charAt(0).toLowerCase() + artifact.slice(1);
-  return `${/^[aeiou]/.test(lower) ? "an" : "a"} ${lower}`;
 }

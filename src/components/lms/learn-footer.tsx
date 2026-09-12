@@ -22,7 +22,7 @@ export function LearnFooter() {
     <footer className="mt-auto border-t border-line">
       <Container className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-5">
         <p className="t-meta text-ink-muted">
-          &copy; {new Date().getFullYear()} AI Tech Education Academy. A free, non-commercial
+          &copy; {new Date().getFullYear()} AI Tech Education Academy. A non-commercial
           educational project by Roan Weigert.
         </p>
         <nav aria-label="Legal" className="flex items-center gap-5">

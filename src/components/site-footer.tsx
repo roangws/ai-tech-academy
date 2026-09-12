@@ -94,7 +94,7 @@ export async function SiteFooter() {
       <Container>
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-line pb-6 pt-5">
         <p className="t-micro text-ink-muted">
-          © 2026 AI Tech Education Academy. A free, non-commercial educational project by
+          © 2026 AI Tech Education Academy. A non-commercial educational project by
           Roan Weigert. {brand.domain}
         </p>
         <ul className="flex flex-wrap gap-5">

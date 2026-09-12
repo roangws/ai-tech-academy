@@ -1,8 +1,9 @@
 import { ArrowRightIcon, PlayCircleIcon, SquaresFourIcon, UsersThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { ApplyButton, Panel, Section } from "@/components/ui";
+import { CourseIntakeButton, Panel, Section } from "@/components/ui";
 import { closing } from "@/lib/content";
+import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * The close, as one inset dark panel. This was two sections.
@@ -61,7 +62,13 @@ export function Closing() {
                 lines now, and a glyph vertically centred against a two-line
                 block has no line of its own to sit on: it landed in the gutter
                 between "Enroll for free" and the date under it. */}
-            <ApplyButton withDate tone="onDark" className="mt-7" />
+            <CourseIntakeButton
+              slug={OPEN_COURSE_SLUG}
+              href={courseDetailHref(OPEN_COURSE_SLUG)}
+              withDate
+              tone="onDark"
+              className="mt-7"
+            />
 
             <p className="t-meta mt-3 text-[#9db0bd]">{closing.reassurance}</p>
           </div>

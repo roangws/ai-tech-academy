@@ -8,7 +8,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
-import { EnrollButton, TextAction } from "@/components/ui";
+import { CourseIntakeButton, TextAction } from "@/components/ui";
 import { TrustSeal } from "@/components/trust-seal";
 import { moduleFormat, type Course } from "@/lib/content";
 
@@ -70,8 +70,12 @@ export function EnrollRail({ course }: { course: Course }) {
         ) : null}
 
         <div className="p-5">
-          <p className="t-h3 text-ink">Free</p>
-          <p className="t-meta mt-1 text-ink-muted">Module 1 opens with no account</p>
+          <p className="t-h3 text-ink">Privileged access</p>
+          <p className="t-meta mt-1 text-ink-muted">
+            {course.slug === "hybrid-filmmaking"
+              ? "Applications are open for this intake"
+              : "Join now for the next course intake"}
+          </p>
 
           {/*
             THE PAGE'S ONE FILLED ACCENT CONTROL, AND IT OPENS A LESSON.
@@ -112,9 +116,9 @@ export function EnrollRail({ course }: { course: Course }) {
             contrast-checked subtitle, and a second spelling of it drifts.
           */}
           <div className="mt-4">
-            <EnrollButton
+            <CourseIntakeButton
+              slug={course.slug}
               withDate
-              href={`/courses/${course.slug}/start`}
               className="w-full"
             />
           </div>

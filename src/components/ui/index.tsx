@@ -3,9 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { StartDate } from "@/components/start-date";
+import { NextMonth } from "@/components/next-month";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
-import { cta, REFERENCE_ZONE, startsOn, type Img } from "@/lib/content";
-import { courseApplicationHref } from "@/lib/intake";
+import { cta, nextMonthName, REFERENCE_ZONE, startsOn, type Img } from "@/lib/content";
+import {
+  courseApplicationHref,
+  courseWaitlistHref,
+  OPEN_COURSE_SLUG,
+  OPEN_COURSE_START,
+} from "@/lib/intake";
 
 /**
  * Shared primitives, built to references/DESIGN-SPEC.md.
@@ -452,11 +458,71 @@ export function ApplyButton({
         <span
           className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
         >
-          Starts <StartDate initial={startsOn(new Date(), REFERENCE_ZONE)} />
+          Starts {OPEN_COURSE_START}
         </span>
       </span>
     </ButtonLink>
   );
+}
+
+/** A joinable waitlist, with the course start month stated below the action. */
+export function WaitlistButton({
+  href,
+  withDate = false,
+  tone = "secondary",
+  size = "lg",
+  className = "",
+  ...props
+}: Omit<ComponentProps<typeof Link>, "href" | "children"> & {
+  href: ComponentProps<typeof Link>["href"];
+  withDate?: boolean;
+  tone?: "primary" | "secondary" | "onDark";
+  size?: "md" | "lg";
+}) {
+  if (!withDate) {
+    return (
+      <ButtonLink href={href} tone={tone} size={size} className={className} {...props}>
+        Join the waitlist
+      </ButtonLink>
+    );
+  }
+
+  const nextMonth = nextMonthName(new Date(), REFERENCE_ZONE);
+
+  return (
+    <ButtonLink
+      href={href}
+      tone={tone}
+      size={size}
+      className={`h-auto py-2.5 ${className}`}
+      {...props}
+    >
+      <span className="flex flex-col items-center leading-tight">
+        <span>Join the waitlist</span>
+        <span
+          className={`t-micro font-semibold ${tone === "secondary" ? "text-ink-muted" : "opacity-90"}`}
+        >
+          Starts <NextMonth initial={nextMonth} />
+        </span>
+      </span>
+    </ButtonLink>
+  );
+}
+
+/** One availability rule for cards, headers, and course-page conversion points. */
+export function CourseIntakeButton({
+  slug,
+  href,
+  ...props
+}: Omit<ComponentProps<typeof ApplyButton>, "href"> & {
+  slug: string;
+  href?: ComponentProps<typeof Link>["href"];
+}) {
+  if (slug === OPEN_COURSE_SLUG) {
+    return <ApplyButton href={href ?? courseApplicationHref(slug)} {...props} />;
+  }
+
+  return <WaitlistButton href={href ?? courseWaitlistHref(slug)} {...props} />;
 }
 
 /**

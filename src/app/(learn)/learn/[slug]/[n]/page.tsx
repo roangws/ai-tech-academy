@@ -392,7 +392,7 @@ export default async function ModulePage({
               <Meter className="mt-3" done={done.size} total={lessons.length} />
             ) : (
               <p className="t-body-sm mt-2 text-ink-secondary">
-                Progress is saved with a free account.
+                Progress is saved with a privileged access account.
               </p>
             )}
             <Link

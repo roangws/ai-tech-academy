@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import {
-  ApplyButton,
-  ButtonLink,
+  CourseIntakeButton,
   CourseCover,
   Section,
   SectionHeader,
@@ -11,10 +10,9 @@ import {
   StatusChip,
   TextAction,
 } from "@/components/ui";
-import { NextMonth } from "@/components/next-month";
-import { cta, nextMonthName, REFERENCE_ZONE } from "@/lib/content";
+import { cta } from "@/lib/content";
 import { getCatalog, moduleCount, type Course } from "@/lib/catalog";
-import { courseWaitlistHref, OPEN_COURSE_SLUG } from "@/lib/intake";
+import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
  * One catalog, one reading order.
@@ -389,22 +387,13 @@ export function CourseCard({ course, eager = false }: { course: Course; eager?: 
 }
 
 function CourseCardPrimary({ course }: { course: Course }) {
-  if (course.slug !== OPEN_COURSE_SLUG) {
-    const nextMonth = nextMonthName(new Date(), REFERENCE_ZONE);
-
-    return (
-      <ButtonLink
-        href={courseWaitlistHref(course.slug)}
-        tone="secondary"
-        size="md"
-        className="whitespace-nowrap"
-        aria-label={`Waitlist starts in ${nextMonth}`}
-      >
-        Waitlist starts in{" "}
-        <NextMonth initial={nextMonth} />
-      </ButtonLink>
-    );
-  }
-
-  return <ApplyButton withDate size="md" />;
+  return (
+    <CourseIntakeButton
+      slug={course.slug}
+      href={courseDetailHref(course.slug)}
+      withDate
+      size="md"
+      className="whitespace-nowrap"
+    />
+  );
 }
