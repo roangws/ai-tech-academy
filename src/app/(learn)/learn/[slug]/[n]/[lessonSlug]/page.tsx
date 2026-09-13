@@ -18,6 +18,8 @@ import { getViewer } from "@/lib/auth";
 import { getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { LessonAdvance } from "@/components/lms/lesson-advance";
+import { YouTubeBlock } from "@/components/lms/blocks/youtube";
+import { filmmakingLessons, filmmakingPoster, filmmakingHref } from "@/lib/filmmaking-lessons";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +39,10 @@ export async function generateMetadata({
   const lesson = course?.curriculum
     .find((m) => m.n === n)
     ?.lessons.find((l) => l.slug === lessonSlug);
+  const video = slug === "hybrid-filmmaking" ? filmmakingLessons.find((l) => l.module === n && l.slug === lessonSlug) : undefined;
 
   return {
-    title: lesson ? `${lesson.name} · ${course?.title}` : (course?.title ?? "Lesson"),
+    title: lesson ? `${video?.title ?? lesson.name} · ${course?.title}` : (course?.title ?? "Lesson"),
     robots: { index: false, follow: false },
   };
 }
@@ -145,7 +148,9 @@ export default async function LessonPage({
     is a pedagogy label (lesson / lab / template) and must never double as a
     claim about media again.
   */
-  const hasVideo = blocks.some((b) => b.kind === "video");
+  const videoIndex = slug === "hybrid-filmmaking" ? filmmakingLessons.findIndex((l) => l.module === n && l.slug === lessonSlug) : -1;
+  const video = videoIndex >= 0 ? filmmakingLessons[videoIndex] : undefined;
+  const hasVideo = Boolean(video) || blocks.some((b) => b.kind === "video");
   const hasAudio = blocks.some((b) => b.kind === "audio");
   const Icon = hasVideo
     ? PlayCircleIcon
@@ -206,7 +211,7 @@ export default async function LessonPage({
             {lesson.kind}
           </span>
           <span className="t-label tabular-nums text-ink-muted">
-            Lesson {index + 1} of {total}
+            {video ? `Lesson ${videoIndex + 1} of ${filmmakingLessons.length}` : `Lesson ${index + 1} of ${total}`}
           </span>
           {/* A duration only where there is something with a running time. The
               one `minutes` value in content.ts is a marketing claim about a
@@ -218,7 +223,8 @@ export default async function LessonPage({
           {done ? <StatusChip>Done</StatusChip> : null}
         </div>
 
-        <h1 className="t-h2 mt-2.5 text-ink">{lesson.name}</h1>
+        <h1 className="t-h2 mt-2.5 text-ink">{video?.title ?? lesson.name}</h1>
+        {video && <div className="mt-5"><YouTubeBlock id={video.youtubeId} title={video.title} poster={filmmakingPoster(video)} /><p className="t-body mt-5 text-ink-secondary">{video.description}</p><Link href={filmmakingHref(videoIndex)} className="t-meta mt-3 inline-block text-accent hover:underline">View all {filmmakingLessons.length} video lessons</Link></div>}
 
         {/*
           The scaffolding notice, at the top.
@@ -229,7 +235,7 @@ export default async function LessonPage({
           text inside it, which also means it disappears on its own the moment
           real content is attached instead of needing a re-seed.
         */}
-        {scaffolding ? (
+        {scaffolding && !video ? (
           <p className="t-body-sm mt-5 max-w-[72ch] rounded-[var(--radius-card)] border border-dashed border-line-control bg-surface-subtle p-4 text-ink-secondary">
             <strong className="font-medium text-ink">This lesson is not written yet.</strong> What
             follows is the outline it will be built on. The lab, the template and the artifact this

@@ -3,6 +3,7 @@ import { CourseIntakeButton } from "@/components/ui";
 import { publicMediaUrl } from "@/lib/lms/media";
 import { createClient } from "@/lib/supabase/server";
 import { type Course } from "@/lib/content";
+import { filmmakingLessons, filmmakingPoster } from "@/lib/filmmaking-lessons";
 
 /**
  * The first lesson's video, on the public course page.
@@ -29,6 +30,10 @@ import { type Course } from "@/lib/content";
  * courses today. An empty slot beats a placeholder.
  */
 export async function CoursePreview({ course }: { course: Course }) {
+  if (course.slug === "hybrid-filmmaking") {
+    const first = filmmakingLessons[0];
+    return <YouTubeBlock id={first.youtubeId} title={first.title} poster={filmmakingPoster(first)} />;
+  }
   const supabase = await createClient();
 
   const { data } = await supabase

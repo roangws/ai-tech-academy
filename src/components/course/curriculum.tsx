@@ -183,7 +183,10 @@ export function Curriculum({
                       key={l.name}
                       className="flex min-h-[40px] items-center gap-2.5 border-b border-line py-2 last:border-b-0"
                     >
-                      <Glyph size={14} aria-hidden="true" className="flex-none text-ink-muted" />
+                      {l.thumbnail ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.thumbnail} alt="" width={112} height={63} loading="lazy" className="aspect-video w-24 flex-none rounded-md object-cover sm:w-28" />
+                      ) : <Glyph size={14} aria-hidden="true" className="flex-none text-ink-muted" />}
                       <span className="t-body-sm min-w-0 flex-1 text-ink-secondary">{l.name}</span>
                       {/* Only where a real figure exists. See the head of this file. */}
                       {l.minutes ? (
@@ -196,9 +199,9 @@ export function Curriculum({
                 })}
               </ul>
 
-              <p className="t-meta mt-3 border-t border-line pt-3 text-ink-muted">
+              {m.artifact && <p className="t-meta mt-3 border-t border-line pt-3 text-ink-muted">
                 You finish with <span className="text-ink">{m.artifact}</span>
-              </p>
+              </p>}
 
               {/* The free module carries the video and the start control. `i === 0`
                   rather than `m.access === "open"`: a course with two open modules

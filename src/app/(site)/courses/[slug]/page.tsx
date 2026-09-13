@@ -19,6 +19,7 @@ import { brand } from "@/lib/content";
 import { getCatalog, getCourseBySlug, totalLessons } from "@/lib/catalog";
 import { getCourseInstructors, getInstructors } from "@/lib/roster";
 import { courseJsonLd } from "@/lib/seo";
+import { filmmakingCurriculum, filmmakingLessons } from "@/lib/filmmaking-lessons";
 
 /**
  * One course, in full.
@@ -175,8 +176,13 @@ export async function generateMetadata({
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const course = await getCourseBySlug(slug);
-  if (!course) notFound();
+  const storedCourse = await getCourseBySlug(slug);
+  if (!storedCourse) notFound();
+  const course = slug === "hybrid-filmmaking" ? {
+    ...storedCourse,
+    curriculum: filmmakingCurriculum,
+    stats: storedCourse.stats.map((stat) => stat.value === "12 modules" ? { value: `${filmmakingLessons.length} video lessons`, label: "With guides and practice material" } : stat),
+  } : storedCourse;
 
   /* The lead instructor, for the structured data below. A query rather than
      `instructors.people[0]`: the roster moved into Postgres, so the person this
@@ -346,8 +352,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                   import. It renders nothing when the course has no video yet, in
                   which case the panel is unchanged. */}
               <Curriculum
-                modules={course.curriculum}
-                totalLessons={totalLessons(course)}
+                modules={slug === "hybrid-filmmaking" ? filmmakingCurriculum : course.curriculum}
+                totalLessons={slug === "hybrid-filmmaking" ? filmmakingLessons.length : totalLessons(course)}
                 preview={<CoursePreview course={course} />}
               />
             </div>

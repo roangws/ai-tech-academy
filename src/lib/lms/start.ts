@@ -58,6 +58,8 @@ export type StartTarget = {
   resuming: boolean;
 };
 
+import { filmmakingLessons, filmmakingHref } from "@/lib/filmmaking-lessons";
+
 export async function resolveStart(
   slug: string,
   userId: string | null,
@@ -89,13 +91,18 @@ export async function resolveStart(
 
   /* Flattened once, in reading order, so all three rules below are a `find` over
      the same list rather than three different nested walks. */
-  const openable = modules
+  const entries = modules
     .filter((m) => m.access === "open" || Boolean(userId))
     .flatMap((m) => (m.lessons ?? []).map((l) => ({ ...l, n: m.n })));
+  const openable = slug === "hybrid-filmmaking"
+    ? filmmakingLessons.flatMap((video) => entries.filter((l) => l.n === video.module && l.slug === video.slug))
+    : entries;
 
   if (!openable.length) return null;
 
-  const href = (l: { n: string; slug: string }) => `/learn/${slug}/${l.n}/${l.slug}`;
+  const href = (l: { n: string; slug: string }) => slug === "hybrid-filmmaking"
+    ? filmmakingHref(filmmakingLessons.findIndex((video) => video.module === l.n && video.slug === l.slug))
+    : `/learn/${slug}/${l.n}/${l.slug}`;
 
   if (!userId) return { href: href(openable[0]), resuming: false };
 

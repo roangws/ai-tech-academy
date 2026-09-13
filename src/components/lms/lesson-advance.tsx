@@ -61,6 +61,7 @@ export function LessonAdvance({
   done,
   next,
   nextModule,
+  forward,
 }: {
   lessonId: string;
   courseId: string;
@@ -71,6 +72,7 @@ export function LessonAdvance({
   next: { slug: string; name: string } | null;
   /** The next module in the course, or null at the end of it. */
   nextModule: { n: string; name: string } | null;
+  forward?: { href: string; label: string };
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -109,16 +111,16 @@ export function LessonAdvance({
     end of the last module — the certifications page, which is where a finished
     course is claimed. Never a dead end.
   */
-  const forwardHref = next
+  const forwardHref = forward?.href ?? (next
     ? `/learn/${slug}/${n}/${next.slug}`
     : nextModule
       ? `/learn/${slug}/${nextModule.n}`
-      : "/dashboard/certifications";
-  const forwardLabel = next
+      : "/dashboard/certifications");
+  const forwardLabel = forward?.label ?? (next
     ? `Next: ${next.name}`
     : nextModule
       ? `Next module: ${nextModule.n} ${nextModule.name}`
-      : "Finish the course";
+      : "Finish the course");
 
   const save = useCallback(
     (wasDone: boolean) => {

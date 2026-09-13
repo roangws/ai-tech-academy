@@ -990,6 +990,7 @@ export type Lesson = {
   slug: string;
   name: string;
   kind: "lesson" | "lab" | "template";
+  thumbnail?: string;
   /**
    * Runtime, where a real one exists.
    *

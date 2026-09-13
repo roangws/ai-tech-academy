@@ -14,6 +14,8 @@ import { getViewer } from "@/lib/auth";
 import { getCourseBoard, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { enroll } from "@/app/actions/lms";
+import { FilmmakingClassroom } from "@/components/lms/filmmaking-classroom";
+import { filmmakingLessons } from "@/lib/filmmaking-lessons";
 
 export const dynamic = "force-dynamic";
 
@@ -53,14 +55,23 @@ export async function generateMetadata({
  */
 export default async function CourseBoardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lesson?: string }>;
 }) {
   const { slug } = await params;
   const viewer = await getViewer();
   const board = await getCourseBoard(slug, viewer?.id ?? null);
 
   if (!board) notFound();
+
+  if (slug === "hybrid-filmmaking") {
+    const requested = (await searchParams).lesson ?? "1";
+    const index = Number(requested) - 1;
+    if (!/^\d+$/.test(requested) || !Number.isInteger(index) || index < 0 || index >= filmmakingLessons.length) notFound();
+    return <FilmmakingClassroom board={board} index={index} />;
+  }
 
   const { course, modules, totalLessons, doneLessons, enrollment } = board;
   const signedIn = Boolean(viewer);
