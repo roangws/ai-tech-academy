@@ -5,7 +5,7 @@ export function Outcomes() {
     <SectionHeader id="outcomes-heading" label="Adaptive learning research" heading="Learning should respond to understanding" />
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,512px)] lg:gap-12">
       <div>
-        <p className="t-body max-w-[52ch] text-ink-secondary">Finishing a video is not the same as understanding it. Roan Weigert's adaptive-learning research explores how educational content can respond to what a learner understands and where they need more support.</p>
+        <p className="t-body max-w-[52ch] text-ink-secondary">Finishing a video is not the same as understanding it. Roan Weigert&apos;s adaptive-learning research explores how educational content can respond to what a learner understands and where they need more support.</p>
         <div className="mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5 md:p-6">
           <h3 className="t-card-title text-ink">World Models, by Roan Weigert</h3>
           <p className="t-h3 mt-3 text-ink">What does this learner need next?</p>
