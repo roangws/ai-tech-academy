@@ -49,9 +49,9 @@ export function FilmmakingPreview() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Watch the Hybrid Filmmaking trailer"
-          className="group absolute inset-0 grid size-full cursor-pointer place-items-center bg-black/10"
+          className="group absolute inset-0 grid size-full cursor-pointer place-items-center"
         >
-          <span className="grid size-14 place-items-center rounded-full bg-white text-ink shadow-e2 transition-transform group-hover:scale-105">
+          <span className="grid size-12 place-items-center rounded-full bg-white/45 text-ink shadow-e2 transition-[transform,background-color] group-hover:scale-105 group-hover:bg-white/75 group-focus-visible:bg-white/75">
             <PlayIcon size={22} weight="fill" aria-hidden="true" />
           </span>
         </button>

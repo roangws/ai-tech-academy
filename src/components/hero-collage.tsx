@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { ArrowRightIcon } from "@phosphor-icons/react";
-import { Photo, StatusChip } from "@/components/ui";
+import { Photo } from "@/components/ui";
 import { FilmmakingPreview } from "@/components/filmmaking-preview";
 import { hero } from "@/lib/content";
 
@@ -121,18 +121,12 @@ export function HeroCollage({ curriculumHref }: { curriculumHref: string }) {
         </motion.div>
 
         {/*
-          Second frame, tucked under the main one's lower-right corner.
-
-          It sits right and the card sits left, which is the opposite of the
-          obvious arrangement and is driven by the photograph: Roan stands on
-          the right of this frame, so a card overlapping from the right cropped
-          him out and left a rectangle of foliage. Overlapping from the left
-          takes the foliage instead. A collage overlap has to be chosen against
-          the image under it, not against the grid.
+          Keep the cover above the lesson card so its title stays visible.
+          It overlaps only the main video's lower-right corner.
         */}
         <motion.div
           variants={item}
-          className="absolute bottom-[74px] right-0 z-20 hidden w-[41%] sm:block"
+          className="absolute bottom-[150px] right-0 z-30 hidden w-[41%] sm:block"
         >
           <div className={frame}>
             <span className="relative block aspect-video overflow-hidden rounded-[10px] bg-surface-sunken">
@@ -157,7 +151,6 @@ export function HeroCollage({ curriculumHref }: { curriculumHref: string }) {
         >
           <div className="flex items-center justify-between gap-3">
             <p className="t-label text-ink-muted">{hero.lesson.label}</p>
-            <StatusChip open>{hero.lesson.status}</StatusChip>
           </div>
 
           <h2 className="t-card-title clamp-2 mt-1.5 text-ink">{hero.lesson.title}</h2>
