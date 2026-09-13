@@ -13,5 +13,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Preserve the existing CTA design. Use the original `LiquidButton` / `ButtonLink` components, colors, pill shape, glass layers, typography, sizing, and hover behavior.
 - Functional changes to login, applications, enrollment, or waitlists do not authorize a CTA redesign. Never replace these buttons with flat controls or change their visual style without Roan's explicit approval.
 - Keep a visible, direct route to My courses and clearly separate accessible courses from applications and upcoming-course waitlists.
-- Course management belongs in My courses (/dashboard), not Account. Homepage Apply to join CTAs lead to the filmmaking course detail. Keep course titles over the bottom of their cover images with a gradient and initial.
+- Course management belongs in My courses (/dashboard), not Account. Homepage Apply to join CTAs lead to the filmmaking course detail. Keep course titles over the bottom of their cover images with a gradient. Homepage thumbnails must not have letter/initial badges. Fill the featured card's spare height with useful project information, not an empty gap above its CTA.
 - Public headers must show the full text logo and "by Roan Weigert", without a Website/panel switcher. The compact identity and area switcher are for signed-in users only.

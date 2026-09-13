@@ -756,6 +756,7 @@ export function CourseCover({
   eager = false,
   href,
   title,
+  showInitial = true,
 }: {
   ground: string;
   /**
@@ -781,6 +782,7 @@ export function CourseCover({
   href?: string;
   /** Names the destination for the one case where nothing else does. */
   title?: string;
+  showInitial?: boolean;
   /**
    * The photograph under the cover's graphic treatment. Absent leaves the flat
    * ground the covers shipped with, so a path with no picture yet degrades to
@@ -850,7 +852,7 @@ export function CourseCover({
         </>
       ) : null}
       {title && <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end bg-linear-to-t from-black/90 via-black/20 to-transparent p-5">
-        <span aria-hidden="true" className="mb-3 flex size-9 items-center justify-center rounded-lg border border-white/40 bg-white/15 text-xl font-medium text-white">{title[0]}</span>
+        {showInitial && <span aria-hidden="true" className="mb-3 flex size-9 items-center justify-center rounded-lg border border-white/40 bg-white/15 text-xl font-medium text-white">{title[0]}</span>}
         <h3 className="t-card-title text-white">{title}</h3>
       </div>}
     </div>
