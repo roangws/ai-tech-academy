@@ -11,7 +11,7 @@ import { Container, FactsLine } from "@/components/ui";
 import { CoursePhoto } from "@/components/lms/course-photo";
 import { Meter, ModuleState } from "@/components/lms/ui";
 import { getViewer } from "@/lib/auth";
-import { getCourseBoard, bySlug } from "@/lib/lms/queries";
+import { getCourseBoard, getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { enroll } from "@/app/actions/lms";
 import { FilmmakingClassroom } from "@/components/lms/filmmaking-classroom";
@@ -58,7 +58,7 @@ export default async function CourseBoardPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ lesson?: string }>;
+  searchParams: Promise<{ lesson?: string; material?: string }>;
 }) {
   const { slug } = await params;
   const viewer = await getViewer();
@@ -67,10 +67,14 @@ export default async function CourseBoardPage({
   if (!board) notFound();
 
   if (slug === "hybrid-filmmaking") {
-    const requested = (await searchParams).lesson ?? "1";
+    const { lesson: requested = "1", material } = await searchParams;
     const index = Number(requested) - 1;
     if (!/^\d+$/.test(requested) || !Number.isInteger(index) || index < 0 || index >= filmmakingLessons.length) notFound();
-    return <FilmmakingClassroom board={board} index={index} />;
+    const materialModule = material ? board.modules.find((m) => m.lessons.some((l) => l.slug === material)) : null;
+    if (material && !materialModule) notFound();
+    const materialView = material && materialModule ? await getLessonView(slug, materialModule.n, material, viewer?.id ?? null) : null;
+    if (material && !materialView) notFound();
+    return <FilmmakingClassroom board={board} index={index} materialView={materialView} />;
   }
 
   const { course, modules, totalLessons, doneLessons, enrollment } = board;

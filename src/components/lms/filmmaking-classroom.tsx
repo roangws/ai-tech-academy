@@ -3,26 +3,28 @@ import {
   CheckCircleIcon,
   PlayCircleIcon,
   ArrowLeftIcon,
-  ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "@/components/ui";
 import { Meter } from "@/components/lms/ui";
 import { YouTubeBlock } from "@/components/lms/blocks/youtube";
 import { LessonAdvance } from "@/components/lms/lesson-advance";
+import { LessonBlocks } from "@/components/lms/blocks";
 import {
   filmmakingLessons,
   filmmakingPoster,
   filmmakingHref,
 } from "@/lib/filmmaking-lessons";
-import type { CourseBoard } from "@/lib/lms/queries";
+import type { CourseBoard, LessonView } from "@/lib/lms/queries";
 import { cn } from "@/lib/utils";
 
 export function FilmmakingClassroom({
   board,
   index,
+  materialView = null,
 }: {
   board: CourseBoard;
   index: number;
+  materialView?: LessonView | null;
 }) {
   const current = filmmakingLessons[index];
   const currentModule = board.modules.find((m) => m.n === current.module);
@@ -140,14 +142,6 @@ export function FilmmakingClassroom({
           <p className="t-body mt-5 max-w-[68ch] text-ink-secondary">
             {current.description}
           </p>
-          <a
-            href={`https://www.youtube.com/watch?v=${current.youtubeId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="t-meta mt-2 inline-block text-accent hover:underline"
-          >
-            Watch on YouTube
-          </a>
           <div className="mt-7 border-t border-line pt-5">
             <h3 className="t-card-title text-ink">Put it into practice</h3>
             <p className="t-body-sm mt-2 max-w-[68ch] text-ink-secondary">
@@ -191,15 +185,6 @@ export function FilmmakingClassroom({
             ) : (
               <span />
             )}
-            {index + 1 < filmmakingLessons.length && (
-              <Link
-                href={filmmakingHref(index + 1)}
-                className="t-meta inline-flex items-center gap-2 text-ink-secondary hover:text-ink"
-              >
-                Browse next lesson
-                <ArrowRightIcon size={14} />
-              </Link>
-            )}
           </nav>
           <details className="mt-7 rounded-[var(--radius-feature)] border border-line p-5">
             <summary className="t-card-title cursor-pointer text-ink">
@@ -213,7 +198,7 @@ export function FilmmakingClassroom({
               {currentModule?.lessons.map((l) => (
                 <li key={l.id}>
                   <Link
-                    href={`/learn/${board.course.slug}/${currentModule.n}/${l.slug}`}
+                    href={`${filmmakingHref(index)}&material=${encodeURIComponent(l.slug)}#lesson-material`}
                     className="t-body-sm text-accent hover:underline"
                   >
                     {l.name}
@@ -231,16 +216,17 @@ export function FilmmakingClassroom({
                 .filter((m) => m.n === "08" || m.n === "12")
                 .map((m) => (
                   <li key={m.id}>
-                    <Link
-                      href={`/learn/${board.course.slug}/${m.n}`}
-                      className="t-body-sm text-accent hover:underline"
-                    >
-                      {m.name}
-                    </Link>
+                    <p className="t-body-sm text-ink">{m.name}</p>
+                    <ul className="mt-2 space-y-2">{m.lessons.map((entry) => <li key={entry.id}><Link href={`${filmmakingHref(index)}&material=${encodeURIComponent(entry.slug)}#lesson-material`} className="t-body-sm text-accent hover:underline">{entry.name}</Link></li>)}</ul>
                   </li>
                 ))}
             </ul>
           </details>
+          {materialView && <section id="lesson-material" className="mt-8 scroll-mt-24 border-t border-line pt-6">
+            <h3 className="t-h3 text-ink">{materialView.lesson.name}</h3>
+            <LessonBlocks blocks={materialView.blocks} coverSrc={board.course.cover?.src} />
+            <LessonAdvance key={materialView.lesson.id} lessonId={materialView.lesson.id} courseId={board.courseId} slug={board.course.slug} n={materialView.module.n} done={materialView.done} next={null} nextModule={null} forward={{ href: filmmakingHref(index), label: "Back to lesson" }} />
+          </section>}
         </div>
       </div>
     </Container>

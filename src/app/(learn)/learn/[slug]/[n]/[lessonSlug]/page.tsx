@@ -19,7 +19,7 @@ import { getLessonView, bySlug } from "@/lib/lms/queries";
 import { isLocked, unlockHref } from "@/lib/lms/access";
 import { LessonAdvance } from "@/components/lms/lesson-advance";
 import { YouTubeBlock } from "@/components/lms/blocks/youtube";
-import { filmmakingLessons, filmmakingPoster, filmmakingHref } from "@/lib/filmmaking-lessons";
+import { filmmakingLessons, filmmakingPoster, filmmakingHref, filmmakingLegacyHref } from "@/lib/filmmaking-lessons";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +89,10 @@ export default async function LessonPage({
   const viewer = await getViewer();
   const view = await getLessonView(slug, n, lessonSlug, viewer?.id ?? null);
   if (!view) notFound();
+  if (slug === "hybrid-filmmaking") {
+    const destination = filmmakingLegacyHref(n, lessonSlug);
+    if (destination) permanentRedirect(destination);
+  }
 
   const {
     course,

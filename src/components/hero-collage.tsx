@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { ArrowRightIcon, PlayIcon } from "@phosphor-icons/react";
-import { Photo, PosterChip, StatusChip } from "@/components/ui";
+import { ArrowRightIcon } from "@phosphor-icons/react";
+import { Photo, StatusChip } from "@/components/ui";
+import { FilmmakingPreview } from "@/components/filmmaking-preview";
 import { hero } from "@/lib/content";
 
 /**
@@ -116,32 +117,7 @@ export function HeroCollage({ curriculumHref }: { curriculumHref: string }) {
         {/* Full width below sm, where there is no second frame to make room
             for and no shapes to sit inside of. */}
         <motion.div variants={item} className="absolute left-0 top-0 z-10 w-full sm:left-[7%] sm:w-[81%]">
-          <Link
-            href={curriculumHref}
-            aria-label={`Watch ${hero.lesson.label}: ${hero.lesson.title}`}
-            className={`group relative block no-underline ${frame}`}
-          >
-            <span className="relative block aspect-video overflow-hidden rounded-[10px] bg-surface-sunken">
-              <Photo
-                image={hero.lesson.poster}
-                width={1280}
-                height={720}
-                priority
-                sizes="(max-width: 1024px) 90vw, 430px"
-              />
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white pl-0.5 shadow-e2 transition-transform duration-150 group-hover:scale-105">
-                  <PlayIcon size={18} weight="fill" className="text-ink" />
-                </span>
-              </span>
-              {/* Bottom left, not bottom right. The second frame overlaps this
-                  frame's lower-right corner, so a chip there is read against a
-                  card edge 12px away. */}
-              <PosterChip className="absolute bottom-2.5 left-2.5">
-                {hero.lesson.duration}
-              </PosterChip>
-            </span>
-          </Link>
+          <div className={frame}><FilmmakingPreview /></div>
         </motion.div>
 
         {/*
@@ -159,11 +135,11 @@ export function HeroCollage({ curriculumHref }: { curriculumHref: string }) {
           className="absolute bottom-[74px] right-0 z-20 hidden w-[41%] sm:block"
         >
           <div className={frame}>
-            <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px] bg-surface-sunken">
+            <span className="relative block aspect-video overflow-hidden rounded-[10px] bg-surface-sunken">
               <Photo
-                image={hero.aside}
-                width={900}
-                height={675}
+                image={{ src: "/images/lessons/hybrid-filmmaking/slide-11.webp", alt: "Hybrid Filmmaking: traditional craft and applied AI, with Roan Weigert" }}
+                width={1280}
+                height={720}
                 sizes="(max-width: 1024px) 45vw, 215px"
               />
             </span>

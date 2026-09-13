@@ -5,7 +5,6 @@ import { Container, CourseIntakeButton, Photo, StatusChip, TextAction } from "@/
 import { TrustSeal } from "@/components/trust-seal";
 import { cta, hero } from "@/lib/content";
 import { getInstructors } from "@/lib/roster";
-import { getCatalog } from "@/lib/catalog";
 import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
 
 /**
@@ -51,9 +50,7 @@ export async function Hero() {
     column now, so the href is resolved here — on the server, where the catalogue
     is — and handed down.
   */
-  const catalog = await getCatalog();
-  const lead = catalog.find((c) => c.featured) ?? catalog[0];
-  const curriculumHref = lead ? `/courses/${lead.slug}#curriculum` : "/courses";
+  const curriculumHref = "/courses/hybrid-filmmaking";
 
   return (
     /* `overflow-hidden` because the collage's shapes are offset outside their
@@ -144,7 +141,7 @@ export async function Hero() {
             {/* `#method` since the merge: the module band and the method band
                 are one section now, and this link always meant the one that
                 answers "how does this work". */}
-            <TextAction href="#method">
+            <TextAction href={curriculumHref}>
               {cta.howItWorks}
               <ArrowRightIcon size={14} weight="bold" />
             </TextAction>

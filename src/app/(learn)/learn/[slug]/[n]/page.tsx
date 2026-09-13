@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { filmmakingLegacyHref } from "@/lib/filmmaking-lessons";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -86,6 +87,10 @@ export default async function ModulePage({
   const view = await getModuleView(slug, n, viewer?.id ?? null);
 
   if (!view) notFound();
+  if (slug === "hybrid-filmmaking") {
+    const destination = filmmakingLegacyHref(n, ["08", "12"].includes(n) ? view.lessons[0]?.slug : undefined);
+    if (destination) permanentRedirect(destination);
+  }
 
   const { course, module, lessons, done, prev, next } = view;
   const signedIn = Boolean(viewer);

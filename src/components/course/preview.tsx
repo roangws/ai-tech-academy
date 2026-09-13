@@ -3,7 +3,6 @@ import { CourseIntakeButton } from "@/components/ui";
 import { publicMediaUrl } from "@/lib/lms/media";
 import { createClient } from "@/lib/supabase/server";
 import { type Course } from "@/lib/content";
-import { filmmakingLessons, filmmakingPoster } from "@/lib/filmmaking-lessons";
 
 /**
  * The first lesson's video, on the public course page.
@@ -30,10 +29,8 @@ import { filmmakingLessons, filmmakingPoster } from "@/lib/filmmaking-lessons";
  * courses today. An empty slot beats a placeholder.
  */
 export async function CoursePreview({ course }: { course: Course }) {
-  if (course.slug === "hybrid-filmmaking") {
-    const first = filmmakingLessons[0];
-    return <YouTubeBlock id={first.youtubeId} title={first.title} poster={filmmakingPoster(first)} />;
-  }
+  // The filmmaking trailer lives in the enrollment rail. GTM has no preview.
+  if (["hybrid-filmmaking", "applied-ai-for-go-to-market"].includes(course.slug)) return null;
   const supabase = await createClient();
 
   const { data } = await supabase

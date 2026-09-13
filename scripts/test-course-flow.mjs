@@ -30,7 +30,7 @@ assert.match(framework, /63\/967,917/);
 assert.match(framework, /not a granted patent/);
 console.log("PASS: course navigation, account separation, protected team inbox, and accurate patent status.");
 const cards = readFileSync(new URL("../src/components/sections/courses.tsx", import.meta.url), "utf8");
-assert.match(cards, /showInitial=\{!homepage\}/, "Homepage thumbnails must not show letter badges");
+assert.match(cards, /showInitial=\{false\}/, "Course thumbnails must not show letter badges");
 assert.match(cards, /data-course-project/, "The featured card must fill its spare height with project information");
 assert.match(cards, /featured && homepage \? "mt-4" : "mt-auto"/, "No auto-margin gap above the homepage featured CTA");
 console.log("PASS: homepage-only thumbnail badges and filled featured-card spacing.");

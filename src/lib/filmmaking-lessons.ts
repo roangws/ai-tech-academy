@@ -131,6 +131,15 @@ export const filmmakingPoster = (lesson: FilmmakingLesson) =>
 export const filmmakingHref = (index: number) =>
   `/learn/hybrid-filmmaking?lesson=${index + 1}`;
 
+/** Keep old bookmarks and supplemental material inside the same classroom. */
+export function filmmakingLegacyHref(moduleN: string, lessonSlug?: string) {
+  const index = filmmakingLessons.findIndex((l) => l.module === moduleN);
+  const target = index >= 0 ? index : moduleN === "08" ? 7 : moduleN === "12" ? 9 : -1;
+  if (target < 0) return null;
+  const supplemental = lessonSlug && lessonSlug !== filmmakingLessons[target].slug;
+  return filmmakingHref(target) + (supplemental ? `&material=${encodeURIComponent(lessonSlug)}#lesson-material` : "");
+}
+
 export const filmmakingCurriculum: CourseModule[] = [
   ...new Set(filmmakingLessons.map((l) => l.group)),
 ].map((group, i) => ({

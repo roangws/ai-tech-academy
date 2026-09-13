@@ -756,7 +756,7 @@ export function CourseCover({
   eager = false,
   href,
   title,
-  showInitial = true,
+  showInitial = false,
 }: {
   ground: string;
   /**

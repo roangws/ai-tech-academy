@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { VideoPlayer } from "@/components/video-player";
+import { FilmmakingPreview } from "@/components/filmmaking-preview";
 import { CourseIntakeButton, TextAction } from "@/components/ui";
 import { TrustSeal } from "@/components/trust-seal";
 import { moduleFormat, type Course } from "@/lib/content";
@@ -60,7 +61,7 @@ export function EnrollRail({ course }: { course: Course }) {
           stat bar; both went back when the token turned out to be one the spec
           forbids on a card by name. The note in course/hero.tsx has it. */}
       <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1">
-        {course.preview ? (
+        {course.slug === "hybrid-filmmaking" ? <FilmmakingPreview /> : course.slug !== "applied-ai-for-go-to-market" && course.preview ? (
           <VideoPlayer
             src={course.preview.src}
             poster={course.preview.poster}

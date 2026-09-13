@@ -6,7 +6,7 @@ import {
   WrenchIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
-import { VideoPlayer } from "@/components/video-player";
+import { FilmmakingPreview } from "@/components/filmmaking-preview";
 import { CheckList, CourseIntakeButton, Section, SectionHeader, StatusChip } from "@/components/ui";
 import { method, moduleFormat } from "@/lib/content";
 import { courseDetailHref, OPEN_COURSE_SLUG } from "@/lib/intake";
@@ -149,14 +149,9 @@ export function HowModulesWork() {
           it reads as. */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_1fr] lg:gap-x-8 lg:gap-y-7">
         <figure className="m-0 min-w-0 lg:col-start-1 lg:row-start-1">
-          <VideoPlayer
-            src={moduleFormat.video.src}
-            poster={moduleFormat.video.poster}
-            posterAlt={moduleFormat.video.posterAlt}
-            card={moduleFormat.video.card}
-          />
+          <FilmmakingPreview />
           <figcaption className="t-meta mt-2 text-ink-muted">
-            {moduleFormat.video.caption}
+            Watch the Hybrid Filmmaking course trailer
           </figcaption>
         </figure>
 

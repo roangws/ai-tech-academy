@@ -19,7 +19,7 @@ export async function Courses() {
 export function CourseCard({ course, eager = false, featured = false, homepage = false }: { course: Course; eager?: boolean; featured?: boolean; homepage?: boolean }) {
   return <article className={`group flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 ${featured ? "md:flex-row" : ""}`}>
     <div className={featured ? "md:w-[44%] md:flex-none" : ""}>
-      <CourseCover ground={course.ground} image={course.cover} eager={eager} href={`/courses/${course.slug}`} title={course.title} fill={featured} showInitial={!homepage} />
+      <CourseCover ground={course.ground} image={course.cover} eager={eager} href={`/courses/${course.slug}`} title={course.title} fill={featured} showInitial={false} />
     </div>
     <div className="flex min-w-0 flex-1 flex-col p-5">
       <p className="t-body-sm text-ink-secondary">{course.summary}</p>
