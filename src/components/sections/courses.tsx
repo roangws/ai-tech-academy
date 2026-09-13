@@ -1,3 +1,4 @@
+import { filmmakingLessons } from "@/lib/filmmaking-lessons";
 import { ArrowRightIcon, CheckIcon, SealCheckIcon } from "@phosphor-icons/react/dist/ssr";
 import { CourseIntakeButton, CourseCover, Section, SectionHeader, FactsLine, TextAction } from "@/components/ui";
 import { getCatalog, moduleCount, type Course } from "@/lib/catalog";
@@ -17,20 +18,21 @@ export async function Courses() {
 }
 
 export function CourseCard({ course, eager = false, featured = false, homepage = false }: { course: Course; eager?: boolean; featured?: boolean; homepage?: boolean }) {
+  const isFilmmaking = course.slug === "hybrid-filmmaking";
   return <article className={`group flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-e1 ${featured ? "md:flex-row" : ""}`}>
     <div className={featured ? "md:w-[44%] md:flex-none" : ""}>
       <CourseCover ground={course.ground} image={course.cover} eager={eager} href={`/courses/${course.slug}`} title={course.title} fill={featured} showInitial={false} />
     </div>
     <div className={`flex min-w-0 flex-1 flex-col ${featured ? "p-5" : "p-4"}`}>
       <p className="t-body-sm text-ink-secondary">{course.summary}</p>
-      <div className={featured ? "mt-4" : "mt-3 mb-4"}><FactsLine items={[moduleCount(course), course.duration]} /></div>
+      <div className={featured ? "mt-4" : "mt-3 mb-4"}><FactsLine items={isFilmmaking ? [`${filmmakingLessons.length} video lessons`, course.duration, `About ${course.workloadHours} hours total`] : [moduleCount(course), course.duration]} /></div>
       {featured && <p className="t-meta mt-3 text-ink-secondary"><span className="font-medium text-ink">For </span>{course.audience}</p>}
       {featured && <div className="my-4 border-t border-line pt-4">
         <p className="t-field text-ink-muted">{featured ? "Inside the course" : "What you’ll learn"}</p>
         <ul className="mt-2 space-y-2">
           {(featured ? course.curriculum.slice(0, 5).map((m) => m.name) : course.whatLearn.slice(0, 2)).map((item) => <li key={item} className="t-body-sm flex items-start gap-2 text-ink-secondary"><CheckIcon aria-hidden="true" size={15} className="mt-1 shrink-0 text-accent" /><span>{item}</span></li>)}
         </ul>
-        {featured && <p className="t-meta mt-2 text-ink-muted">Explore all {course.curriculum.length} modules on the course page.</p>}
+        {featured && <p className="t-meta mt-2 text-ink-muted">{isFilmmaking ? `Explore all ${filmmakingLessons.length} classes on the course page.` : `Explore all ${course.curriculum.length} modules on the course page.`}</p>}
       </div>}
       {featured && homepage && <div data-course-project className="flex flex-1 flex-col justify-center rounded-lg bg-surface-subtle p-4">
         <p className="t-field text-ink">Your final project</p>

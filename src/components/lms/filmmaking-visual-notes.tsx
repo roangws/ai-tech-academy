@@ -26,7 +26,7 @@ export function FilmmakingVisualNotes({ index }: { index: number }) {
         {/* These course images need the viewer's session, so bypass the image optimizer. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/api/lesson-materials/${index + 1}?image=${i}`} alt={figure.alt} width={figure.width} height={figure.height} loading="lazy" className="h-auto w-full" />
-        <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs text-ink shadow-sm"><ArrowsOutIcon size={14} aria-hidden="true" />Enlarge</span>
+        <span className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs text-ink shadow-sm"><ArrowsOutIcon size={14} aria-hidden="true" />Enlarge</span>
       </a>
       <figcaption className="mt-4"><h4 className="t-card-title text-ink">{figure.title}</h4><p className="t-body-sm mt-2 max-w-[68ch] text-ink-secondary">{figure.text}</p></figcaption>
     </figure>)}</div>
