@@ -1,3 +1,4 @@
+import { BooksIcon, TargetIcon, ChatsCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { Photo, Section } from "@/components/ui";
 import { teams } from "@/lib/content";
 import { getCatalog } from "@/lib/catalog";
@@ -16,10 +17,15 @@ export async function Teams() {
           <p className="t-label text-white/60">For companies and teams</p>
           <h2 className="t-h2 mt-2 text-white">Bring AI training to your team</h2>
           <p className="t-body mt-3 text-[#c3d2dc]">Help your team apply AI to the work they already do, through guided courses and practical projects.</p>
-          <dl className="mt-6 space-y-4">
-            <div><dt className="t-card-title text-white">Choose a relevant course</dt><dd className="t-body-sm mt-1 text-[#c3d2dc]">Explore filmmaking, marketing, education, infrastructure, and small-business workflows.</dd></div>
-            <div><dt className="t-card-title text-white">Start with a real goal</dt><dd className="t-body-sm mt-1 text-[#c3d2dc]">Tell us what your team wants to improve, how many people will join, and your preferred dates.</dd></div>
-            <div><dt className="t-card-title text-white">Discuss the next steps</dt><dd className="t-body-sm mt-1 text-[#c3d2dc]">We will review your request and contact you by email to discuss the training.</dd></div>
+          <dl className="mt-6 space-y-5">
+            {[
+              { icon: BooksIcon, title: "Choose a relevant course", text: "Explore filmmaking, marketing, education, infrastructure, and small-business workflows." },
+              { icon: TargetIcon, title: "Start with a real goal", text: "Tell us what your team wants to improve, how many people will join, and your preferred dates." },
+              { icon: ChatsCircleIcon, title: "Plan the training together", text: "We will review your request and contact you by email to discuss the next steps." },
+            ].map(({ icon: Icon, title, text }) => <div key={title} className="group flex gap-4">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white motion-safe:transition-transform motion-safe:group-hover:-translate-y-1"><Icon size={23} weight="duotone" aria-hidden="true" /></span>
+              <div><dt className="t-card-title text-white">{title}</dt><dd className="t-body-sm mt-1 text-[#c3d2dc]">{text}</dd></div>
+            </div>)}
           </dl>
           <TeamTrainingDialog courses={courses} />
           <p className="t-meta mt-3 text-white/65">No account needed to send a request.</p>

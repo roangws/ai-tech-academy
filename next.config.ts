@@ -56,6 +56,7 @@ const RENAMED_COURSE_SLUGS: readonly (readonly [string, string])[] = [
 ];
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: { "/api/course-kits/*": ["./resources/video-kits/**/*"] },
   async redirects() {
     return [
       ...LEGACY_COURSE_IDS.map(([id, slug]) => ({

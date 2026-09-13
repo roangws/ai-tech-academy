@@ -1,29 +1,35 @@
+import { BrainIcon, BookOpenIcon, TargetIcon, CertificateIcon } from "@phosphor-icons/react/dist/ssr";
 import { Section, SectionHeader } from "@/components/ui";
 
 export function Outcomes() {
   return <Section id="outcomes" tint ariaLabelledBy="outcomes-heading">
-    <SectionHeader id="outcomes-heading" label="Adaptive learning research" heading="Learning should respond to understanding" />
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,512px)] lg:gap-12">
-      <div>
-        <p className="t-body max-w-[52ch] text-ink-secondary">Finishing a video is not the same as understanding it. Roan Weigert&apos;s adaptive-learning research explores how educational content can respond to what a learner understands and where they need more support.</p>
-        <div className="mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5 md:p-6">
-          <h3 className="t-card-title text-ink">World Models, by Roan Weigert</h3>
-          <p className="t-h3 mt-3 text-ink">What does this learner need next?</p>
-          <p className="t-body-sm mt-3 text-ink-secondary">A clearer explanation, another example, or an opportunity to apply the idea. The research connects learner comprehension with personalized educational content.</p>
-        </div>
-        <p className="t-body-sm mt-5 max-w-[58ch] text-ink-secondary"><span className="font-medium text-ink">At the academy today, </span>you follow structured lessons, practice on real projects, and save your progress. Adaptive personalization remains a research focus.</p>
-      </div>
-      <aside className="rounded-[var(--radius-card)] border border-line border-t-4 border-t-accent bg-surface p-6 md:p-8" aria-label="Patent application information">
-        <p className="t-label text-accent">Patent application filed</p>
-        <h3 className="t-h3 mt-4 text-ink">Adaptive learning systems</h3>
-        <p className="t-body-sm mt-3 text-ink-secondary">Research into personalized educational content and learner comprehension, by Roan Weigert.</p>
-        <dl className="mt-6 space-y-4 border-t border-line pt-5">
-          <div><dt className="t-meta text-ink-muted">U.S. provisional patent application</dt><dd className="t-h3 mt-1 text-ink">63/967,917</dd></div>
-          <div><dt className="t-meta text-ink-muted">Filed</dt><dd className="t-body-sm mt-1 text-ink">January 26, 2026</dd></div>
-          <div><dt className="t-meta text-ink-muted">Inventor</dt><dd className="t-body-sm mt-1 text-ink">Roan Weigert</dd></div>
-        </dl>
-        <p className="t-meta mt-5 border-t border-line pt-4 text-ink-muted">Provisional application, not a granted patent.</p>
-      </aside>
+    <SectionHeader id="outcomes-heading" label="Adaptive learning research" heading="Learning that learns what you need" />
+    <p className="t-body max-w-[64ch] text-ink-secondary">We are developing an intelligent system that learns from your progress and goals, then adapts the explanations, examples, and practice to what you need next.</p>
+    <div className="mt-7 grid gap-6 sm:grid-cols-3">
+      {[
+        { icon: TargetIcon, title: "Start with your goal", text: "Connect what you learn to the work you want to do." },
+        { icon: BrainIcon, title: "Understand your progress", text: "Identify what you understand and where you need support." },
+        { icon: BookOpenIcon, title: "Adapt your next lesson", text: "Choose a clearer explanation, a relevant example, or more practice." },
+      ].map(({ icon: Icon, title, text }) => <div key={title} className="flex items-start gap-3">
+        <Icon size={25} weight="duotone" className="mt-1 shrink-0 text-accent" aria-hidden="true" />
+        <div><h3 className="t-card-title text-ink">{title}</h3><p className="t-body-sm mt-2 text-ink-secondary">{text}</p></div>
+      </div>)}
     </div>
+    <aside className="mt-8 flex flex-col gap-5 rounded-[var(--radius-card)] border border-line bg-surface p-5 sm:flex-row sm:items-center md:px-6" aria-label="Patent application information">
+      <div className="flex shrink-0 items-center gap-3 text-accent sm:w-40 sm:flex-col sm:border-r sm:border-line sm:pr-5 sm:text-center">
+        <CertificateIcon size={36} weight="duotone" aria-hidden="true" />
+        <p className="text-xs font-semibold leading-relaxed">PATENT APPLICATION<br />FILED</p>
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="t-card-title text-ink">Adaptive learning systems</h3>
+        <p className="t-meta mt-1 text-ink-secondary">U.S. provisional application 63/967,917</p>
+        <dl className="mt-3 flex flex-wrap gap-x-7 gap-y-2 t-meta">
+          <div><dt className="inline text-ink-muted">Filed </dt><dd className="inline text-ink">January 26, 2026</dd></div>
+          <div><dt className="inline text-ink-muted">Inventor </dt><dd className="inline text-ink">Roan Weigert</dd></div>
+        </dl>
+        <p className="t-meta mt-3 text-ink-muted">Provisional application, not a granted patent.</p>
+      </div>
+    </aside>
+    <p className="t-meta mt-4 max-w-[80ch] text-ink-secondary">Personalization is in development. Today, the academy offers structured video lessons, practical projects, and saved progress.</p>
   </Section>;
 }

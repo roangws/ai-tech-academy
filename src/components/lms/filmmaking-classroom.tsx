@@ -1,3 +1,4 @@
+import { FilmmakingCookbook } from "@/components/lms/filmmaking-cookbook";
 import Link from "next/link";
 import {
   CheckCircleIcon,
@@ -142,12 +143,7 @@ export function FilmmakingClassroom({
           <p className="t-body mt-5 max-w-[68ch] text-ink-secondary">
             {current.description}
           </p>
-          <div className="mt-7 border-t border-line pt-5">
-            <h3 className="t-card-title text-ink">Put it into practice</h3>
-            <p className="t-body-sm mt-2 max-w-[68ch] text-ink-secondary">
-              {current.practice}
-            </p>
-          </div>
+          <FilmmakingCookbook index={index} />
           {lesson && currentModule && (
             <LessonAdvance
               key={lesson.id}
