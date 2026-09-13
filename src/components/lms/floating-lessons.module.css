@@ -3,12 +3,15 @@
 .stage { perspective: 1400px; padding: 28px 12px 32px; }
 .wall { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 28px 22px; transform-style: preserve-3d;  }
 .slot { min-width: 0; transform-style: preserve-3d;  }
-.card { display: block; height: 100%; border-radius: 13px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; box-shadow: 0 16px 24px -18px rgb(13 26 34 / .55), 0 3px 7px rgb(13 26 34 / .07); transition: transform 250ms ease, box-shadow 250ms ease; }
-.card:hover, .card:focus-visible { transform: translateY(-3px); box-shadow: 0 24px 32px -16px rgb(13 26 34 / .35); outline: 2px solid var(--accent); outline-offset: 3px; }
-.slot:has(.card:hover), .slot:focus-within { z-index: 2; }
+.card { display: block; height: 100%; border-radius: 13px; color: var(--ink); text-decoration: none; outline-offset: 4px; }
+/* The link never transforms. Its stable hit area prevents edge-hover feedback. */
+.visual { height: 100%; pointer-events: none; border-radius: 13px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 16px 24px -18px rgb(13 26 34 / .4), 0 3px 7px rgb(13 26 34 / .07); backface-visibility: hidden; }
+.card:focus-visible { outline: 2px solid var(--accent); }
+.card:hover .visual { border-color: var(--accent); }
+.slot:focus-within { z-index: 2; }
 .cover { position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px 12px 0 0; }
 .cover img { width: 100%; height: 100%; object-fit: cover; }
-.play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: white; background: rgb(13 26 34 / .68); backdrop-filter: blur(8px); opacity: 0; transition: opacity 180ms; }
+.play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: white; background: rgb(13 26 34 / .68);  opacity: 0; transition: opacity 180ms; }
 .card:hover .play, .card:focus-visible .play { opacity: 1; }
 .check { position: absolute; right: 8px; top: 8px; color: var(--accent); border-radius: 50%; background: white; }
 .caption { display: flex; align-items: flex-start; gap: 8px; padding: 12px 10px 13px; }
@@ -28,6 +31,6 @@
   .arrow { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wall, .slot, .card:hover, .card:focus-visible { transform: none; }
+  .visual { transform: none !important; }
   .card, .play { transition: none; }
 }

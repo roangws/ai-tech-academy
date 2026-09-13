@@ -8,7 +8,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ less
   const { lesson } = await params;
   if (!Object.hasOwn(filmmakingVisuals, lesson)) return new Response("Lesson not found", { status: 404 });
   const image = new URL(request.url).searchParams.get("image");
-  if (image !== null && !["0", "1"].includes(image)) return new Response("Image not found", { status: 404 });
+  if (image !== null && !["0", "1", ...(lesson === "2" ? ["shot-0", "shot-1", "shot-2", "shot-3"] : [])].includes(image)) return new Response("Image not found", { status: 404 });
   const course = await bySlug("hybrid-filmmaking");
   if (!course) return new Response("Course not found", { status: 404 });
   await requireCourseAccess(course.slug, course.id);

@@ -17,3 +17,5 @@ These are selected slide frames from the original Hybrid Filmmaking class record
 Source frames: intros-GMI/roan-classes/<class>/work/slideframes.
 Tool names and versions in these historical slides reflect the recorded classes.
 Instructional visuals and downloads are served only after the course access check.
+
+The four shot-size explorer photographs are crops of the image panels in Foundations frame 002. They are served through the same protected lesson materials route.

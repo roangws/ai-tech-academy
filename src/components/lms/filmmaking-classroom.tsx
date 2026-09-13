@@ -1,3 +1,4 @@
+import { FilmmakingConcept } from "./filmmaking-concept";
 import { LessonResourceLinks, FilmmakingVisualNotes } from "./filmmaking-visual-notes";
 import { FilmmakingCookbook } from "@/components/lms/filmmaking-cookbook";
 import Link from "next/link";
@@ -146,6 +147,7 @@ export function FilmmakingClassroom({
           <p className="t-body mt-5 max-w-[68ch] text-ink-secondary">
             {current.description}
           </p>
+          <FilmmakingConcept key={`concept-${index}`} index={index} />
           <FilmmakingVisualNotes index={index} />
           <FilmmakingCookbook index={index} />
           {lesson && currentModule && (
