@@ -1,3 +1,4 @@
+import { LessonResourceLinks, FilmmakingVisualNotes } from "./filmmaking-visual-notes";
 import { FilmmakingCookbook } from "@/components/lms/filmmaking-cookbook";
 import Link from "next/link";
 import {
@@ -132,6 +133,7 @@ export function FilmmakingClassroom({
             <span className="ml-2">{current.group}</span>
           </p>
           <h2 className="t-h3 mt-2 text-ink">{current.title}</h2>
+          <LessonResourceLinks index={index} />
           <div className="mt-5">
             <YouTubeBlock
               key={current.youtubeId}
@@ -144,6 +146,7 @@ export function FilmmakingClassroom({
           <p className="t-body mt-5 max-w-[68ch] text-ink-secondary">
             {current.description}
           </p>
+          <FilmmakingVisualNotes index={index} />
           <FilmmakingCookbook index={index} />
           {lesson && currentModule && (
             <LessonAdvance

@@ -1,3 +1,4 @@
+import { LessonPreview } from "@/components/sections/lesson-preview";
 import { Board } from "@/components/sections/board";
 import { Closing } from "@/components/sections/closing";
 import { HowModulesWork } from "@/components/sections/modules";
@@ -135,6 +136,7 @@ export default function HomePage() {
       <Hero />
       <Courses />
       <HowModulesWork />
+      <LessonPreview />
       <Outcomes />
       {/* THE CERTIFICATE BAND WAS HERE, between Outcomes and Instructors, and it is
           gone on Roan's instruction — moved onto the five course pages, where the

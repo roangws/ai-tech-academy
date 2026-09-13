@@ -18,7 +18,7 @@ function KitRecipe({ kit }: { kit: VideoKit }) {
     <h4 className="t-h3 text-ink">{kit.title}</h4>
     <p className="t-body-sm mt-2 text-ink-secondary">{kit.goal}</p>
     <div className="mt-5 rounded-[var(--radius-card)] border border-accent/25 bg-accent-tint p-4 sm:p-5">
-      <div className="flex items-start gap-3"><FolderOpenIcon size={26} weight="duotone" className="shrink-0 text-accent" aria-hidden="true" /><div><h5 className="t-card-title text-ink">Your skill and project files</h5><p className="t-body-sm mt-1 text-ink-secondary">Download and unzip the complete kit. It includes the skill, scripts, rules, and START-HERE.md. Open the whole folder in Claude Code or Codex.</p></div></div>
+      <div className="flex items-start gap-3"><FolderOpenIcon size={26} weight="duotone" className="shrink-0 text-accent" aria-hidden="true" /><div><h5 className="t-card-title text-ink">Use this skill in Claude Code or Codex</h5><p className="t-body-sm mt-1 text-ink-secondary">Download and unzip the complete kit. It includes the skill, scripts, rules, and START-HERE.md. Open the whole folder in Claude Code or Codex.</p></div></div>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
         <ButtonLink href={`/api/course-kits/${kit.id}`} download prefetch={false} size="md"><DownloadSimpleIcon size={17} aria-hidden="true" />Download {kit.id === "micro-drama" ? "series" : kit.id} kit</ButtonLink>
         <a href={`/api/course-kits/${kit.id}?file=skill`} download className="t-body-sm inline-flex min-h-11 items-center gap-2 text-accent underline underline-offset-4"><DownloadSimpleIcon size={17} aria-hidden="true" />Download skill only</a>
