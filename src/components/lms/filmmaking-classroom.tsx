@@ -138,6 +138,7 @@ export function FilmmakingClassroom({
               id={current.youtubeId}
               title={current.title}
               poster={filmmakingPoster(current)}
+              completion={lesson && currentModule ? { lessonId: lesson.id, courseId: board.courseId, n: currentModule.n, done: completed.has(index) } : undefined}
             />
           </div>
           <p className="t-body mt-5 max-w-[68ch] text-ink-secondary">
@@ -146,7 +147,7 @@ export function FilmmakingClassroom({
           <FilmmakingCookbook index={index} />
           {lesson && currentModule && (
             <LessonAdvance
-              key={lesson.id}
+              key={`${lesson.id}:${completed.has(index)}`}
               lessonId={lesson.id}
               courseId={board.courseId}
               slug={board.course.slug}

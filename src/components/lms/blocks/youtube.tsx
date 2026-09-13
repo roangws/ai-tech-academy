@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PlayIcon } from "@phosphor-icons/react/dist/ssr";
 
 /**
@@ -36,24 +37,47 @@ import { PlayIcon } from "@phosphor-icons/react/dist/ssr";
  * src/components/video-player.tsx, which found it first and explains it at
  * length; it is the most valuable twenty lines in that file.
  *
- * ------------------------------------------------------------------ no API
- *
- * No `window.YT`, no IFrame Player API, no third-party script. That means no
- * watch-progress events, which is deliberate: "watched" is unfalsifiable
- * anyway (seek to the end and you are at 100%), and completion here is a fact a
- * learner asserts by pressing a button, not one inferred from a player.
+ * Opening the player can complete a course lesson when completion metadata is
+ * supplied. This temporary policy tracks opening, not watch duration. Other
+ * embeds and marketing videos do not supply completion metadata.
  */
 export function YouTubeBlock({
   id,
   title,
   poster,
+  completion,
 }: {
   id: string;
   title: string;
   poster: string | null;
+  completion?: { lessonId: string; courseId: string; n: string; done: boolean };
 }) {
   const [playing, setPlaying] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [saveFailed, setSaveFailed] = useState(false);
+  const saving = useRef(false);
+
+  async function completeOnOpen() {
+    if (!completion || completion.done || saving.current) return;
+    saving.current = true;
+    setSaveFailed(false);
+    try {
+      const response = await fetch("/api/lesson-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...completion, done: false }),
+        keepalive: true,
+      });
+      if (!response.ok) throw new Error("Progress could not be saved");
+      startTransition(() => router.refresh());
+    } catch {
+      setSaveFailed(true);
+    } finally {
+      saving.current = false;
+    }
+  }
 
   /* Warm the connection on intent rather than on load, so the handshake is done
      by the time the click lands but nothing is contacted for a reader who never
@@ -71,6 +95,7 @@ export function YouTubeBlock({
 
   if (playing) {
     return (
+      <div>
       <div className="overflow-hidden rounded-[var(--radius-feature)] border border-line bg-black">
         <iframe
           ref={frame}
@@ -82,6 +107,8 @@ export function YouTubeBlock({
           className="aspect-video w-full border-0"
         />
       </div>
+      {saveFailed && <p role="alert" className="t-body-sm mt-3 text-danger">Your video is open, but progress did not save. <button type="button" onClick={() => void completeOnOpen()} className="min-h-11 underline underline-offset-4">Retry saving progress</button></p>}
+      </div>
     );
   }
 
@@ -92,6 +119,7 @@ export function YouTubeBlock({
       onFocus={warm}
       onClick={() => {
         setPlaying(true);
+        void completeOnOpen();
         requestAnimationFrame(() => frame.current?.focus());
       }}
       className="group relative block aspect-video w-full overflow-hidden rounded-[var(--radius-feature)] border border-line bg-surface-sunken"

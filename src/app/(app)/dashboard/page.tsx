@@ -1,3 +1,5 @@
+import { FloatingLessons } from "@/components/lms/floating-lessons";
+import { filmmakingLessons } from "@/lib/filmmaking-lessons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -11,7 +13,7 @@ import { Meter } from "@/components/lms/ui";
 import { IntakeCards } from "@/components/course/intake-cards";
 import { getIntakeSnapshot } from "@/lib/course-intake";
 import { requireUser } from "@/lib/auth";
-import { getDashboard, type DashboardCourse } from "@/lib/lms/queries";
+import { getDashboard, getCourseBoard, type DashboardCourse } from "@/lib/lms/queries";
 import { getCatalog, totalLessons } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -124,6 +126,14 @@ export default async function DashboardPage() {
   const byCourseId = new Map(enrolled.map((e) => [e.course.id, e]));
   const started = enrolled.filter((e) => e.done > 0);
   const current = started[0] ?? enrolled[0] ?? null;
+  const filmmakingBoard = approved.has("hybrid-filmmaking")
+    ? await getCourseBoard("hybrid-filmmaking", viewer.id) : null;
+  const completedVideos = filmmakingLessons.flatMap((video, index) => {
+    const lessonModule = filmmakingBoard?.modules.find(m => m.n === video.module);
+    const lesson = lessonModule?.lessons.find(l => l.slug === video.slug);
+    return lesson && lessonModule?.doneIds.has(lesson.id) ? [index] : [];
+  });
+  const isFilmmaking = current?.course.slug === "hybrid-filmmaking";
   const actions = nextActions(enrolled);
   const scored = enrolled.filter((e) => e.judgements.length > 0);
 
@@ -209,7 +219,7 @@ export default async function DashboardPage() {
               </div>
               <h2 className="mt-2 max-w-[32ch] text-[20px] font-medium leading-[1.3] tracking-[-0.025em] text-ink md:text-[24px]">{current.course.title}</h2>
 
-              <Meter className="mt-5" done={current.done} total={current.total} />
+              <Meter className="mt-5" done={isFilmmaking ? completedVideos.length : current.done} total={isFilmmaking ? filmmakingLessons.length : current.total} />
 
               {current.resume ? (
                 <p className="t-body-sm mt-5 text-ink-secondary">
@@ -247,17 +257,20 @@ export default async function DashboardPage() {
                   href={`/learn/${current.course.slug}`}
                   className="t-button ml-5 inline-flex min-h-[48px] items-center text-ink-secondary no-underline underline-offset-4 hover:text-ink hover:underline"
                 >
-                  All {current.course.curriculum.length} modules
+                  {isFilmmaking ? `All ${filmmakingLessons.length} video lessons` : `All ${current.course.curriculum.length} modules`}
                 </Link>
               </div>
             </div>
           </div>
+          {isFilmmaking && <FloatingLessons completed={completedVideos} />}
         </section>
       ) : (
         <p className="t-body mt-3 max-w-[58ch] text-ink-secondary">
           Your course applications and waitlists are saved here. Choose a course below to get started.
         </p>
       )}
+
+      {!isFilmmaking && filmmakingBoard && <FloatingLessons completed={completedVideos} />}
 
       {/* ---------------------------------------------------------- needs you */}
       {actions.length ? (
