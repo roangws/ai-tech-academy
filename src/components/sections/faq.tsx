@@ -132,20 +132,8 @@ export function Faq() {
               className="relative border-b border-line"
               header={() => (
                 <span className="group flex w-full items-start py-3 md:py-4">
-                    {/* The index. Tabular so eleven of them share an edge, and
-                        hung into the container gutter from lg so the question
-                        can start where the section heading starts. */}
                     <span
-                      aria-hidden="true"
-                      className={`t-micro absolute left-0 w-5 flex-none pt-1 tabular-nums transition-colors duration-200 md:pt-2 lg:-left-7 ${
-                        expanded ? "text-accent" : "text-ink-muted/80"
-                      }`}
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-
-                    <span
-                      className={`t-question min-w-0 flex-1 pl-7 transition-colors duration-200 sm:text-[20px] md:text-[24px] lg:pl-0 lg:text-[26px] ${
+                      className={`t-question min-w-0 flex-1 transition-colors duration-200 sm:text-[20px] md:text-[24px] lg:text-[26px] ${
                         /*
                           55%, not the reference's 20%.
 
@@ -167,7 +155,7 @@ export function Faq() {
               {/* Indented to the question's own left edge, not the row's, so
                   the answer hangs off the question rather than off the
                   number. */}
-              <p className="t-body max-w-[640px] pb-6 pl-7 text-ink-secondary lg:pl-0">{f.a}</p>
+              <p className="t-body max-w-[640px] pb-6 text-ink-secondary">{f.a}</p>
             </AccordionItem>
           );
         })}
