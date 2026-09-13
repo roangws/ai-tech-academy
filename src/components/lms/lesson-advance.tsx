@@ -4,6 +4,7 @@ import { useCallback, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRightIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 
 /**
  * Finishing a lesson, and getting to the next one.
@@ -157,6 +158,16 @@ export function LessonAdvance({
     "t-button inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-5 text-on-accent no-underline transition-colors hover:bg-accent-hover";
   const quiet =
     "t-button inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-line-control px-4 text-ink-secondary transition-colors hover:border-line-strong hover:text-ink";
+  const nextLink = (
+    <Link href={forwardHref} onClick={() => {
+      if (ticked) return;
+      setTicked(true);
+      save(false);
+    }} className={forward ? "t-button" : primary}>
+      {forwardLabel}
+      <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
+    </Link>
+  );
 
   return (
     <div className="mt-10 border-t border-line pt-6">
@@ -219,18 +230,7 @@ export function LessonAdvance({
           It names the destination instead, which is the thing the reader does
           not know.
         */}
-        <Link
-          href={forwardHref}
-          onClick={() => {
-            if (ticked) return;
-            setTicked(true);
-            save(false);
-          }}
-          className={primary}
-        >
-          {forwardLabel}
-          <ArrowRightIcon size={15} weight="bold" aria-hidden="true" />
-        </Link>
+        {forward ? <LiquidButton asChild>{nextLink}</LiquidButton> : nextLink}
       </div>
 
       {/* Only ever shown when the write actually failed. Success says nothing,
